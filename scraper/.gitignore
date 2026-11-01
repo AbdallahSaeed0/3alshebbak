@@ -1,0 +1,5 @@
+node_modules/
+out/
+.env
+# Rebuilt from TMDB; CI keeps its own copy in the Actions cache.
+data/tmdb-cache.json

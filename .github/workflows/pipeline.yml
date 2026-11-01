@@ -1,0 +1,90 @@
+# Keeps عالشباك's showtimes fresh: scrape the cinemas, match films to TMDB,
+# upload to Supabase. Every 30 minutes for the chains' own sites; elCinema
+# (VOX + the smaller cinemas, ~11 min of polite paging) once an hour.
+
+name: Showtimes pipeline
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Sources to scrape (space-separated; empty = all)"
+        required: false
+        default: ""
+
+# Never two runs at once: a slow run finishes before the next starts.
+concurrency:
+  group: showtimes-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: scraper
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      SCRAPER_CONTACT: ${{ secrets.SCRAPER_CONTACT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+
+      - run: npm ci
+
+      # Premiere needs a real browser (its showtime API is encrypted).
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
+      - run: npx playwright install --with-deps chromium
+
+      # TMDB lookups are cached for a week; keep the cache between runs.
+      - name: Restore TMDB cache
+        uses: actions/cache/restore@v4
+        with:
+          path: scraper/data/tmdb-cache.json
+          key: tmdb-cache-${{ github.run_id }}
+          restore-keys: tmdb-cache-
+
+      - name: Pick sources
+        id: sources
+        run: |
+          if [ -n "${{ github.event.inputs.sources }}" ]; then
+            echo "list=${{ github.event.inputs.sources }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%M)" -lt 30 ]; then
+            # The first run of each hour includes elCinema.
+            echo "list=renaissance scene premiere elcinema" >> "$GITHUB_OUTPUT"
+          else
+            echo "list=renaissance scene premiere" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Scrape and sync
+        run: npm run pipeline -- ${{ steps.sources.outputs.list }}
+
+      - name: Save TMDB cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: scraper/data/tmdb-cache.json
+          key: tmdb-cache-${{ github.run_id }}
+
+      # Scrape output and warnings, for looking into a bad run.
+      - name: Keep the scrape output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-output
+          path: scraper/out/
+          retention-days: 3

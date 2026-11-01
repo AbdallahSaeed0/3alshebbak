@@ -1,0 +1,24 @@
+{
+  "name": "3alshebbak-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "عالشباك — reads Egyptian cinema showtimes into one normalized shape",
+  "type": "module",
+  "scripts": {
+    "scrape": "tsx src/run.ts",
+    "sync": "tsx src/sync.ts",
+    "pipeline": "tsx src/pipeline.ts",
+    "export-app": "node -e \"for (const f of ['renaissance','scene','premiere','elcinema','catalog']) require('fs').copyFileSync('out/'+f+'.json', '../app/assets/data/'+f+'.json')\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "cheerio": "^1.0.0",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
