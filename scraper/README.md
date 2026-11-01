@@ -42,6 +42,23 @@ npm run pipeline   # scrape, then sync
   `tickets_opened` view is built on it. Future showtimes a source stops listing
   are deleted. Scrape output older than 2 hours is never synced.
 
+## Map pins
+
+Every cinema's coordinates are in `data/cinema-locations.json` (kept by hand;
+`approximate: true` marks a mall's or town's pin rather than the cinema's).
+A new cinema without one gets a warning in the run; add it with
+`npx tsx scripts/geocode-cinemas.ts` (OpenStreetMap lookup) and check the pin.
+
+## "Tickets are out" notifications
+
+After each upload, `src/notify.ts` finds films that opened a new day of
+showtimes at a cinema and pushes a notification (Firebase Cloud Messaging) to
+phones that follow the film and picked that cinema, at most once per film per
+phone per day. Phones register through the `register_device` function
+(`supabase/migrations/002_map_and_push.sql`). Needs the repository secret
+`FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON); without it the
+step is skipped.
+
 ## Sources (tier 1: chains' own sites)
 
 | Source | How | Notes |

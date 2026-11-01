@@ -16,6 +16,11 @@ export interface Cinema {
   url?: string;
   /** Shown in the app when the data comes from a third party, e.g. "elCinema.com". */
   attribution?: string;
+  /** Map pin, from data/cinema-locations.json (see locations.ts). */
+  lat?: number;
+  lng?: number;
+  /** The pin is the mall's or the town's, not the cinema's own entrance. */
+  locationApproximate?: boolean;
 }
 
 export interface Film {

@@ -4,6 +4,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { closeBrowser } from './browser.js';
 import { errorMessage } from './http.js';
+import { placeCinemas } from './locations.js';
 import type { Source, SourceId } from './model.js';
 import { elcinema } from './sources/elcinema.js';
 import { premiere } from './sources/premiere.js';
@@ -30,7 +31,7 @@ async function main() {
   for (const id of ids) {
     const started = Date.now();
     try {
-      const result = await SOURCES[id].scrape();
+      const result = placeCinemas(await SOURCES[id].scrape());
       await writeFile(`out/${id}.json`, JSON.stringify(result, null, 2));
       const days = new Set(result.showtimes.map((s) => s.businessDate));
       console.log(

@@ -4,7 +4,9 @@
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { errorMessage } from './http.js';
+import { placeCinemas } from './locations.js';
 import type { ScrapeResult } from './model.js';
+import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
 import { buildCatalog } from './tmdb.js';
 
@@ -17,7 +19,8 @@ async function freshResults(): Promise<ScrapeResult[]> {
   for (const file of files) {
     const r = JSON.parse(await readFile(`out/${file}`, 'utf8')) as ScrapeResult;
     if (Date.now() - Date.parse(r.fetchedAt) > MAX_AGE_MS) console.log(`  skip ${file}: scraped ${r.fetchedAt}, too old`);
-    else results.push(r);
+    // Placed again here so a pin fixed by hand reaches Supabase on the next sync.
+    else results.push(placeCinemas(r));
   }
   return results;
 }
@@ -51,6 +54,7 @@ async function main() {
   await upload(db, results, catalog, runStartedAt);
   const showtimes = results.reduce((n, r) => n + r.showtimes.length, 0);
   console.log(`✓ supabase: ${results.map((r) => r.source).join(', ')} — ${showtimes} showtimes`);
+  await notifyDrops(db, runStartedAt);
 }
 
 main().catch((e) => {

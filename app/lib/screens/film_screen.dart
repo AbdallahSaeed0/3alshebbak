@@ -298,7 +298,7 @@ class _CinemaBlock extends StatelessWidget {
                         Text(
                           [
                             cinema.area,
-                            cinema.city,
+                            if (cinema.city != null) cityName(cinema.city!),
                           ].whereType<String>().join(' · '),
                           style: AppText.body(12, color: AppColors.muted),
                         ),

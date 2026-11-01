@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import 'models.dart';
@@ -265,6 +267,22 @@ class AppData {
     return list;
   }
 
+  /// Straight-line distance from where the user last was, when we know both.
+  double? distanceKm(Cinema c) {
+    final spot = prefs.spot;
+    if (spot == null || !c.hasLocation) return null;
+    return haversineKm(spot.lat, spot.lng, c.lat!, c.lng!);
+  }
+
+  /// Cinemas by distance from [spot], nearest first; ones without a pin last.
+  List<Cinema> byDistance(Spot spot) {
+    double d(Cinema c) => c.hasLocation
+        ? haversineKm(spot.lat, spot.lng, c.lat!, c.lng!)
+        : double.infinity;
+    return catalog.cinemas.values.toList()
+      ..sort((a, b) => d(a).compareTo(d(b)));
+  }
+
   Showtime? nextShow({String? cinemaId, String? movieId}) {
     for (final s in catalog.showtimes) {
       if ((cinemaId == null || s.cinemaId == cinemaId) &&
@@ -275,6 +293,19 @@ class AppData {
     }
     return null;
   }
+}
+
+double haversineKm(double lat1, double lng1, double lat2, double lng2) {
+  const r = 6371.0;
+  double rad(double deg) => deg * math.pi / 180;
+  final dLat = rad(lat2 - lat1);
+  final dLng = rad(lng2 - lng1);
+  final a =
+      math.pow(math.sin(dLat / 2), 2) +
+      math.cos(rad(lat1)) *
+          math.cos(rad(lat2)) *
+          math.pow(math.sin(dLng / 2), 2);
+  return 2 * r * math.asin(math.sqrt(a));
 }
 
 /// Hands [AppData] to every screen below it, and rebuilds them when the

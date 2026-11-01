@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/app_data.dart';
 import '../data/models.dart';
 import '../theme.dart';
+import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/schedule.dart';
 import 'film_screen.dart';
@@ -37,7 +38,10 @@ class _CinemaScreenState extends State<CinemaScreen> {
     final schedule = date == null
         ? const <(Movie, List<Showtime>)>[]
         : data.cinemaSchedule(cinema.id, date);
-    final place = [cinema.area, cinema.city].whereType<String>().join(' · ');
+    final place = [
+      cinema.area,
+      if (cinema.city != null) cityName(cinema.city!),
+    ].whereType<String>().join(' · ');
 
     return Scaffold(
       body: CustomScrollView(

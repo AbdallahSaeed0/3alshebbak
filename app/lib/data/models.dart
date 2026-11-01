@@ -12,6 +12,9 @@ class Cinema {
     this.area,
     this.url,
     this.attribution,
+    this.lat,
+    this.lng,
+    this.locationApproximate = false,
   });
 
   final String id;
@@ -25,6 +28,13 @@ class Cinema {
   /// Third-party data source to credit, e.g. "elCinema.com".
   final String? attribution;
 
+  /// Map pin. [locationApproximate]: the mall's or the town's, not the door's.
+  final double? lat;
+  final double? lng;
+  final bool locationApproximate;
+
+  bool get hasLocation => lat != null && lng != null;
+
   /// "VOX · City Centre Almaza" — how a showtime names its cinema.
   String get label => chain == 'Independent' ? name : '$chain · $name';
 
@@ -37,6 +47,9 @@ class Cinema {
     area: j['area'] as String?,
     url: j['url'] as String?,
     attribution: j['attribution'] as String?,
+    lat: (j['lat'] as num?)?.toDouble(),
+    lng: (j['lng'] as num?)?.toDouble(),
+    locationApproximate: j['locationApproximate'] as bool? ?? false,
   );
 }
 

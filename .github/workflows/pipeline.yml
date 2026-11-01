@@ -31,6 +31,8 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       SCRAPER_CONTACT: ${{ secrets.SCRAPER_CONTACT }}
+      # Optional: without it the run skips push notifications.
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v4
 

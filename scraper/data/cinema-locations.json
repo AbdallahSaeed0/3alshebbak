@@ -1,0 +1,450 @@
+{
+  "elcinema:agamy-star-cinema": {
+    "lat": 31.14056,
+    "lng": 29.78528,
+    "city": "Alexandria",
+    "area": "Agamy",
+    "query": "Agami, Alexandria",
+    "approximate": true
+  },
+  "elcinema:alexandria-metro": {
+    "lat": 31.19793,
+    "lng": 29.90407,
+    "city": "Alexandria",
+    "area": "Downtown",
+    "query": "Metro Cinema, Alexandria"
+  },
+  "elcinema:almasa-matrouh": {
+    "lat": 31.35286,
+    "lng": 27.23953,
+    "city": "Marsa Matrouh",
+    "query": "Marsa Matruh",
+    "approximate": true
+  },
+  "elcinema:americana-plaza": {
+    "lat": 30.02698,
+    "lng": 31.01378,
+    "city": "Cairo",
+    "area": "Sheikh Zayed",
+    "query": "Americana Plaza, Sheikh Zayed"
+  },
+  "elcinema:cairo-mall-cinema": {
+    "lat": 30.0055,
+    "lng": 31.17,
+    "city": "Cairo",
+    "area": "Haram",
+    "approximate": true
+  },
+  "elcinema:cairo-metro": {
+    "lat": 30.05157,
+    "lng": 31.24131,
+    "city": "Cairo",
+    "area": "Downtown",
+    "query": "Metro Cinema, Talaat Harb, Cairo"
+  },
+  "elcinema:cine-max": {
+    "lat": 30.0565,
+    "lng": 30.9856,
+    "city": "Cairo",
+    "area": "Sheikh Zayed",
+    "approximate": true
+  },
+  "elcinema:cine-max-minya": {
+    "lat": 28.21254,
+    "lng": 30.91237,
+    "city": "Minya",
+    "query": "Minya",
+    "approximate": true
+  },
+  "elcinema:cinematy-port-said": {
+    "lat": 31.26324,
+    "lng": 32.3055,
+    "city": "Port Said",
+    "query": "Port Said",
+    "approximate": true
+  },
+  "elcinema:city-centre-alexandria": {
+    "lat": 31.16799,
+    "lng": 29.93186,
+    "city": "Alexandria",
+    "area": "Moharam Bek",
+    "query": "City Centre Alexandria"
+  },
+  "elcinema:city-centre-almaza": {
+    "lat": 30.0855,
+    "lng": 31.3711,
+    "city": "Cairo",
+    "area": "Heliopolis",
+    "approximate": true
+  },
+  "elcinema:city-stars-cinema": {
+    "lat": 30.07332,
+    "lng": 31.34424,
+    "city": "Cairo",
+    "area": "Nasr City",
+    "query": "City Stars, Nasr City"
+  },
+  "elcinema:cosmos-cinema": {
+    "lat": 30.0525,
+    "lng": 31.2445,
+    "city": "Cairo",
+    "area": "Downtown",
+    "approximate": true
+  },
+  "elcinema:deeb-mall-cinema": {
+    "lat": 31.2295,
+    "lng": 29.958,
+    "city": "Alexandria",
+    "area": "Roshdy",
+    "approximate": true
+  },
+  "elcinema:diamond-bandar-maadi": {
+    "lat": 29.97761,
+    "lng": 31.28423,
+    "city": "Cairo",
+    "area": "Maadi",
+    "query": "Bandar Mall, Maadi"
+  },
+  "elcinema:diamond-marseille-park": {
+    "lat": 31.28761,
+    "lng": 30.01815,
+    "city": "Alexandria",
+    "area": "Montazah",
+    "query": "Montaza, Alexandria",
+    "approximate": true
+  },
+  "elcinema:donia-porto-el-sokhna": {
+    "lat": 29.43772,
+    "lng": 32.47788,
+    "city": "Ain Sokhna",
+    "area": "Ain Sokhna",
+    "query": "Porto Sokhna"
+  },
+  "elcinema:el-shams-cinema": {
+    "lat": 30.13048,
+    "lng": 31.31675,
+    "city": "Cairo",
+    "area": "Ain Shams",
+    "query": "Ain Shams, Cairo",
+    "approximate": true
+  },
+  "elcinema:el-tahrir-cinema": {
+    "lat": 30.03917,
+    "lng": 31.21451,
+    "city": "Cairo",
+    "area": "Dokki",
+    "query": "Tahrir Cinema, Dokki"
+  },
+  "elcinema:galaxy-cineplex-mall-of-arabia": {
+    "lat": 29.99728,
+    "lng": 30.96498,
+    "city": "Cairo",
+    "area": "6th of October",
+    "query": "Mall of Arabia, 6th of October"
+  },
+  "elcinema:galaxy-el-gezeera-plaza": {
+    "lat": 31.0409,
+    "lng": 31.3785,
+    "city": "Mansoura",
+    "approximate": true
+  },
+  "elcinema:galaxy-el-maadi": {
+    "lat": 29.96493,
+    "lng": 31.24688,
+    "city": "Cairo",
+    "area": "Maadi",
+    "query": "Galaxy Cinema, Maadi"
+  },
+  "elcinema:galaxy-mall-of-university": {
+    "lat": 31.04078,
+    "lng": 31.35813,
+    "city": "Mansoura",
+    "query": "Mansoura University",
+    "approximate": true
+  },
+  "elcinema:galaxy-mega": {
+    "lat": 26.76246,
+    "lng": 32.09099,
+    "city": "Sohag",
+    "area": "New Sohag",
+    "query": "Sohag",
+    "approximate": true
+  },
+  "elcinema:golden-stars": {
+    "lat": 30.07332,
+    "lng": 31.34424,
+    "city": "Cairo",
+    "area": "Nasr City",
+    "query": "City Stars, Nasr City"
+  },
+  "elcinema:golf-city-cinema": {
+    "lat": 30.17429,
+    "lng": 31.47628,
+    "city": "Cairo",
+    "area": "Obour City",
+    "query": "Golf City Mall, Obour"
+  },
+  "elcinema:grand-hurghada-cinema": {
+    "lat": 27.22256,
+    "lng": 33.83071,
+    "city": "Hurghada",
+    "query": "Hurghada",
+    "approximate": true
+  },
+  "elcinema:grand-nile-tower-cinema": {
+    "lat": 30.033,
+    "lng": 31.228,
+    "city": "Cairo",
+    "area": "Garden City",
+    "approximate": true
+  },
+  "elcinema:green-plaza-cinema": {
+    "lat": 31.20664,
+    "lng": 29.9654,
+    "city": "Alexandria",
+    "area": "Smouha",
+    "query": "Green Plaza, Alexandria"
+  },
+  "elcinema:horeya-cinema": {
+    "lat": 30.60438,
+    "lng": 32.27708,
+    "city": "Ismailia",
+    "area": "Downtown",
+    "query": "Ismailia",
+    "approximate": true
+  },
+  "elcinema:kiroseiz-sharm-el-sheikh": {
+    "lat": 27.86444,
+    "lng": 34.29545,
+    "city": "Sharm El Sheikh",
+    "query": "Sharm El Sheikh",
+    "approximate": true
+  },
+  "elcinema:lido-cinema": {
+    "lat": 30.053,
+    "lng": 31.245,
+    "city": "Cairo",
+    "area": "Downtown",
+    "approximate": true
+  },
+  "elcinema:mall-of-egypt": {
+    "lat": 29.97213,
+    "lng": 31.01706,
+    "city": "Cairo",
+    "area": "6th of October",
+    "query": "Mall of Egypt"
+  },
+  "elcinema:sea-cinema-amir": {
+    "lat": 31.19689,
+    "lng": 29.90416,
+    "city": "Alexandria",
+    "area": "Downtown",
+    "query": "Amir Cinema, Alexandria"
+  },
+  "elcinema:sea-cinema-arabella": {
+    "lat": 30.0225,
+    "lng": 31.458,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-el-gouna": {
+    "lat": 27.39893,
+    "lng": 33.67416,
+    "city": "Hurghada",
+    "area": "El Gouna",
+    "query": "El Gouna",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-fayoum": {
+    "lat": 29.30741,
+    "lng": 30.83997,
+    "city": "Fayoum",
+    "query": "Faiyum",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-luxor": {
+    "lat": 25.7021,
+    "lng": 32.64719,
+    "city": "Luxor",
+    "query": "Luxor",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-royal-plaza": {
+    "lat": 31.269,
+    "lng": 29.998,
+    "city": "Alexandria",
+    "area": "Montazah",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-shebin-el-kom": {
+    "lat": 30.5586,
+    "lng": 31.0119,
+    "city": "Shebin El Kom",
+    "area": "Shebin El Kom",
+    "approximate": true
+  },
+  "elcinema:sea-cinema-tanta": {
+    "lat": 30.78337,
+    "lng": 30.99825,
+    "city": "Tanta",
+    "query": "Tanta",
+    "approximate": true
+  },
+  "elcinema:sea-way-suez-cinema": {
+    "lat": 29.937,
+    "lng": 32.56,
+    "city": "Suez",
+    "area": "Port Tawfik",
+    "approximate": true
+  },
+  "elcinema:sun-city": {
+    "lat": 30.1005,
+    "lng": 31.3763,
+    "city": "Cairo",
+    "area": "Heliopolis",
+    "approximate": true
+  },
+  "elcinema:tulip-of-alexandria-cinema": {
+    "lat": 31.23137,
+    "lng": 29.94665,
+    "city": "Alexandria",
+    "query": "Tolip Hotel Alexandria"
+  },
+  "elcinema:universal-cinema": {
+    "lat": 30.02777,
+    "lng": 31.47568,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "query": "New Cairo",
+    "approximate": true
+  },
+  "elcinema:white-rose-cinema": {
+    "lat": 31.28761,
+    "lng": 30.01815,
+    "city": "Alexandria",
+    "area": "Montazah",
+    "query": "Montaza, Alexandria",
+    "approximate": true
+  },
+  "elcinema:zamalek-cinema": {
+    "lat": 30.06166,
+    "lng": 31.21899,
+    "city": "Cairo",
+    "area": "Zamalek",
+    "query": "Zamalek Cinema, Cairo"
+  },
+  "elcinema:zawya": {
+    "lat": 30.05562,
+    "lng": 31.24453,
+    "city": "Cairo",
+    "area": "Downtown",
+    "query": "Zawya Cinema, Cairo"
+  },
+  "premiere:cima-arkan": {
+    "lat": 30.02022,
+    "lng": 31.0033,
+    "city": "Cairo",
+    "area": "Sheikh Zayed",
+    "query": "Arkan Plaza, Sheikh Zayed"
+  },
+  "premiere:galaxy-elmanial": {
+    "lat": 30.01754,
+    "lng": 31.22311,
+    "city": "Cairo",
+    "area": "Manial",
+    "query": "Galaxy Cinema, Manial"
+  },
+  "premiere:nile-cinema": {
+    "lat": 30.07209,
+    "lng": 31.22791,
+    "city": "Cairo",
+    "area": "Corniche",
+    "query": "Nile City Towers, Cairo"
+  },
+  "premiere:premiere-plaza": {
+    "lat": 30.03541,
+    "lng": 30.96697,
+    "city": "Cairo",
+    "area": "Sheikh Zayed",
+    "query": "Plaza Mall, Sheikh Zayed"
+  },
+  "premiere:premiere-point90": {
+    "lat": 30.02026,
+    "lng": 31.49472,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "query": "Point 90 Mall"
+  },
+  "renaissance:al-masrya-plaza-agazig": {
+    "lat": 30.58534,
+    "lng": 31.50351,
+    "city": "Zagazig",
+    "query": "Zagazig",
+    "approximate": true
+  },
+  "renaissance:al_rehab": {
+    "lat": 30.0596,
+    "lng": 31.492,
+    "city": "Cairo",
+    "area": "Rehab City",
+    "approximate": true
+  },
+  "renaissance:banha": {
+    "lat": 30.4625,
+    "lng": 31.18406,
+    "city": "Banha",
+    "query": "Banha",
+    "approximate": true
+  },
+  "renaissance:dandy_mall": {
+    "lat": 30.06249,
+    "lng": 31.02782,
+    "city": "Cairo",
+    "area": "6th of October",
+    "query": "Dandy Mega Mall"
+  },
+  "renaissance:downtown": {
+    "lat": 30.05575,
+    "lng": 31.24421,
+    "city": "Cairo",
+    "area": "Downtown",
+    "query": "Emad El Din Street, Cairo"
+  },
+  "renaissance:madinty": {
+    "lat": 30.10778,
+    "lng": 31.62731,
+    "city": "Cairo",
+    "area": "Madinaty",
+    "query": "Open Air Mall, Madinaty"
+  },
+  "renaissance:san_stephano": {
+    "lat": 31.2453,
+    "lng": 29.9662,
+    "city": "Alexandria",
+    "area": "San Stefano",
+    "approximate": true
+  },
+  "renaissance:semoha": {
+    "lat": 31.21686,
+    "lng": 29.94629,
+    "city": "Alexandria",
+    "area": "Smouha",
+    "query": "Smouha, Alexandria",
+    "approximate": true
+  },
+  "scene:cfc": {
+    "lat": 30.02814,
+    "lng": 31.40767,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "query": "Cairo Festival City Mall"
+  },
+  "scene:district5": {
+    "lat": 29.95599,
+    "lng": 31.45211,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "query": "District 5, New Cairo"
+  }
+}

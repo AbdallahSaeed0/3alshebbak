@@ -28,8 +28,17 @@ declare global {
 }
 
 async function openNowShowing(page: Page): Promise<Listing[]> {
-  await page.goto(NOW_SHOWING, { waitUntil: 'load', timeout: PAGE_TIMEOUT_MS });
-  return page.evaluate(() => window.__shebbakPremiere.ready());
+  const response = await page.goto(NOW_SHOWING, { waitUntil: 'load', timeout: PAGE_TIMEOUT_MS });
+  try {
+    return await page.evaluate(() => window.__shebbakPremiere.ready());
+  } catch (e) {
+    // Say what the page was instead, so a failure far away (CI) can be told
+    // apart: a layout change, an error page, or a page that never loaded.
+    const seen = await page
+      .evaluate(() => `"${document.title}" — ${document.body?.innerText.replace(/\s+/g, ' ').slice(0, 200) ?? ''}`)
+      .catch(() => '(unreadable)');
+    throw new Error(`${errorMessage(e)} [HTTP ${response?.status() ?? '?'} ${page.url()} ${seen}]`);
+  }
 }
 
 const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

@@ -68,3 +68,40 @@ String shortFormat(String format) {
 
 /// "1 سينما" / "2 سينما" / "3 سينمات".
 String cinemaCount(int n) => n >= 3 && n <= 10 ? '$n سينمات' : '$n سينما';
+
+/// Joins place parts ("Nasr City", "2.9 كم"). The right-to-left mark before
+/// each separator keeps a number after a Latin name from joining the Latin
+/// run, which would print "كم Nasr City · 2.9".
+String joinPlace(Iterable<String> parts) => parts.join('‏ · ');
+
+/// "٣٫٢ كم" style, kept short: "800 م", "3.2 كم", "45 كم".
+String distance(double km) {
+  if (km < 1) return '${(km * 1000).round() ~/ 50 * 50} م';
+  if (km < 10) return '${km.toStringAsFixed(1)} كم';
+  return '${km.round()} كم';
+}
+
+const _cities = {
+  'Cairo': 'القاهرة',
+  'Alexandria': 'إسكندرية',
+  'Mansoura': 'المنصورة',
+  'Tanta': 'طنطا',
+  'Zagazig': 'الزقازيق',
+  'Banha': 'بنها',
+  'Shebin El Kom': 'شبين الكوم',
+  'Menofia': 'المنوفية',
+  'Fayoum': 'الفيوم',
+  'Minya': 'المنيا',
+  'Sohag': 'سوهاج',
+  'Luxor': 'الأقصر',
+  'Hurghada': 'الغردقة',
+  'Sharm El Sheikh': 'شرم الشيخ',
+  'Ismailia': 'الإسماعيلية',
+  'Suez': 'السويس',
+  'Ain Sokhna': 'العين السخنة',
+  'Port Said': 'بورسعيد',
+  'Marsa Matrouh': 'مرسى مطروح',
+};
+
+/// The city in Arabic when we have it.
+String cityName(String city) => _cities[city] ?? city;

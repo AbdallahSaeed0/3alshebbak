@@ -13,7 +13,7 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
   SupabaseShowtimesRepository({http.Client? client})
     : _client = client ?? http.Client();
 
-  static const _url = 'https://enmcbbwunzhjxgwehzuf.supabase.co';
+  static const url = 'https://enmcbbwunzhjxgwehzuf.supabase.co';
   static const _publishableKey =
       'sb_publishable_f7K-cdE2gojpx4tXP8mNyQ_UKgrYgg1';
 
@@ -23,7 +23,8 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
 
   final http.Client _client;
 
-  Map<String, String> get _headers => {
+  /// Also used by push.dart to register the phone.
+  static const headers = {
     'apikey': _publishableKey,
     'Accept-Profile': 'shebbak',
   };
@@ -33,7 +34,7 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
     Map<String, String> extra = const {},
   }) async {
     final res = await _client
-        .get(Uri.parse('$_url/rest/v1/$path'), headers: {..._headers, ...extra})
+        .get(Uri.parse('$url/rest/v1/$path'), headers: {...headers, ...extra})
         .timeout(_timeout);
     if (res.statusCode >= 300)
       throw Exception('Supabase $path: HTTP ${res.statusCode} ${res.body}');
@@ -53,7 +54,10 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
         'showtimes?select=$fields&starts_at=gte.$since&order=starts_at,id';
 
     final results = await Future.wait([
-      _get('cinemas?select=id,chain,name,name_ar,city,area,url,attribution'),
+      _get(
+        'cinemas?select=id,chain,name,name_ar,city,area,url,attribution,'
+        'lat,lng,location_approximate',
+      ),
       _get(
         'movies?select=id,tmdb_id,title,title_ar,overview,poster_path,backdrop_path,'
         'release_date,runtime,genres,fallback_poster_url',
@@ -98,6 +102,9 @@ CatalogData _parse(List<String> bodies) {
         area: c['area'] as String?,
         url: c['url'] as String?,
         attribution: c['attribution'] as String?,
+        lat: (c['lat'] as num?)?.toDouble(),
+        lng: (c['lng'] as num?)?.toDouble(),
+        locationApproximate: c['location_approximate'] as bool? ?? false,
       ),
   };
   final movies = {
