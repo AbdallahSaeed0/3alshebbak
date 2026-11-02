@@ -12,6 +12,7 @@ import 'screens/film_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'screens/splash_screen.dart';
+import 'services/home_widget_sync.dart';
 import 'services/push.dart';
 import 'theme.dart';
 import 'util/i18n.dart';
@@ -52,6 +53,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _data?.prefs.removeListener(_applyLook);
+    _data?.prefs.removeListener(_syncWidget);
     super.dispose();
   }
 
@@ -99,9 +101,15 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     (context as Element).visitChildren(markAll);
   }
 
-  void _ready(AppData data) {
+  void _ready(AppData data, {bool stale = false}) {
+    data.refresh = _refresh;
     setState(() => _data = data);
+    // Opened on last time's catalog: fetch today's behind it.
+    if (stale) _refresh();
     data.prefs.addListener(_applyLook);
+    // Starring a cinema or switching language changes what the widget shows.
+    data.prefs.addListener(_syncWidget);
+    _syncWidget();
     _applyLook();
     // A tapped "tickets are out" notification opens its film.
     Push.instance.onOpenFilm = (movieId) {
@@ -110,6 +118,29 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       if (movie != null && context != null) openFilm(context, movie);
     };
     Push.instance.start(data.prefs);
+  }
+
+  void _syncWidget() {
+    final data = _data;
+    if (data != null) syncHomeWidget(data);
+  }
+
+  /// The latest showtimes from Supabase, swapped in under whatever screen is
+  /// open. A failed fetch keeps what's there.
+  Future<void> _refresh() async {
+    final current = _data;
+    if (current == null) return;
+    final repo = widget.repository;
+    final live = repo is FallbackShowtimesRepository ? repo.primary : repo;
+    try {
+      final catalog = await live.load();
+      if (!mounted || catalog.showtimes.isEmpty) return;
+      final fresh = AppData(catalog, current.prefs)..refresh = _refresh;
+      setState(() => _data = fresh);
+      _syncWidget();
+    } catch (e) {
+      debugPrint('Refreshing showtimes failed: $e');
+    }
   }
 
   @override

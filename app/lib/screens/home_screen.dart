@@ -30,155 +30,165 @@ class HomeScreen extends StatelessWidget {
         ? tr('سينماتك', 'your cinemas')
         : tr('سينمات ${cityName(city)}', '${cityName(city)} cinemas');
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(child: _Header(onSearch: onSearch)),
-        _gap(24),
-        SliverToBoxAdapter(
-          child: SectionHeader(
-            title: tr('الجاي في سينماتك', 'Up next at your cinemas'),
-            leading: _Dot(color: AppColors.amber),
-            subtitle: tr(
-              'أقرب الحفلات في السينمات اللي معلّم عليها نجمة · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
-              'The next shows at the cinemas you starred · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
-            ),
-          ),
-        ),
-        _gap(8),
-        SliverToBoxAdapter(
-          child: soon.isEmpty
-              ? _Empty(
-                  tr(
-                    'مفيش حفلات جاية في سينماتك خلال ٢٤ ساعة',
-                    'No shows at your cinemas in the next 24 hours',
-                  ),
-                )
-              : SizedBox(
-                  height: 132,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    itemCount: soon.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, i) =>
-                        _SoonCard(showtime: soon[i], now: data.now),
-                  ),
-                ),
-        ),
-        if (opened.isNotEmpty) ...[
+    // Pull down for the latest showtimes.
+    return RefreshIndicator(
+      onRefresh: data.refresh ?? () async {},
+      color: AppColors.gold,
+      backgroundColor: AppColors.surface,
+      edgeOffset: MediaQuery.paddingOf(context).top,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _Header(onSearch: onSearch)),
           _gap(24),
           SliverToBoxAdapter(
             child: SectionHeader(
-              title: tr('التذاكر نزلت!', 'Tickets are out!'),
-              color: AppColors.gold,
-              leading: MarqueeBulbs(),
+              title: tr('الجاي في سينماتك', 'Up next at your cinemas'),
+              leading: _Dot(color: AppColors.amber),
               subtitle: tr(
-                'الحجز لسه فاتح · اسبق الزحمة',
-                'Booking just opened · beat the rush',
+                'أقرب الحفلات في السينمات اللي معلّم عليها نجمة · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+                'The next shows at the cinemas you starred · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+              ),
+            ),
+          ),
+          _gap(8),
+          SliverToBoxAdapter(
+            child: soon.isEmpty
+                ? _Empty(
+                    tr(
+                      'مفيش حفلات جاية في سينماتك خلال ٢٤ ساعة',
+                      'No shows at your cinemas in the next 24 hours',
+                    ),
+                  )
+                : SizedBox(
+                    height: 132,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      itemCount: soon.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (context, i) =>
+                          _SoonCard(showtime: soon[i], now: data.now),
+                    ),
+                  ),
+          ),
+          if (opened.isNotEmpty) ...[
+            _gap(24),
+            SliverToBoxAdapter(
+              child: SectionHeader(
+                title: tr('التذاكر نزلت!', 'Tickets are out!'),
+                color: AppColors.gold,
+                leading: MarqueeBulbs(),
+                subtitle: tr(
+                  'الحجز لسه فاتح · اسبق الزحمة',
+                  'Booking just opened · beat the rush',
+                ),
+              ),
+            ),
+            _gap(12),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 300,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: opened.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) => _OpenedCard(item: opened[i]),
+                ),
+              ),
+            ),
+          ],
+          _gap(28),
+          SliverToBoxAdapter(
+            child: SectionHeader(
+              title: tr('النهارده في السينما', 'Today at the cinema'),
+              subtitle: tr(
+                '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
+                '${dayLabel(data.today)} · at $where (${data.homeCinemaCount})',
               ),
             ),
           ),
           _gap(12),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 300,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: opened.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (context, i) => _OpenedCard(item: opened[i]),
-              ),
-            ),
-          ),
-        ],
-        _gap(28),
-        SliverToBoxAdapter(
-          child: SectionHeader(
-            title: tr('النهارده في السينما', 'Today at the cinema'),
-            subtitle: tr(
-              '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
-              '${dayLabel(data.today)} · at $where (${data.homeCinemaCount})',
-            ),
-          ),
-        ),
-        _gap(12),
-        if (today.isEmpty)
-          SliverToBoxAdapter(
-            child: _Empty(
-              tr(
-                'خلصت حفلات النهارده في $where',
-                'Today\'s shows at $where are over',
-              ),
-            ),
-          )
-        else ...[
-          // The busiest few; the rest are a tap away instead of a long scroll.
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverList.separated(
-              itemCount: today.length.clamp(0, HomeScreen._todayShown),
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, i) => _TodayCard(day: today[i]),
-            ),
-          ),
-          if (today.length > HomeScreen._todayShown)
+          if (today.isEmpty)
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const _TodayPage()),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.gold,
-                    side: BorderSide(color: AppColors.goldEdge),
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              child: _Empty(
+                tr(
+                  'خلصت حفلات النهارده في $where',
+                  'Today\'s shows at $where are over',
+                ),
+              ),
+            )
+          else ...[
+            // The busiest few; the rest are a tap away instead of a long scroll.
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList.separated(
+                itemCount: today.length.clamp(0, HomeScreen._todayShown),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, i) => _TodayCard(day: today[i]),
+              ),
+            ),
+            if (today.length > HomeScreen._todayShown)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const _TodayPage(),
+                      ),
                     ),
-                    textStyle: AppText.body(15, weight: FontWeight.w700),
-                  ),
-                  child: Text(
-                    tr(
-                      'اعرض كل الأفلام (${today.length})',
-                      'See all films (${today.length})',
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.gold,
+                      side: BorderSide(color: AppColors.goldEdge),
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: AppText.body(15, weight: FontWeight.w700),
+                    ),
+                    child: Text(
+                      tr(
+                        'اعرض كل الأفلام (${today.length})',
+                        'See all films (${today.length})',
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
-        if (coming.isNotEmpty) ...[
-          _gap(28),
-          SliverToBoxAdapter(
-            child: SectionHeader(
-              title: tr('قريبًا', 'Coming soon'),
-              subtitle: tr(
-                'تابِع الفيلم ونقولك أول ما التذاكر تنزل',
-                'Follow a film and we\'ll tell you when tickets go on sale',
+          ],
+          if (coming.isNotEmpty) ...[
+            _gap(28),
+            SliverToBoxAdapter(
+              child: SectionHeader(
+                title: tr('قريبًا', 'Coming soon'),
+                subtitle: tr(
+                  'تابِع الفيلم ونقولك أول ما التذاكر تنزل',
+                  'Follow a film and we\'ll tell you when tickets go on sale',
+                ),
               ),
             ),
-          ),
-          _gap(12),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 300,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: coming.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (context, i) => _ComingCard(item: coming[i]),
+            _gap(12),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 300,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: coming.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) => _ComingCard(item: coming[i]),
+                ),
               ),
             ),
-          ),
+          ],
+          _gap(barSpace(context) + 16),
         ],
-        _gap(barSpace(context) + 16),
-      ],
+      ),
     );
   }
 
@@ -498,7 +508,7 @@ class _FormatTag extends StatelessWidget {
 
 String _chains(List<Cinema> cinemas) {
   final chains = cinemas
-      .map((c) => c.chain == 'Independent' ? c.name : c.chain)
+      .map((c) => c.chain == 'Independent' ? c.label : c.chain)
       .toSet()
       .toList();
   return chains.length <= 2

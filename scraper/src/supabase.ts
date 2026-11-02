@@ -71,6 +71,8 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
       release_date: m.releaseDate,
       runtime: m.runtime,
       genres: m.genres,
+      rating: m.rating,
+      trailer_key: m.trailerKey,
       fallback_poster_url: m.fallbackPosterUrl,
       updated_at: now,
     })),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
@@ -357,6 +358,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'This version doesn\'t send notifications',
                   ),
                 ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _Group(
+            children: [
+              _Row(
+                icon: Icons.privacy_tip_outlined,
+                title: tr('سياسة الخصوصية', 'Privacy policy'),
+                onTap: () => launchUrl(
+                  Uri.parse(
+                    'https://abdallahsaeed0.github.io/3alshebbak/privacy.html'
+                    '${Lang.english ? '#en' : ''}',
+                  ),
+                ),
+              ),
             ],
           ),
         ],

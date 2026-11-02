@@ -41,14 +41,19 @@ class Poster extends StatelessWidget {
       ),
     );
     final url = movie.posterUrl;
+    final rating = movie.rating;
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: SizedBox(
         width: width,
         height: height,
-        child: url == null
-            ? placeholder
-            : Image.network(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (url == null)
+              placeholder
+            else
+              Image.network(
                 url,
                 fit: BoxFit.cover,
                 cacheWidth: (width * MediaQuery.devicePixelRatioOf(context))
@@ -57,9 +62,41 @@ class Poster extends StatelessWidget {
                 loadingBuilder: (_, child, progress) =>
                     progress == null ? child : placeholder,
               ),
+            // TMDB's rating, on posters big enough to carry it.
+            if (rating != null && width >= 80)
+              PositionedDirectional(
+                bottom: 6,
+                start: 6,
+                child: _RatingBadge(rating),
+              ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _RatingBadge extends StatelessWidget {
+  const _RatingBadge(this.rating);
+  final double rating;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: const Color(0xCC0B0A08),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      '★ ${rating.toStringAsFixed(1)}',
+      textDirection: TextDirection.ltr,
+      style: AppText.body(
+        11,
+        weight: FontWeight.w700,
+        color: const Color(0xFFF2B544),
+      ),
+    ),
+  );
 }
 
 /// A section title in display type, an optional subtitle, and "الكل".

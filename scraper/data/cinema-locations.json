@@ -26,7 +26,8 @@
     "lng": 31.01378,
     "city": "Cairo",
     "area": "Sheikh Zayed",
-    "query": "Americana Plaza, Sheikh Zayed"
+    "query": "Americana Plaza, Sheikh Zayed",
+    "nameAr": "سينما بريمير أمريكانا بلازا"
   },
   "elcinema:cairo-mall-cinema": {
     "lat": 30.0055,
@@ -47,7 +48,8 @@
     "lng": 31.0033,
     "city": "Cairo",
     "area": "Sheikh Zayed",
-    "query": "Arkan Plaza, Sheikh Zayed"
+    "query": "Arkan Plaza, Sheikh Zayed",
+    "nameAr": "سينما أركان"
   },
   "elcinema:cine-max": {
     "lat": 30.0565,
@@ -160,7 +162,8 @@
     "lng": 31.24688,
     "city": "Cairo",
     "area": "Maadi",
-    "query": "Galaxy Cinema, Maadi"
+    "query": "Galaxy Cinema, Maadi",
+    "nameAr": "سينما جلاكسي المعادي"
   },
   "elcinema:galaxy-mall-of-university": {
     "lat": 31.04078,
@@ -182,7 +185,8 @@
     "lng": 31.34424,
     "city": "Cairo",
     "area": "Nasr City",
-    "query": "City Stars, Nasr City"
+    "query": "City Stars, Nasr City",
+    "nameAr": "سينما جولدن ستارز"
   },
   "elcinema:golf-city-cinema": {
     "lat": 30.17429,
@@ -246,7 +250,8 @@
     "lng": 31.49472,
     "city": "Cairo",
     "area": "New Cairo",
-    "query": "Point 90 Mall"
+    "query": "Point 90 Mall",
+    "nameAr": "سينما بريمير بوينت 90"
   },
   "elcinema:sea-cinema-amir": {
     "lat": 31.19689,
@@ -317,7 +322,8 @@
     "lng": 31.3763,
     "city": "Cairo",
     "area": "Heliopolis",
-    "approximate": true
+    "approximate": true,
+    "nameAr": "سينما صن سيتي"
   },
   "elcinema:tulip-of-alexandria-cinema": {
     "lat": 31.23137,
@@ -452,13 +458,15 @@
     "lng": 31.40767,
     "city": "Cairo",
     "area": "New Cairo",
-    "query": "Cairo Festival City Mall"
+    "query": "Cairo Festival City Mall",
+    "nameAr": "كايرو فستيفال سيتي"
   },
   "scene:district5": {
     "lat": 29.95599,
     "lng": 31.45211,
     "city": "Cairo",
     "area": "New Cairo",
-    "query": "District 5, New Cairo"
+    "query": "District 5, New Cairo",
+    "nameAr": "ديستريكت 5"
   }
 }

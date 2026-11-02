@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
@@ -8,6 +9,7 @@ import '../widgets/common.dart';
 import '../widgets/schedule.dart';
 import 'cinema_screen.dart';
 import '../util/i18n.dart';
+import 'go_together_sheet.dart';
 
 void openFilm(BuildContext context, Movie movie) => Navigator.of(
   context,
@@ -46,6 +48,7 @@ class _FilmScreenState extends State<FilmScreen> {
     final following = data.prefs.isFollowing(movie.id);
 
     final meta = [
+      if (movie.rating != null) '★ ${movie.rating!.toStringAsFixed(1)}',
       if (movie.releaseDate != null) movie.releaseDate!.substring(0, 4),
       if (movie.runtime != null)
         tr('${movie.runtime} د', '${movie.runtime} min'),
@@ -104,6 +107,31 @@ class _FilmScreenState extends State<FilmScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      if (movie.trailerUrl case final trailer?) ...[
+                        Expanded(
+                          child: _SideButton(
+                            icon: Icons.play_circle_outline,
+                            label: tr('شوف الإعلان', 'Watch trailer'),
+                            onPressed: () => launchUrl(
+                              Uri.parse(trailer),
+                              mode: LaunchMode.externalApplication,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(
+                        child: _SideButton(
+                          icon: Icons.groups_outlined,
+                          label: tr('نروح سوا؟', 'Shall we go?'),
+                          onPressed: () => showGoTogether(context, movie),
+                        ),
+                      ),
+                    ],
                   ),
                   if (movie.overview != null) ...[
                     const SizedBox(height: 16),
@@ -329,4 +357,31 @@ class _CinemaBlock extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A secondary action under the follow button.
+class _SideButton extends StatelessWidget {
+  const _SideButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: onPressed,
+    icon: Icon(icon, size: 18),
+    label: Text(label),
+    style: OutlinedButton.styleFrom(
+      foregroundColor: AppColors.text,
+      side: BorderSide(color: AppColors.perforation),
+      minimumSize: const Size.fromHeight(46),
+      textStyle: AppText.body(14, weight: FontWeight.w600),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+  );
 }

@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import '../data/app_data.dart';
 import '../data/prefs.dart';
 import '../data/repository.dart';
+import '../data/supabase_repository.dart';
 import '../theme.dart';
 import '../widgets/ticket_mark.dart';
 import '../util/i18n.dart';
 
 /// Shows the mark with its stub lights chasing while the catalog loads, then
 /// hands the loaded [AppData] on. Stays at least [_minimum] so it never flashes.
+/// With a catalog saved from last time it opens on that straight away
+/// (`stale: true`) and the app refreshes it behind the scenes.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
@@ -19,7 +22,7 @@ class SplashScreen extends StatefulWidget {
   });
 
   final ShowtimesRepository repository;
-  final void Function(AppData data) onReady;
+  final void Function(AppData data, {bool stale}) onReady;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -28,6 +31,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   static const _minimum = Duration(milliseconds: 1600);
+
+  /// Just long enough to see the mark, when the catalog is already here.
+  static const _minimumCached = Duration(milliseconds: 500);
 
   late final AnimationController _lights = AnimationController(
     vsync: this,
@@ -43,6 +49,17 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _load() async {
     setState(() => _error = null);
+    final cached = await SupabaseShowtimesRepository.cached();
+    if (cached != null) {
+      final results = await Future.wait([
+        Prefs.load(),
+        Future<void>.delayed(_minimumCached),
+      ]);
+      if (mounted) {
+        widget.onReady(AppData(cached, results[0] as Prefs), stale: true);
+      }
+      return;
+    }
     try {
       final results = await Future.wait([
         widget.repository.load(),

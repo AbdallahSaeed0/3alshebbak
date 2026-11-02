@@ -71,6 +71,9 @@ class AppData {
   final Prefs prefs;
   final DateTime now;
 
+  /// Fetches the latest showtimes (pull to refresh); set by the app.
+  Future<void> Function()? refresh;
+
   /// Experience filters offered in Explore, matched against each chain's format names.
   static const formatFilters = [
     'IMAX',
@@ -354,4 +357,10 @@ class AppScope extends InheritedNotifier<Prefs> {
 
   static AppData of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!.data;
+
+  /// Also when fresh showtimes arrive (a new [AppData]), not only when the
+  /// user's picks change.
+  @override
+  bool updateShouldNotify(AppScope oldWidget) =>
+      oldWidget.data != data || super.updateShouldNotify(oldWidget);
 }

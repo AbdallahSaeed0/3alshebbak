@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'app_data.dart';
+import 'catalog_cache.dart';
 import 'models.dart';
 import 'repository.dart';
 
@@ -59,8 +61,9 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
         'lat,lng,location_approximate',
       ),
       _get(
-        'movies?select=id,tmdb_id,title,title_ar,original_title,overview,poster_path,backdrop_path,'
-        'release_date,runtime,genres,fallback_poster_url',
+        // Every column: newer ones (rating, trailer_key) may not exist yet
+        // on an older database, and naming them would fail the request.
+        'movies?select=*',
       ),
       // The first page also says how many rows there are in all.
       _get(
@@ -78,12 +81,36 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
         _get(showtimesPath, extra: {'Range': '$from-${from + _page - 1}'}),
     ]);
 
-    return compute(_parse, [
+    final bodies = [
       // Decoded as UTF-8 explicitly: without a charset header `body` would be
       // read as Latin-1 and garble every Arabic title.
       for (final r in [results[0], results[1], first, ...rest])
         utf8.decode(r.bodyBytes),
-    ]);
+    ];
+    final data = await parse(bodies);
+    if (data.showtimes.isNotEmpty) {
+      // Next launch opens on this at once (catalog_cache.dart).
+      unawaited((await CatalogCache.open())?.write(bodies));
+    }
+    return data;
+  }
+
+  /// The catalog in [bodies] (cinemas, movies, then pages of showtimes), off
+  /// the UI thread.
+  static Future<CatalogData> parse(List<String> bodies) =>
+      compute(_parse, bodies);
+
+  /// The catalog saved on the last launch, when it's recent enough.
+  static Future<CatalogData?> cached() async {
+    final bodies = await (await CatalogCache.open())?.read();
+    if (bodies == null) return null;
+    try {
+      final data = await parse(bodies);
+      return data.showtimes.isEmpty ? null : data;
+    } catch (e) {
+      debugPrint('Cached catalog unusable: $e');
+      return null;
+    }
   }
 }
 
@@ -121,6 +148,8 @@ CatalogData _parse(List<String> bodies) {
         releaseDate: m['release_date'] as String?,
         runtime: m['runtime'] as int?,
         genres: (m['genres'] as List?)?.cast<String>() ?? const [],
+        rating: (m['rating'] as num?)?.toDouble(),
+        trailerKey: m['trailer_key'] as String?,
         fallbackPosterUrl: m['fallback_poster_url'] as String?,
       ),
   };

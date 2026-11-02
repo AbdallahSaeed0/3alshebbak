@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The next-shows home-screen widget (NextShowWidget.kt). -->
+<resources>
+    <string name="next_show_widget_description">الحفلات الجاية في سينماتك</string>
+
+    <style name="NextShowRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">#F5EFE6</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+</resources>

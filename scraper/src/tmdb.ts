@@ -33,6 +33,10 @@ export interface Movie {
   releaseDate: string | null;
   runtime: number | null;
   genres: string[];
+  /** TMDB's vote average out of 10, once enough people voted. */
+  rating: number | null;
+  /** YouTube id of the trailer. */
+  trailerKey: string | null;
   /** A chain's own poster, for films with no TMDB match. */
   fallbackPosterUrl: string | null;
 }
@@ -66,6 +70,33 @@ interface TmdbDetails {
   release_date: string;
   runtime: number | null;
   genres: { name: string }[];
+  vote_average?: number;
+  vote_count?: number;
+  videos?: { results: TmdbVideo[] };
+}
+
+interface TmdbVideo {
+  key: string;
+  site: string;
+  type: string;
+  official: boolean;
+  iso_639_1: string | null;
+}
+
+/** Fewer votes than this and TMDB's average says little. */
+const MIN_VOTES = 20;
+
+/**
+ * The trailer to show: a YouTube trailer (a teaser if there's none), official
+ * first, in the film's own language when it's Arabic.
+ */
+function pickTrailer(videos: TmdbVideo[], arabic: boolean): string | null {
+  const score = (v: TmdbVideo) =>
+    (v.type === 'Trailer' ? 4 : 0) + (v.official ? 2 : 0) + (arabic && v.iso_639_1 === 'ar' ? 1 : 0);
+  const best = videos
+    .filter((v) => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'))
+    .sort((a, b) => score(b) - score(a))[0];
+  return best?.key ?? null;
 }
 
 // Format and edition noise chains add to titles. Only words that can't be part
@@ -181,11 +212,16 @@ class Tmdb {
     );
   }
 
-  async details(id: number): Promise<{ en: TmdbDetails; arTitle: string | null }> {
+  async details(id: number): Promise<{ en: TmdbDetails; arTitle: string | null; trailerKey: string | null }> {
     const { en, ar } = await this.cached(
-      `movie-en-ar:${id}`,
+      // v2: with the rating and videos.
+      `movie-en-ar-v2:${id}`,
       async () => ({
-        en: await this.get<TmdbDetails>(`/movie/${id}`, { language: 'en-US' }),
+        en: await this.get<TmdbDetails>(`/movie/${id}`, {
+          language: 'en-US',
+          append_to_response: 'videos',
+          include_video_language: 'ar,en,null',
+        }),
         ar: await this.get<TmdbDetails>(`/movie/${id}`, { language: 'ar-EG' }),
       }),
       () => true,
@@ -195,7 +231,8 @@ class Tmdb {
     const untranslated = ar.title === ar.original_title && ar.original_language !== 'ar';
     const arTitle =
       ar.title && ar.title !== en.title && !untranslated && /\p{Script=Arabic}/u.test(ar.title) ? ar.title : null;
-    return { en, arTitle };
+    const trailerKey = pickTrailer(en.videos?.results ?? [], en.original_language === 'ar');
+    return { en, arTitle, trailerKey };
   }
 }
 
@@ -220,6 +257,8 @@ function localMovie(normalized: string, film: Film): Movie {
     releaseDate: null,
     runtime: film.durationMins ?? null,
     genres: film.genres ? film.genres.split(/\s*[,|]\s*/).filter(Boolean) : [],
+    rating: null,
+    trailerKey: null,
     fallbackPosterUrl: film.posterUrl ?? null,
   };
 }
@@ -251,7 +290,7 @@ export async function buildCatalog(films: Film[], log: (m: string) => void = () 
         const pinned = tmdb.override(normalized);
         tmdbId = pinned !== undefined ? pinned : await tmdb.search(group[0].title);
         if (tmdbId != null && !movies.has(`tmdb:${tmdbId}`)) {
-          const { en, arTitle } = await tmdb.details(tmdbId);
+          const { en, arTitle, trailerKey } = await tmdb.details(tmdbId);
           movies.set(`tmdb:${tmdbId}`, {
             id: `tmdb:${tmdbId}`,
             tmdbId,
@@ -264,6 +303,8 @@ export async function buildCatalog(films: Film[], log: (m: string) => void = () 
             releaseDate: en.release_date || null,
             runtime: en.runtime || null,
             genres: en.genres.map((g) => g.name),
+            rating: (en.vote_count ?? 0) >= MIN_VOTES && en.vote_average ? Math.round(en.vote_average * 10) / 10 : null,
+            trailerKey,
             fallbackPosterUrl: group.find((f) => f.posterUrl)?.posterUrl ?? null,
           });
         }

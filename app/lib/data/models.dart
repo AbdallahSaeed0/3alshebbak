@@ -37,8 +37,24 @@ class Cinema {
 
   bool get hasLocation => lat != null && lng != null;
 
-  /// "VOX · City Centre Almaza" — how a showtime names its cinema.
-  String get label => chain == 'Independent' ? name : '$chain · $name';
+  /// How a showtime names its cinema: "VOX · City Centre Almaza", or in
+  /// Arabic "سينما فوكس سيتي سنتر ألماظة". elCinema's Arabic names already
+  /// say the chain; the chains' own sites give just the branch ("وسط البلد").
+  String get label {
+    if (!Lang.english && nameAr != null) {
+      return id.startsWith('elcinema:')
+          ? nameAr!
+          : '${_chainsAr[chain] ?? chain} · $nameAr';
+    }
+    return chain == 'Independent' ? name : '$chain · $name';
+  }
+
+  static const _chainsAr = {
+    'Renaissance': 'رينيسانس',
+    'Scene': 'سين',
+    'Premiere': 'بريمير',
+    'VOX': 'ڤوكس',
+  };
 
   factory Cinema.fromJson(Map<String, dynamic> j) => Cinema(
     id: j['id'] as String,
@@ -68,6 +84,8 @@ class Movie {
     this.releaseDate,
     this.runtime,
     this.genres = const [],
+    this.rating,
+    this.trailerKey,
     this.fallbackPosterUrl,
   });
 
@@ -84,7 +102,16 @@ class Movie {
   final String? releaseDate;
   final int? runtime;
   final List<String> genres;
+
+  /// TMDB's vote average out of 10, once enough people voted.
+  final double? rating;
+
+  /// YouTube id of the trailer.
+  final String? trailerKey;
   final String? fallbackPosterUrl;
+
+  String? get trailerUrl =>
+      trailerKey == null ? null : 'https://www.youtube.com/watch?v=$trailerKey';
 
   /// Made in Arabic: its original title is written in Arabic letters. Films
   /// TMDB doesn't know only have the chain's title, Arabic when it's Arabic.
@@ -124,6 +151,8 @@ class Movie {
     releaseDate: j['releaseDate'] as String?,
     runtime: j['runtime'] as int?,
     genres: (j['genres'] as List?)?.cast<String>() ?? const [],
+    rating: (j['rating'] as num?)?.toDouble(),
+    trailerKey: j['trailerKey'] as String?,
     fallbackPosterUrl: j['fallbackPosterUrl'] as String?,
   );
 }
