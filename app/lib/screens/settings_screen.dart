@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
+import '../data/tickets.dart';
 import '../services/location.dart';
 import '../services/push.dart';
 import '../theme.dart';
 import '../util/format.dart';
+import 'following_screen.dart';
 import 'onboarding_screen.dart';
-
-void openSettings(BuildContext context) => Navigator.of(
-  context,
-).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
+import 'tickets_screen.dart';
 
 /// Which cinemas Home shows: mine, or every cinema in one city.
 Future<void> showCityPicker(BuildContext context) {
@@ -96,9 +95,13 @@ class _Choice extends StatelessWidget {
   }
 }
 
-/// Settings: my cinemas, location, notifications, and where the data comes from.
+/// The fourth tab: my films and tickets, then my cinemas, location,
+/// notifications, and where the data comes from.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, required this.onExplore});
+
+  /// Switches to the Explore tab (from an empty Following page).
+  final VoidCallback onExplore;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -148,6 +151,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _openFollowing() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => Scaffold(
+          appBar: AppBar(backgroundColor: AppColors.background),
+          body: FollowingScreen(
+            onExplore: () {
+              Navigator.of(context).pop();
+              widget.onExplore();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _redoSetup() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -171,6 +190,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
+          const _Heading('حاجاتي'),
+          _Row(
+            icon: Icons.notifications_none,
+            title: 'متابعاتي',
+            detail: prefs.following.isEmpty
+                ? 'الأفلام اللي بتستناها، ونقولك أول ما تذاكرها تنزل'
+                : '${prefs.following.length} فيلم بتتابعه',
+            onTap: _openFollowing,
+          ),
+          FutureBuilder<TicketStore>(
+            future: TicketStore.load(),
+            builder: (context, snap) => ListenableBuilder(
+              listenable: snap.data ?? Listenable.merge(const []),
+              builder: (context, _) => _Row(
+                icon: Icons.confirmation_number_outlined,
+                title: 'تذاكري',
+                detail: switch (snap.data?.all.length) {
+                  null || 0 => 'اسكرينات تذاكرك، محفوظة على موبايلك',
+                  final n => '$n تذكرة محفوظة',
+                },
+                onTap: () => openTickets(context),
+              ),
+            ),
+          ),
           const _Heading('سينماتي'),
           _Row(
             icon: Icons.star_outline,

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'cinemas_screen.dart';
 import 'explore_screen.dart';
-import 'following_screen.dart';
 import 'home_screen.dart';
+import 'settings_screen.dart';
 
 /// The four tabs. Tabs keep their state (scroll position…) when you switch away.
 class Shell extends StatefulWidget {
@@ -21,7 +21,7 @@ class _ShellState extends State<Shell> {
     (label: 'الرئيسية', icon: Icons.home_outlined),
     (label: 'استكشف', icon: Icons.search),
     (label: 'السينمات', icon: Icons.place_outlined),
-    (label: 'متابعاتي', icon: Icons.notifications_none),
+    (label: 'الإعدادات', icon: Icons.settings_outlined),
   ];
 
   @override
@@ -33,7 +33,7 @@ class _ShellState extends State<Shell> {
           HomeScreen(onSearch: () => setState(() => _tab = 1)),
           const ExploreScreen(),
           const CinemasScreen(),
-          FollowingScreen(onExplore: () => setState(() => _tab = 1)),
+          SettingsScreen(onExplore: () => setState(() => _tab = 1)),
         ],
       ),
       bottomNavigationBar: _TabBar(

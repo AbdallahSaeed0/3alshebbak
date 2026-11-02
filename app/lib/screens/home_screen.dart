@@ -7,7 +7,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
-import 'settings_screen.dart';
+import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
 
 /// "What's on", most urgent first: starting soon, tickets just opened,
@@ -183,12 +183,6 @@ class _Header extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                _PillButton(
-                  onPressed: () => openSettings(context),
-                  tooltip: 'الإعدادات',
-                  child: const Icon(Icons.settings_outlined, size: 20),
                 ),
               ],
             ),
