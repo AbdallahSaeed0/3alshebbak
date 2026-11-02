@@ -66,69 +66,108 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(tr('تذاكري', 'My tickets'), style: AppText.display(24)),
-        backgroundColor: AppColors.background,
-      ),
-      body: FutureBuilder<TicketStore>(
-        future: TicketStore.load(),
-        builder: (context, snap) {
-          final store = snap.data;
-          if (store == null) {
-            return snap.hasError
-                ? Center(
-                    child: Text(
+    return FutureBuilder<TicketStore>(
+      future: TicketStore.load(),
+      builder: (context, snap) {
+        final store = snap.data;
+        if (store == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                tr('تذاكري', 'My tickets'),
+                style: AppText.display(24),
+              ),
+            ),
+            body: Center(
+              child: snap.hasError
+                  ? Text(
                       tr('معرفناش نفتح تذاكرك', 'Couldn\'t open your tickets'),
                       style: AppText.body(14, color: AppColors.muted),
-                    ),
-                  )
-                : const Center(child: CircularProgressIndicator());
-          }
-          return ListenableBuilder(
-            listenable: store,
-            builder: (context, _) => Stack(
-              children: [
-                _TicketGrid(store: store),
-                PositionedDirectional(
-                  start: 20,
-                  end: 20,
-                  bottom: 20,
-                  child: SafeArea(
-                    top: false,
-                    child: FilledButton.icon(
-                      onPressed: _adding ? null : () => _add(store),
-                      icon: _adding
-                          ? SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.onGold,
-                              ),
-                            )
-                          : const Icon(Icons.add_photo_alternate_outlined),
-                      label: Text(
-                        tr('ضيف اسكرين تذكرة', 'Add a ticket screenshot'),
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.onGold,
-                        minimumSize: const Size.fromHeight(52),
-                        textStyle: AppText.body(16, weight: FontWeight.w700),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                    )
+                  : const CircularProgressIndicator(),
             ),
           );
-        },
-      ),
+        }
+        return ListenableBuilder(
+          listenable: store,
+          builder: (context, _) => DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  tr('تذاكري', 'My tickets'),
+                  style: AppText.display(24),
+                ),
+                bottom: TabBar(
+                  indicatorColor: AppColors.gold,
+                  labelColor: AppColors.gold,
+                  unselectedLabelColor: AppColors.muted,
+                  dividerColor: AppColors.hairline,
+                  labelStyle: AppText.body(14, weight: FontWeight.w700),
+                  tabs: [
+                    Tab(
+                      text: tr(
+                        'الجاية (${store.active.length})',
+                        'Upcoming (${store.active.length})',
+                      ),
+                    ),
+                    Tab(
+                      text: tr(
+                        'انتهت (${store.used.length})',
+                        'Used (${store.used.length})',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              body: Stack(
+                children: [
+                  TabBarView(
+                    children: [
+                      _TicketGrid(store: store, used: false),
+                      _TicketGrid(store: store, used: true),
+                    ],
+                  ),
+                  _addButton(store),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
+
+  Widget _addButton(TicketStore store) => PositionedDirectional(
+    start: 20,
+    end: 20,
+    bottom: 20,
+    child: SafeArea(
+      top: false,
+      child: FilledButton.icon(
+        onPressed: _adding ? null : () => _add(store),
+        icon: _adding
+            ? SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.onGold,
+                ),
+              )
+            : const Icon(Icons.add_photo_alternate_outlined),
+        label: Text(tr('ضيف اسكرين تذكرة', 'Add a ticket screenshot')),
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.gold,
+          foregroundColor: AppColors.onGold,
+          minimumSize: const Size.fromHeight(52),
+          textStyle: AppText.body(16, weight: FontWeight.w700),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 /// Which film a new ticket is for. An empty-id movie means "none"; null
@@ -181,12 +220,36 @@ Future<Movie?> _askFilm(BuildContext context, AppData data) {
 }
 
 class _TicketGrid extends StatelessWidget {
-  const _TicketGrid({required this.store});
+  const _TicketGrid({required this.store, required this.used});
   final TicketStore store;
+
+  /// The "Used" tab, rather than the upcoming one.
+  final bool used;
 
   @override
   Widget build(BuildContext context) {
-    final tickets = store.all;
+    final tickets = used ? store.used : store.active;
+    if (tickets.isEmpty && store.all.isNotEmpty) {
+      // The other tab has some: just say this one is empty.
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(32, 32, 32, 100),
+        child: Center(
+          child: Text(
+            used
+                ? tr(
+                    'لما تستخدم تذكرة، افتحها ودوس «خلاص استخدمتها» وهتنزل هنا.',
+                    'When you\'ve used a ticket, open it and tap "I\'ve used it" to move it here.',
+                  )
+                : tr(
+                    'مفيش تذاكر جاية. اللي استخدمتها في «انتهت».',
+                    'No upcoming tickets. Used ones are under "Used".',
+                  ),
+            style: AppText.body(14, color: AppColors.muted),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
     if (tickets.isEmpty) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(32, 32, 32, 100),
@@ -245,14 +308,18 @@ class _TicketGrid extends StatelessWidget {
               Expanded(
                 child: Hero(
                   tag: 'ticket-${t.id}',
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.hairline),
-                      image: DecorationImage(
-                        image: store.image(t),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
+                  child: AnimatedOpacity(
+                    opacity: t.used ? 0.45 : 1,
+                    duration: const Duration(milliseconds: 200),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.hairline),
+                        image: DecorationImage(
+                          image: store.image(t),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                        ),
                       ),
                     ),
                   ),
@@ -266,10 +333,12 @@ class _TicketGrid extends StatelessWidget {
                 style: AppText.body(13, weight: FontWeight.w700),
               ),
               Text(
-                tr(
-                  'اتضافت ${dayLabel(isoDate(t.addedAt))}',
-                  'Added ${dayLabel(isoDate(t.addedAt))}',
-                ),
+                t.used
+                    ? tr('✓ اتستخدمت', '✓ Used')
+                    : tr(
+                        'اتضافت ${dayLabel(isoDate(t.addedAt))}',
+                        'Added ${dayLabel(isoDate(t.addedAt))}',
+                      ),
                 style: AppText.body(11, color: AppColors.muted),
               ),
             ],
@@ -323,6 +392,28 @@ class _TicketView extends StatelessWidget {
     if (context.mounted) Navigator.of(context).pop();
   }
 
+  /// Moves it to "Used" (or back) and goes back to the list, where it shows
+  /// in its new tab; Undo reverses it.
+  Future<void> _toggleUsed(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final nowUsed = !ticket.used;
+    await store.setUsed(ticket, nowUsed);
+    if (context.mounted) Navigator.of(context).pop();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          nowUsed
+              ? tr('اتنقلت لـ«انتهت»', 'Moved to "Used"')
+              : tr('رجعت لـ«الجاية»', 'Moved back to "Upcoming"'),
+        ),
+        action: SnackBarAction(
+          label: tr('تراجع', 'Undo'),
+          onPressed: () => store.setUsed(ticket, !nowUsed),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final movie = AppScope.of(context).catalog.movies[ticket.movieId];
@@ -360,6 +451,38 @@ class _TicketView extends StatelessWidget {
             child: Image(image: store.image(ticket)),
           ),
         ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        child: ticket.used
+            ? OutlinedButton.icon(
+                onPressed: () => _toggleUsed(context),
+                icon: const Icon(Icons.undo),
+                label: Text(tr('رجّعها للجاية', 'Move back to upcoming')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white38),
+                  minimumSize: const Size.fromHeight(50),
+                  textStyle: AppText.body(15, weight: FontWeight.w700),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              )
+            : FilledButton.icon(
+                onPressed: () => _toggleUsed(context),
+                icon: const Icon(Icons.check_circle_outline),
+                label: Text(tr('خلاص استخدمتها', 'I\'ve used it')),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  foregroundColor: AppColors.onGold,
+                  minimumSize: const Size.fromHeight(50),
+                  textStyle: AppText.body(15, weight: FontWeight.w700),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
       ),
     );
   }

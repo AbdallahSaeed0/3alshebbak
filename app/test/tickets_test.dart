@@ -56,4 +56,22 @@ void main() {
     await store.add(Uint8List.fromList([2]), movieId: 'new');
     expect(store.all.map((t) => t.movieId), ['new', 'old']);
   });
+
+  test('a used ticket moves to the used list, and back', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = TicketStore.open(prefs, dir);
+    await store.add(Uint8List.fromList([1]), movieId: 'tmdb:1');
+    final ticket = store.all.single;
+    expect(store.active, hasLength(1));
+
+    await store.setUsed(ticket, true);
+    expect(store.active, isEmpty);
+    expect(store.used.single.movieId, 'tmdb:1');
+    // Kept across reopening.
+    expect(TicketStore.open(prefs, dir).used, hasLength(1));
+
+    await store.setUsed(store.used.single, false);
+    expect(store.used, isEmpty);
+    expect(store.active, hasLength(1));
+  });
 }

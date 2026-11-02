@@ -9,7 +9,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// A screenshot of a booking, kept on this phone only — there are no
 /// accounts, so deleting the app deletes them.
 class Ticket {
-  const Ticket({required this.id, required this.addedAt, this.movieId});
+  const Ticket({
+    required this.id,
+    required this.addedAt,
+    this.movieId,
+    this.used = false,
+  });
 
   final String id;
   final DateTime addedAt;
@@ -17,16 +22,21 @@ class Ticket {
   /// The film it's for, when the user said.
   final String? movieId;
 
+  /// Already shown at the door: it moves to the "Used" tab.
+  final bool used;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'addedAt': addedAt.toIso8601String(),
     'movieId': movieId,
+    'used': used,
   };
 
   factory Ticket.fromJson(Map<String, dynamic> j) => Ticket(
     id: j['id'] as String,
     addedAt: DateTime.parse(j['addedAt'] as String),
     movieId: j['movieId'] as String?,
+    used: j['used'] as bool? ?? false,
   );
 }
 
@@ -78,6 +88,32 @@ class TicketStore extends ChangeNotifier {
   /// Newest first.
   List<Ticket> get all =>
       [..._tickets]..sort((a, b) => b.addedAt.compareTo(a.addedAt));
+
+  /// Still to use, newest first.
+  List<Ticket> get active => [
+    for (final t in all)
+      if (!t.used) t,
+  ];
+
+  /// Used already, newest first.
+  List<Ticket> get used => [
+    for (final t in all)
+      if (t.used) t,
+  ];
+
+  /// Moves a ticket to "Used", or back.
+  Future<void> setUsed(Ticket ticket, bool used) async {
+    final i = _tickets.indexWhere((t) => t.id == ticket.id);
+    if (i < 0) return;
+    final t = _tickets[i];
+    _tickets[i] = Ticket(
+      id: t.id,
+      addedAt: t.addedAt,
+      movieId: t.movieId,
+      used: used,
+    );
+    await _saveList();
+  }
 
   File _file(String id) => File('${_dir!.path}/$id.jpg');
 
