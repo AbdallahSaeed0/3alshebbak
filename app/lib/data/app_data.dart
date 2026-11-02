@@ -129,18 +129,23 @@ class AppData {
       ..sort((a, b) => b.$2.compareTo(a.$2));
   }
 
-  /// The next show of each movie on Home within [window], soonest first.
-  List<Showtime> startingSoon({Duration window = const Duration(hours: 3)}) {
+  /// What's next at my cinemas — whatever city Home shows: each film's next
+  /// show at each of them within [window], soonest first.
+  List<Showtime> nextAtMyCinemas({
+    Duration window = const Duration(hours: 24),
+    int limit = 20,
+  }) {
     final until = now.add(window);
     final seen = <String>{};
-    return [
+    final list = [
       for (final s in catalog.showtimes)
         if (s.startsAt.isAfter(now) &&
             !s.startsAt.isAfter(until) &&
-            _onHome(s) &&
-            seen.add(s.movieId))
+            prefs.isMine(s.cinemaId) &&
+            seen.add('${s.movieId}|${s.cinemaId}'))
           s,
-    ];
+    ]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+    return list.take(limit).toList();
   }
 
   /// Movies with shows still to come today on Home, busiest first.

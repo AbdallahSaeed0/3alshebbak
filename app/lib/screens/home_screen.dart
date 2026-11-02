@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
-    final soon = data.startingSoon();
+    final soon = data.nextAtMyCinemas();
     final opened = data.upcoming(minDaysAhead: 1, maxDaysAhead: 7);
     final today = data.showingToday();
     final coming = data.upcoming(minDaysAhead: 8, maxDaysAhead: 365);
@@ -36,11 +36,11 @@ class HomeScreen extends StatelessWidget {
         _gap(24),
         SliverToBoxAdapter(
           child: SectionHeader(
-            title: tr('قرّب يبدأ', 'Starting soon'),
+            title: tr('الجاي في سينماتك', 'Up next at your cinemas'),
             leading: _Dot(color: AppColors.amber),
             subtitle: tr(
-              'حفلات في $where خلال ٣ ساعات · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
-              'Shows at $where in the next 3 hours · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+              'أقرب الحفلات في السينمات اللي معلّم عليها نجمة · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+              'The next shows at the cinemas you starred · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
             ),
           ),
         ),
@@ -49,8 +49,8 @@ class HomeScreen extends StatelessWidget {
           child: soon.isEmpty
               ? _Empty(
                   tr(
-                    'مفيش حفلات في $where خلال الـ٣ ساعات الجاية',
-                    'No shows at $where in the next 3 hours',
+                    'مفيش حفلات جاية في سينماتك خلال ٢٤ ساعة',
+                    'No shows at your cinemas in the next 24 hours',
                   ),
                 )
               : SizedBox(
@@ -115,15 +115,43 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           )
-        else
+        else ...[
+          // The busiest few; the rest are a tap away instead of a long scroll.
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverList.separated(
-              itemCount: today.length,
+              itemCount: today.length.clamp(0, HomeScreen._todayShown),
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, i) => _TodayCard(day: today[i]),
             ),
           ),
+          if (today.length > HomeScreen._todayShown)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const _TodayPage()),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.gold,
+                    side: BorderSide(color: AppColors.goldEdge),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    textStyle: AppText.body(15, weight: FontWeight.w700),
+                  ),
+                  child: Text(
+                    tr(
+                      'اعرض كل الأفلام (${today.length})',
+                      'See all films (${today.length})',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
         if (coming.isNotEmpty) ...[
           _gap(28),
           SliverToBoxAdapter(
@@ -156,6 +184,39 @@ class HomeScreen extends StatelessWidget {
 
   static Widget _gap(double h) =>
       SliverToBoxAdapter(child: SizedBox(height: h));
+
+  /// Films "Today at the cinema" shows before its "See all" button.
+  static const _todayShown = 4;
+}
+
+/// Every film still showing today on Home's cinemas, busiest first.
+class _TodayPage extends StatelessWidget {
+  const _TodayPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = AppScope.of(context);
+    final today = data.showingToday();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          tr('النهارده في السينما', 'Today at the cinema'),
+          style: AppText.display(24),
+        ),
+      ),
+      body: ListView.separated(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          24 + MediaQuery.paddingOf(context).bottom,
+        ),
+        itemCount: today.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (context, i) => _TodayCard(day: today[i]),
+      ),
+    );
+  }
 }
 
 class _Header extends StatelessWidget {

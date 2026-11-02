@@ -48,10 +48,11 @@ void main() {
     expect(data.showingToday().single.showtimes.length, 3);
   });
 
-  test('starting soon is the next show of each movie within 3 hours', () {
-    final soon = data.startingSoon();
-    expect(soon.single.wallClock.hour, 19);
-    expect(startsIn(soon.single.startsAt.difference(data.now)), 'بعد 45 دقيقة');
+  test('up next is each film\'s next show at my cinemas, soonest first', () {
+    final soon = data.nextAtMyCinemas();
+    expect(soon.first.wallClock.hour, 19);
+    expect(startsIn(soon.first.startsAt.difference(data.now)), 'بعد 45 دقيقة');
+    expect(soon.every((s) => s.cinemaId == 'scene:cfc'), isTrue);
   });
 
   test('times read in Cairo wall clock', () {
@@ -74,7 +75,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('قرّب يبدأ'), findsOneWidget);
+    expect(find.text('الجاي في سينماتك'), findsOneWidget);
     expect(find.text('Clayface'), findsWidgets);
   });
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
@@ -358,30 +357,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'This version doesn\'t send notifications',
                   ),
                 ),
-            ],
-          ),
-          _Heading(tr('عن التطبيق', 'About')),
-          _Group(
-            children: [
-              _Row(
-                icon: Icons.theaters_outlined,
-                title: tr('مواعيد الحفلات', 'Showtimes'),
-                detail: tr(
-                  'من مواقع السينمات نفسها، ومن elCinema.com للباقي · بتتحدث كل نص ساعة',
-                  'From the cinemas\' own sites, and elCinema.com for the rest · updated every 30 minutes',
-                ),
-                onTap: () => launchUrl(Uri.parse('https://elcinema.com')),
-              ),
-              _Row(
-                icon: Icons.movie_outlined,
-                title: tr(
-                  'بيانات الأفلام والبوسترات',
-                  'Film details and posters',
-                ),
-                detail:
-                    'This product uses the TMDB API but is not endorsed or certified by TMDB.',
-                onTap: () => launchUrl(Uri.parse('https://www.themoviedb.org')),
-              ),
             ],
           ),
         ],
