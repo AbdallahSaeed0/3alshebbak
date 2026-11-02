@@ -7,6 +7,7 @@ import { errorMessage } from './http.js';
 import { placeCinemas } from './locations.js';
 import type { Source, SourceId } from './model.js';
 import { elcinema } from './sources/elcinema.js';
+import { elcinemaPresales } from './sources/elcinema-presales.js';
 import { premiere } from './sources/premiere.js';
 import { renaissance } from './sources/renaissance.js';
 import { scene } from './sources/scene.js';
@@ -14,7 +15,7 @@ import { vox } from './sources/vox.js';
 
 // VOX's and Premiere's week comes through elcinema; their own sources add only
 // presale days past it (see time.ts presaleFrom).
-const SOURCES: Record<string, Source> = { renaissance, scene, premiere, elcinema, vox };
+const SOURCES: Record<string, Source> = { renaissance, scene, premiere, elcinema, vox, 'elcinema-presales': elcinemaPresales };
 
 async function main() {
   try {

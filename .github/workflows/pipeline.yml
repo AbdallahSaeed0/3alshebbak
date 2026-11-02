@@ -64,7 +64,7 @@ jobs:
           if [ -n "$REQUESTED_SOURCES" ]; then
             for source in $REQUESTED_SOURCES; do
               case "$source" in
-                renaissance|scene|elcinema|vox|premiere) ;;
+                renaissance|scene|elcinema|vox|premiere|elcinema-presales) ;;
                 *) echo "Unknown source: $source"; exit 1 ;;
               esac
             done

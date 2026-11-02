@@ -40,7 +40,7 @@ const voxBooking = (date: string) => `https://egy.voxcinemas.com/showtimes?d=${d
 // Chosen from the elCinema inventory (Nov 2026): every Egyptian cinema showing
 // at least 3 films that no tier-1 source already covers. Left out on purpose:
 // the state-run Alshab (سينما الشعب) screens and single-film halls.
-const THEATERS: Theater[] = [
+export const THEATERS: Theater[] = [
   // VOX — its own site rejects automated browsers.
   { id: '3101353', chain: 'VOX', venue: 'City Centre Almaza', city: 'Cairo', area: 'Heliopolis', fallbackBooking: voxBooking },
   { id: '3101271', chain: 'VOX', venue: 'Mall of Egypt', city: 'Cairo', area: '6th of October', fallbackBooking: voxBooking },

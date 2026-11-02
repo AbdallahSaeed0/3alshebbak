@@ -1,7 +1,7 @@
 // The one shape every source returns. Later stages (TMDB matching, venue
 // merging, Supabase) only ever see this, never a chain's own markup.
 
-export type SourceId = 'vox' | 'premiere' | 'renaissance' | 'scene' | 'elcinema';
+export type SourceId = 'vox' | 'premiere' | 'renaissance' | 'scene' | 'elcinema' | 'elcinema-presales';
 
 export interface Cinema {
   /** `${source}:${slug}` — stable across runs. */

@@ -10,7 +10,7 @@ import type { Catalog } from './tmdb.js';
 import { presaleFrom } from './time.js';
 
 /** Sources that add only presale days to cinemas elCinema lists (vox.ts, premiere.ts). */
-const PRESALE_SOURCES = ['vox', 'premiere'];
+const PRESALE_SOURCES = ['vox', 'premiere', 'elcinema-presales'];
 
 const BATCH = 500;
 
