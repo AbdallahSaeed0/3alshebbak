@@ -1,7 +1,8 @@
 // Polite HTTP for the plain-HTML sources: identifies itself honestly, caps
 // concurrency per run, and retries a page once or twice before giving up on it.
 
-const CONTACT = process.env.SCRAPER_CONTACT ?? 'contact pending';
+// `||`: CI passes an unset secret as an empty string.
+const CONTACT = process.env.SCRAPER_CONTACT || 'https://github.com/AbdallahSaeed0/3alshebbak';
 export const USER_AGENT = `3alShebbakBot/0.1 (cinema showtimes app; ${CONTACT})`;
 
 const TIMEOUT_MS = 20_000;
