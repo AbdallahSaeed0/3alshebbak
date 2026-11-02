@@ -16,12 +16,41 @@ in the User-Agent of every plain HTTP request. Copy `.env.example` to `.env`.
 
 ## Schedule (GitHub Actions)
 
-`.github/workflows/pipeline.yml` runs `npm run pipeline` every 30 minutes:
-the chains' own sites every run, elCinema on the first run of each hour. It
+Supabase Cron on the existing project dispatches `.github/workflows/pipeline.yml`
+every 10 minutes (UTC minutes 7, 17, 27, 37, 47, 57). VOX presales run every
+time, Renaissance and Scene twice an hour, and elCinema once an hour. It
 needs the repository secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
 `TMDB_API_KEY` and `SCRAPER_CONTACT`. Run it by hand from the Actions tab
-(optionally naming sources). GitHub pauses scheduled workflows after 60 days
-without a commit to the repository.
+(optionally naming sources). GitHub's native cron is disabled; Supabase is
+the scheduler, while GitHub Actions remains the execution host. Runner queues,
+site failures and source coverage can still delay detecting a booking opening.
+
+The `shebbak-showtimes-every-10-minutes` job calls the private
+`shebbak_private.dispatch_pipeline()` function. GitHub authorization is kept in
+Supabase Vault as `shebbak_github_dispatch_token`; it must be rotated if revoked.
+The current credential is the existing GitHub CLI OAuth credential, not a
+repository-scoped token. A dedicated repository-scoped Actions-write token can
+replace it using `vault.update_secret` without changing the scheduler. Never
+put credentials into cron commands, committed SQL or logs.
+
+To inspect scheduling and delivery to GitHub (HTTP 204 means accepted):
+
+```sql
+select j.jobname, r.status, r.start_time, r.return_message
+from cron.job_run_details r join cron.job j using (jobid)
+where j.jobname = 'shebbak-showtimes-every-10-minutes'
+order by r.start_time desc limit 10;
+
+select d.requested_at, d.sources, r.status_code, r.error_msg
+from shebbak_private.pipeline_dispatches d
+left join net._http_response r on r.id = d.request_id
+order by d.requested_at desc limit 10;
+```
+
+Dispatch history is retained for 30 days; pg_net responses normally last six
+hours. Read access to pg_net's queue and responses is restricted to prevent
+client roles from reading authorization headers. These are private operational
+objects, separate from the application's exposed `shebbak` schema.
 
 ## Sync: TMDB + Supabase
 
