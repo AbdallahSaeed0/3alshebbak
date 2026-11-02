@@ -3,11 +3,15 @@
 // Every showtime link carries its own data-* attributes (branch, day, time,
 // after-midnight flag, booking URL), so parsing doesn't depend on layout classes
 // beyond the per-movie block.
+//
+// Branch pages link only the next ten days. Presales further out (a big
+// release on sale weeks ahead) show up on the film's own page, `/en/movie/<slug>`,
+// so those days are read from film pages and then fetched per branch like the rest.
 
 import * as cheerio from 'cheerio';
 import { clean, errorMessage, fetchText, pool, slugOf } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { fromDmy, showStart } from '../time.js';
+import { addDays, cairoToday, fromDmy, showStart, toDmy } from '../time.js';
 
 const ORIGIN = 'https://rnscinemas.com';
 const PARALLEL = 3;
@@ -32,6 +36,45 @@ function dayUrls($: cheerio.CheerioAPI, branchUrl: string): string[] {
     if (fromDmy(href.slice(href.lastIndexOf('/') + 1))) urls.add(href);
   });
   return [...urls];
+}
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+/** "Wednesday 16 Dec" → the next such date on or after `today` (yyyy-mm-dd); the site gives no year. */
+export function dayFromLabel(label: string, today: string): string | null {
+  const m = /(\d{1,2})\s+([A-Za-z]{3})/.exec(label);
+  const month = m ? MONTHS.indexOf(m[2].toLowerCase()) : -1;
+  if (!m || month < 0) return null;
+  const year = Number(today.slice(0, 4));
+  const iso = (y: number) => `${y}-${String(month + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  // A day a little in the past is still this year (yesterday's late show); far back means next year.
+  return iso(year) >= addDays(today, -7) ? iso(year) : iso(year + 1);
+}
+
+/** Days any film is on sale, read off the film pages linked from the home page. */
+async function filmPageDays(out: ResultBuilder): Promise<Set<string>> {
+  const $home = cheerio.load(await fetchText(`${ORIGIN}/en`));
+  const films = new Set<string>();
+  $home('a[href*="/en/movie/"]').each((_, a) => {
+    films.add(new URL($home(a).attr('href')!, ORIGIN).href.split(/[?#]/)[0].replace(/\/+$/, ''));
+  });
+
+  const today = cairoToday();
+  const days = new Set<string>();
+  await pool([...films], PARALLEL, async (url) => {
+    try {
+      const $ = cheerio.load(await fetchText(url));
+      $('a.js-booking-confirm-link').each((_, a) => {
+        // An after-midnight show is labelled with the next calendar day.
+        if ($(a).attr('data-after-midnight') === '1') return;
+        const day = dayFromLabel($(a).attr('data-event-day-en') ?? '', today);
+        if (day) days.add(day);
+      });
+    } catch (e) {
+      out.warn(errorMessage(e));
+    }
+  });
+  return days;
 }
 
 function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, branchUrl: string, businessDate: string) {
@@ -97,6 +140,18 @@ export const renaissance: Source = {
         out.warn(errorMessage(e));
       }
     });
+
+    // Presale days past what the branch pages link, for every branch: a page
+    // with nothing on that day just reads as empty.
+    const linked = new Set(pages.map((p) => p.date));
+    try {
+      for (const date of await filmPageDays(out)) {
+        if (linked.has(date)) continue;
+        for (const branchUrl of branches) pages.push({ url: `${branchUrl}/${toDmy(date)}`, date });
+      }
+    } catch (e) {
+      out.warn(`presale days: ${errorMessage(e)}`);
+    }
 
     await pool(pages, PARALLEL, async ({ url, date }) => {
       try {
