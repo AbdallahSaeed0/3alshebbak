@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
+import '../services/hidden_page.dart';
+import '../services/live_shows.dart';
+import '../services/live_source.dart';
 import '../services/premiere_live.dart';
+import '../services/vox_live.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -11,6 +17,12 @@ import '../widgets/schedule.dart';
 import 'cinema_screen.dart';
 import '../util/i18n.dart';
 import 'go_together_sheet.dart';
+
+/// Live sources' names for the "checking…" line, Arabic then English.
+const _sourceNames = {
+  'premiere': ('بريمير', 'Premiere\'s'),
+  'vox': ('ڤوكس', 'VOX\'s'),
+};
 
 void openFilm(BuildContext context, Movie movie) => Navigator.of(
   context,
@@ -26,37 +38,66 @@ class FilmScreen extends StatefulWidget {
   State<FilmScreen> createState() => _FilmScreenState();
 }
 
+/// The "my cinemas" tab's key among chain names.
+const _mineTab = '\u0000mine';
+
 class _FilmScreenState extends State<FilmScreen> {
   String? _date;
   String? _format;
 
-  /// Premiere's shows, read on the phone (our servers can't reach its site).
-  PremiereShows _premiere = PremiereShows.none;
-  bool _readingPremiere = false;
-  bool _askedPremiere = false;
+  /// Chain tab: null for all, [_mineTab], or a chain name.
+  String? _tab;
+  bool _tabChosen = false;
+
+  /// Shows read on the phone off sites our servers can't fully read
+  /// (Premiere, VOX's days past its opening day), by source.
+  final _live = <String, LiveShows>{};
+  final _reading = <String>{};
+  final _watching = <StreamSubscription<LiveShows>>[];
+  bool _asked = false;
+
+  LiveShows get _liveShows =>
+      _live.values.fold(LiveShows.none, (all, s) => all.plus(s));
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_askedPremiere || !PremiereLive.available) return;
-    _askedPremiere = true;
-    _readingPremiere = true;
-    PremiereLive.instance
-        .showtimesFor(widget.movie, AppScope.of(context).today)
-        .then((shows) {
-          if (!mounted) return;
-          setState(() {
-            _premiere = shows;
-            _readingPremiere = false;
-          });
-        });
+    if (_asked || !HiddenPage.available) return;
+    _asked = true;
+    final data = AppScope.of(context);
+    final known = {
+      for (final s in data.catalog.showtimes)
+        if (s.movieId == widget.movie.id) '${s.cinemaId}|${s.businessDate}',
+    };
+    for (final source in <LiveSource>[PremiereLive.instance, VoxLive.instance]) {
+      _reading.add(source.id);
+      _watching.add(
+        source
+            .watch(widget.movie, data.today, known: known)
+            .listen(
+              (shows) => setState(() => _live[source.id] = shows),
+              onDone: () {
+                if (mounted) setState(() => _reading.remove(source.id));
+              },
+            ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final w in _watching) {
+      w.cancel();
+    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
     final movie = widget.movie;
-    final dates = data.dates(movieId: movie.id, extra: _premiere.showtimes);
+    final live = _liveShows;
+    final dates = data.dates(movieId: movie.id, extra: live.showtimes);
     final date = _date != null && dates.contains(_date)
         ? _date!
         : (dates.isEmpty ? null : dates.first);
@@ -65,11 +106,47 @@ class _FilmScreenState extends State<FilmScreen> {
         : data.movieSchedule(
             movie.id,
             date,
-            extra: _premiere.showtimes,
-            extraCinemas: _premiere.cinemas,
+            extra: live.showtimes,
+            extraCinemas: live.cinemas,
           );
+    // Tabs: my cinemas, all, then each chain showing it that day (most
+    // cinemas first, single cinemas last).
+    final mine = [
+      for (final e in schedule)
+        if (data.prefs.isMine(e.$1.id)) e,
+    ];
+    final byChain = <String, int>{};
+    for (final (cinema, _) in schedule) {
+      byChain[cinema.chain] = (byChain[cinema.chain] ?? 0) + 1;
+    }
+    final chains = byChain.keys.toList()
+      ..sort((a, b) {
+        if ((a == 'Independent') != (b == 'Independent')) {
+          return a == 'Independent' ? 1 : -1;
+        }
+        return byChain[b]!.compareTo(byChain[a]!);
+      });
+    final tabs = [
+      if (mine.isNotEmpty) (_mineTab, tr('سينماتي', 'My cinemas'), mine.length),
+      (null, tr('الكل', 'All'), schedule.length),
+      if (chains.length > 1)
+        for (final c in chains) (c, chainName(c), byChain[c]!),
+    ];
+    // Opens on my cinemas when they show it; a tab gone from this day falls back to all.
+    final tab = !_tabChosen && mine.isNotEmpty
+        ? _mineTab
+        : tabs.any((t) => t.$1 == _tab)
+        ? _tab
+        : null;
+    final shown = [
+      for (final e in schedule)
+        if (tab == null ||
+            (tab == _mineTab ? data.prefs.isMine(e.$1.id) : e.$1.chain == tab))
+          e,
+    ];
+
     final formats = {
-      for (final (_, shows) in schedule)
+      for (final (_, shows) in shown)
         for (final s in shows) shortFormat(s.format),
     }.toList()..sort();
     final format = formats.contains(_format) ? _format : null;
@@ -175,7 +252,7 @@ class _FilmScreenState extends State<FilmScreen> {
                   Divider(color: AppColors.hairline, height: 1),
                   const SizedBox(height: 18),
                   Text(tr('المواعيد', 'Showtimes'), style: AppText.display(24)),
-                  if (_readingPremiere) ...[
+                  if (_reading.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -189,8 +266,8 @@ class _FilmScreenState extends State<FilmScreen> {
                         const SizedBox(width: 8),
                         Text(
                           tr(
-                            'بنشوف مواعيد بريمير كمان…',
-                            'Checking Premiere\'s times too…',
+                            'بنشوف مواعيد ${_reading.map((s) => _sourceNames[s]!.$1).join(' و')} كمان…',
+                            'Checking ${_reading.map((s) => _sourceNames[s]!.$2).join(' and ')} times too…',
                           ),
                           style: AppText.body(12, color: AppColors.muted),
                         ),
@@ -224,10 +301,21 @@ class _FilmScreenState extends State<FilmScreen> {
                 onSelect: (d) => setState(() => _date = d),
               ),
             ),
+            if (tabs.length > 1)
+              SliverToBoxAdapter(
+                child: _ChainTabs(
+                  tabs: tabs,
+                  selected: tab,
+                  onSelect: (t) => setState(() {
+                    _tab = t;
+                    _tabChosen = true;
+                  }),
+                ),
+              ),
             if (formats.length > 1)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 10),
                   child: FilterPills(
                     options: formats,
                     selected: format,
@@ -238,10 +326,10 @@ class _FilmScreenState extends State<FilmScreen> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
               sliver: SliverList.separated(
-                itemCount: schedule.length,
+                itemCount: shown.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
-                  final (cinema, shows) = schedule[i];
+                  final (cinema, shows) = shown[i];
                   final filtered = format == null
                       ? shows
                       : [
@@ -258,6 +346,95 @@ class _FilmScreenState extends State<FilmScreen> {
       ),
     );
   }
+}
+
+/// Underlined tabs over the cinema list: my cinemas, all, each chain, with
+/// how many cinemas each has that day.
+class _ChainTabs extends StatelessWidget {
+  const _ChainTabs({
+    required this.tabs,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<(String?, String, int)> tabs;
+  final String? selected;
+  final ValueChanged<String?> onSelect;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(top: 10),
+    decoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: AppColors.hairline)),
+    ),
+    height: 46,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      children: [
+        for (final (key, label, count) in tabs)
+          Semantics(
+            selected: key == selected,
+            button: true,
+            child: InkWell(
+              onTap: () => onSelect(key),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: key == selected
+                          ? AppColors.gold
+                          : Colors.transparent,
+                      width: 2.5,
+                    ),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: AppText.body(
+                        14,
+                        weight: FontWeight.w700,
+                        color: key == selected
+                            ? AppColors.text
+                            : AppColors.muted,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: key == selected
+                            ? AppColors.gold
+                            : AppColors.raised,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: AppText.body(
+                          11,
+                          weight: FontWeight.w700,
+                          color: key == selected
+                              ? AppColors.onGold
+                              : AppColors.muted,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 class _Hero extends StatelessWidget {

@@ -95,6 +95,30 @@ String shortFormat(String format) {
   };
 }
 
+const _chainsAr = {
+  'Renaissance': 'رينيسانس',
+  'Scene': 'سين',
+  'Premiere': 'بريمير',
+  'VOX': 'ڤوكس',
+  'Galaxy': 'جلاكسي',
+  'Stars': 'ستارز',
+  'Sea Cinema': 'سي سينما',
+  'Sun City': 'صن سيتي',
+  'Cine Max': 'سيني ماكس',
+  'Diamond': 'دايموند',
+  'Metro': 'مترو',
+  'Donia': 'دنيا',
+  'Almasa': 'الماسة',
+};
+
+/// A cinema chain's name: "ڤوكس" / "VOX"; single cinemas are "مستقلة" /
+/// "Independent".
+String chainName(String chain) => chain == 'Independent'
+    ? tr('مستقلة', 'Independent')
+    : Lang.english
+    ? chain
+    : _chainsAr[chain] ?? chain;
+
 /// "1 سينما" / "3 سينمات"; "1 cinema" / "3 cinemas".
 String cinemaCount(int n) => Lang.english
     ? (n == 1 ? '1 cinema' : '$n cinemas')

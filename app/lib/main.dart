@@ -13,12 +13,19 @@ import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'screens/splash_screen.dart';
 import 'services/home_widget_sync.dart';
+import 'services/premiere_live.dart';
 import 'services/push.dart';
+import 'services/vox_live.dart';
 import 'theme.dart';
 import 'util/i18n.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // Premiere's site takes seconds to load in its hidden page, and VOX's
+  // listing a moment: start both alongside the catalog, so a film opened
+  // early doesn't wait for them.
+  PremiereLive.instance.warmUp();
+  VoxLive.instance.warmUp();
   runApp(
     App(
       repository: FallbackShowtimesRepository(

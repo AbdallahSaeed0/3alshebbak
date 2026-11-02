@@ -133,14 +133,22 @@
 
   // One job covers several dates: each branch is picked once, then every
   // requested date tile under it. Returns { "yyyy-mm-dd": [{ name, formats }] }.
+  // `job.skip` ({ branch: ["yyyy-mm-dd", …] }) leaves out days already known
+  // elsewhere; a branch with all its days skipped isn't even opened.
   async function crawl(job) {
     var card = cards().find(function (c) { return idFromHref(c.querySelector('a').getAttribute('href')) === job.movieId; });
     if (!card) throw new Error('Movie is no longer on the now-showing page.');
+    // After ready({ all: false }) this card's branches may still be loading.
+    await waitFor(function () { return buttons(section(card, CINEMA)).length; }, 20000);
     var names = buttons(section(card, CINEMA)).map(text);
+    var skip = job.skip || {};
 
     var days = {};
     job.dates.forEach(function (d) { days[d] = []; });
     for (var ci = 0; ci < names.length; ci++) {
+      var skipped = skip[names[ci]] || [];
+      var wanted = job.dates.filter(function (d) { return skipped.indexOf(d) < 0; });
+      if (!wanted.length) continue;
       clickButton(card, CINEMA, names[ci]);
       await settle();
       // The first click can land before React hydrates; one retry covers it.
@@ -149,30 +157,40 @@
         clickButton(card, CINEMA, names[ci]);
         await settle();
       }
-      for (var di = 0; di < job.dates.length; di++) {
-        var tile = dateTile(card, job.dates[di]);
+      for (var di = 0; di < wanted.length; di++) {
+        var tile = dateTile(card, wanted[di]);
         if (!tile) continue; // not playing at this branch that day
         tile.click();
         await settle();
         var formats = await readFormats(card);
-        if (formats.length) days[job.dates[di]].push({ name: names[ci], formats: formats });
+        if (formats.length) {
+          days[wanted[di]].push({ name: names[ci], formats: formats });
+          // The app (a Flutter web view) shows each day as soon as it's read.
+          if (job.progress && window.flutter_inappwebview) {
+            window.flutter_inappwebview.callHandler(job.progress, { date: wanted[di], name: names[ci], formats: formats });
+          }
+        }
       }
     }
     return days;
   }
 
   // Resolves with the now-showing listing once every card's branch buttons
-  // have loaded (and React has hydrated, so clicks work).
-  async function ready() {
+  // have loaded (and React has hydrated, so clicks work). With
+  // `{ all: false }` (the app, which wants one film) it returns as soon as
+  // the first card has them; crawl() waits for its own card's.
+  async function ready(opts) {
+    var all = !opts || opts.all !== false;
     await waitFor(function () { return cards().length; }, 30000);
     if (!cards().length) throw new Error("Site layout changed: no movie cards on Premiere's now-showing page");
     await waitFor(function () {
-      return pending === 0 && cards().every(function (c) { return buttons(section(c, CINEMA)).length; });
+      var loaded = function (c) { return buttons(section(c, CINEMA)).length; };
+      return all ? pending === 0 && cards().every(loaded) : cards().some(loaded);
     }, 30000);
     if (!cards().some(function (c) { return buttons(section(c, CINEMA)).length; })) {
       throw new Error("Site layout changed: Premiere's movie cards have no cinema picker");
     }
-    await sleep(300);
+    await sleep(all ? 300 : 0);
     return nowShowing();
   }
 
