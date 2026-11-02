@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
@@ -12,6 +11,7 @@ import '../util/i18n.dart';
 import '../widgets/common.dart';
 import 'following_screen.dart';
 import 'onboarding_screen.dart';
+import 'privacy_screen.dart';
 import 'tickets_screen.dart';
 
 /// Which cinemas Home shows: mine, or every cinema in one city.
@@ -366,10 +366,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _Row(
                 icon: Icons.privacy_tip_outlined,
                 title: tr('سياسة الخصوصية', 'Privacy policy'),
-                onTap: () => launchUrl(
-                  Uri.parse(
-                    'https://abdallahsaeed0.github.io/3alshebbak/privacy.html'
-                    '${Lang.english ? '#en' : ''}',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PrivacyScreen(),
                   ),
                 ),
               ),
