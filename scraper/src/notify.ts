@@ -105,12 +105,13 @@ const MAX_LOOKBACK_MS = 24 * 3600_000;
  * key), are what's new now.
  */
 async function lastCheck(db: SupabaseClient, runStartedAt: string): Promise<string> {
-  const { data } = await db
+  const { data, error } = await db
     .from('scrape_runs')
     .select('started_at')
     .eq('source', ALERTS)
     .order('started_at', { ascending: false })
     .limit(1);
+  if (error) throw new Error(`alerts checkpoint: ${error.message}`);
   const last = data?.[0]?.started_at as string | undefined;
   if (!last) return runStartedAt;
   const floor = new Date(Date.now() - MAX_LOOKBACK_MS).toISOString();
@@ -123,7 +124,8 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
 
   const now = new Date().toISOString();
   await announce(db, fcm, await lastCheck(db, runStartedAt), now);
-  await db.from('scrape_runs').insert({ source: ALERTS, started_at: now, ok: true });
+  const { error } = await db.from('scrape_runs').insert({ source: ALERTS, started_at: now, ok: true });
+  if (error) throw new Error(`save alerts checkpoint: ${error.message}`);
 }
 
 async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string) {
@@ -171,6 +173,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
 
   const today = cairoToday();
   const counts = { opened: 0, days: 0, shows: 0 };
+  let failed = false;
   for (const device of devices) {
     // A phone that picked its cinemas hears only about those.
     const mine = (rows: Seen[]) =>
@@ -184,7 +187,10 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       const { error: seen } = await db
         .from('notifications_sent')
         .insert({ token: device.token, movie_id: movieId, sent_on: today });
-      if (seen) continue;
+      if (seen) {
+        if (seen.code === '23505') continue;
+        throw new Error(`reserve notification: ${seen.message}`);
+      }
 
       try {
         await fcm.send({
@@ -194,10 +200,17 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
         });
         counts[alert.kind]++;
       } catch (e) {
+        // A failed send must not consume today's notification or advance the
+        // checkpoint: the next run needs to pick this alert up again.
+        const { error: release } = await db.from('notifications_sent').delete()
+          .eq('token', device.token).eq('movie_id', movieId).eq('sent_on', today);
+        if (release) throw new Error(`release failed notification: ${release.message}`);
         if (e instanceof StaleToken) {
-          await db.from('devices').delete().eq('token', device.token);
+          const { error } = await db.from('devices').delete().eq('token', device.token);
+          if (error) throw new Error(`remove stale device: ${error.message}`);
           break;
         }
+        failed = true;
         console.log(`  ! notification to …${device.token.slice(-6)}: ${errorMessage(e)}`);
       }
     }
@@ -205,6 +218,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   console.log(
     `✓ notifications: ${counts.opened} opened, ${counts.days} new days, ${counts.shows} new showtimes`,
   );
+  if (failed) throw new Error('Some notifications failed; checkpoint retained for retry');
 }
 
 const CHAINS_AR: Record<string, string> = {
