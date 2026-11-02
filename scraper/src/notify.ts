@@ -1,7 +1,11 @@
-// "Tickets are out": after a sync, tells each phone that follows a film when
-// the film opened a new day of showtimes at one of its cinemas. A day is new
-// when this run is the first to see any showtime of that film, cinema and day
-// — so a cinema adding a late show to a day already on sale says nothing.
+// Alerts for followed films, after each sync. For each phone and film, this
+// run's new showtimes at the phone's cinemas make one of:
+//   opened — the film had nothing on sale there before ("tickets are out"),
+//   days   — booking now reaches days that weren't on sale (a week added),
+//   shows  — more showtimes on days already on sale.
+// "New" is judged against showtimes_seen (004_showtimes_seen.sql), which
+// remembers every show until it's over, so a show that drops out of one
+// scrape and comes back isn't announced again.
 // At most one notification per film per phone per day.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -9,8 +13,13 @@ import { Fcm, StaleToken } from './fcm.js';
 import { errorMessage } from './http.js';
 import { cairoToday } from './time.js';
 
-type Row = { movie_id: string; cinema_id: string; business_date: string };
+export type Seen = { movie_id: string; cinema_id: string; business_date: string };
 type Device = { token: string; following: string[]; cinemas: string[] };
+
+export type Alert =
+  | { kind: 'opened'; cinemas: string[] }
+  | { kind: 'days'; cinemas: string[]; lastDay: string }
+  | { kind: 'shows'; cinemas: string[]; count: number };
 
 const PAGE = 1000;
 
@@ -24,76 +33,119 @@ async function all<T>(query: () => any): Promise<T[]> {
   }
 }
 
-const key = (r: Row) => `${r.movie_id}|${r.cinema_id}|${r.business_date}`;
+const day = (r: Seen) => `${r.cinema_id}|${r.business_date}`;
+const unique = <T>(xs: T[]) => [...new Set(xs)];
 
-/** Film id → the cinemas where it opened a new day in this run. */
-async function drops(db: SupabaseClient, runStartedAt: string): Promise<Map<string, Set<string>>> {
-  const now = new Date().toISOString();
-  const fresh = await all<Row>(() =>
-    db
-      .from('showtimes')
-      .select('movie_id,cinema_id,business_date')
-      .gte('first_seen_at', runStartedAt)
-      .gt('starts_at', now)
-      .order('id'),
-  );
-  if (!fresh.length) return new Map();
+/**
+ * What one phone hears about one film. `fresh` is this run's new upcoming
+ * showtimes and `before` the upcoming ones seen in earlier runs, both already
+ * narrowed to the phone's cinemas.
+ */
+export function alertFor(fresh: Seen[], before: Seen[]): Alert | null {
+  if (!fresh.length) return null;
+  if (!before.length) return { kind: 'opened', cinemas: unique(fresh.map((r) => r.cinema_id)) };
 
-  const movies = [...new Set(fresh.map((r) => r.movie_id))];
-  const known = new Set(
-    (
-      await all<Row>(() =>
-        db
-          .from('showtimes')
-          .select('movie_id,cinema_id,business_date')
-          .in('movie_id', movies)
-          .lt('first_seen_at', runStartedAt)
-          .gt('starts_at', now)
-          .order('id'),
-      )
-    ).map(key),
-  );
-
-  const opened = new Map<string, Set<string>>();
-  for (const r of fresh) {
-    if (known.has(key(r))) continue;
-    let at = opened.get(r.movie_id);
-    if (!at) opened.set(r.movie_id, (at = new Set()));
-    at.add(r.cinema_id);
+  const onSale = new Set(before.map(day));
+  const newDays = fresh.filter((r) => !onSale.has(day(r)));
+  if (newDays.length) {
+    return {
+      kind: 'days',
+      cinemas: unique(newDays.map((r) => r.cinema_id)),
+      lastDay: newDays.map((r) => r.business_date).sort().at(-1)!,
+    };
   }
-  return opened;
+  return { kind: 'shows', cinemas: unique(fresh.map((r) => r.cinema_id)), count: fresh.length };
+}
+
+/** The notification for an alert, in Arabic like the rest of the app's pushes. */
+export function message(alert: Alert, film: string, cinemaLabel: (id: string) => string) {
+  const first = cinemaLabel(alert.cinemas[0]);
+  const where = alert.cinemas.length > 1 ? `${first} و${alert.cinemas.length - 1} سينما كمان` : first;
+  switch (alert.kind) {
+    case 'opened':
+      return { title: `🎟 تذاكر «${film}» نزلت`, body: `الحجز فتح في ${where}` };
+    case 'days':
+      return { title: `📅 «${film}»: أيام حجز جديدة`, body: `الحجز بقى لحد ${dayName(alert.lastDay)} في ${where}` };
+    case 'shows':
+      return { title: `🕐 «${film}»: حفلات جديدة`, body: `${showCount(alert.count)} في ${where}` };
+  }
+}
+
+/** "الخميس 12 نوفمبر", as the app writes days. */
+export function dayName(businessDate: string) {
+  const parts = new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).formatToParts(new Date(`${businessDate}T00:00:00Z`));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value;
+  return `${part('weekday')} ${part('day')} ${part('month')}`;
+}
+
+export function showCount(n: number) {
+  if (n === 1) return 'حفلة جديدة';
+  if (n === 2) return 'حفلتين جداد';
+  if (n <= 10) return `${n} حفلات جديدة`;
+  return `${n} حفلة جديدة`;
 }
 
 export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   const fcm = Fcm.fromEnv();
   if (!fcm) return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped');
 
-  const opened = await drops(db, runStartedAt);
-  if (!opened.size) return console.log('  notifications: no new days on sale');
+  const now = new Date().toISOString();
+  const fresh = await all<Seen>(() =>
+    db
+      .from('showtimes_seen')
+      .select('movie_id,cinema_id,business_date')
+      .gte('first_seen_at', runStartedAt)
+      .gt('starts_at', now)
+      .order('id'),
+  );
+  if (!fresh.length) return console.log('  notifications: no new showtimes');
 
-  const movieIds = [...opened.keys()];
+  const movieIds = unique(fresh.map((r) => r.movie_id));
   const devices = await all<Device>(() =>
     db.from('devices').select('token,following,cinemas').overlaps('following', movieIds).order('token'),
   );
-  if (!devices.length) return console.log(`  notifications: ${movieIds.length} films opened days, nobody follows them`);
+  if (!devices.length) return console.log(`  notifications: ${movieIds.length} films got showtimes, nobody follows them`);
+
+  const followed = movieIds.filter((id) => devices.some((d) => d.following.includes(id)));
+  const before = await all<Seen>(() =>
+    db
+      .from('showtimes_seen')
+      .select('movie_id,cinema_id,business_date')
+      .in('movie_id', followed)
+      .lt('first_seen_at', runStartedAt)
+      .gt('starts_at', now)
+      .order('id'),
+  );
+  const byMovie = (rows: Seen[]) => {
+    const m = new Map<string, Seen[]>();
+    for (const r of rows) m.set(r.movie_id, [...(m.get(r.movie_id) ?? []), r]);
+    return m;
+  };
+  const freshBy = byMovie(fresh);
+  const beforeBy = byMovie(before);
 
   const [{ data: movies }, { data: cinemas }] = await Promise.all([
-    db.from('movies').select('id,tmdb_id,title,title_ar,original_title').in('id', movieIds),
-    db.from('cinemas').select('id,chain,name').in('id', [...new Set([...opened.values()].flatMap((s) => [...s]))]),
+    db.from('movies').select('id,tmdb_id,title,title_ar,original_title').in('id', followed),
+    db.from('cinemas').select('id,chain,name,name_ar').in('id', unique(fresh.map((r) => r.cinema_id))),
   ]);
   const title = new Map((movies ?? []).map((m) => [m.id, displayTitle(m)]));
-  const cinemaLabel = new Map(
-    (cinemas ?? []).map((c) => [c.id, c.chain === 'Independent' ? c.name : `${c.chain} · ${c.name}`]),
-  );
+  const label = new Map((cinemas ?? []).map((c) => [c.id, cinemaLabel(c)]));
 
   const today = cairoToday();
-  let sent = 0;
+  const counts = { opened: 0, days: 0, shows: 0 };
   for (const device of devices) {
+    // A phone that picked its cinemas hears only about those.
+    const mine = (rows: Seen[]) =>
+      device.cinemas.length ? rows.filter((r) => device.cinemas.includes(r.cinema_id)) : rows;
+
     for (const movieId of device.following) {
-      const at = [...(opened.get(movieId) ?? [])];
-      // A phone that picked its cinemas hears only about those.
-      const where = device.cinemas.length ? at.filter((c) => device.cinemas.includes(c)) : at;
-      if (!where.length) continue;
+      const alert = alertFor(mine(freshBy.get(movieId) ?? []), mine(beforeBy.get(movieId) ?? []));
+      if (!alert) continue;
 
       // The primary key makes this the once-a-day check: a second insert fails.
       const { error: seen } = await db
@@ -101,16 +153,13 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
         .insert({ token: device.token, movie_id: movieId, sent_on: today });
       if (seen) continue;
 
-      const first = cinemaLabel.get(where[0]) ?? where[0];
-      const more = where.length > 1 ? ` و${where.length - 1} سينما كمان` : '';
       try {
         await fcm.send({
           token: device.token,
-          title: `🎟 تذاكر «${title.get(movieId) ?? movieId}» نزلت`,
-          body: `حجز أيام جديدة في ${first}${more}`,
+          ...message(alert, title.get(movieId) ?? movieId, (id) => label.get(id) ?? id),
           data: { movieId },
         });
-        sent++;
+        counts[alert.kind]++;
       } catch (e) {
         if (e instanceof StaleToken) {
           await db.from('devices').delete().eq('token', device.token);
@@ -120,7 +169,22 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
       }
     }
   }
-  console.log(`✓ notifications: ${opened.size} films opened days, ${sent} sent`);
+  console.log(
+    `✓ notifications: ${counts.opened} opened, ${counts.days} new days, ${counts.shows} new showtimes`,
+  );
+}
+
+const CHAINS_AR: Record<string, string> = {
+  Renaissance: 'رينيسانس',
+  Scene: 'سين',
+  Premiere: 'بريمير',
+  VOX: 'ڤوكس',
+};
+
+/** As the app labels a cinema in Arabic (Cinema.label). */
+function cinemaLabel(c: { id: string; chain: string; name: string; name_ar: string | null }) {
+  if (c.name_ar) return c.id.startsWith('elcinema:') ? c.name_ar : `${CHAINS_AR[c.chain] ?? c.chain} · ${c.name_ar}`;
+  return c.chain === 'Independent' ? c.name : `${c.chain} · ${c.name}`;
 }
 
 const ARABIC_LETTERS = /[ء-ي]/;

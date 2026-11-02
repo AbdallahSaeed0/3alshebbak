@@ -23,9 +23,9 @@ export function showtimeId(cinemaId: string, filmId: string, start: string, form
   return createHash('sha1').update(`${cinemaId}|${filmId}|${start}|${format}`).digest('hex').slice(0, 24);
 }
 
-async function upsert(db: SupabaseClient, table: string, rows: object[]) {
+async function upsert(db: SupabaseClient, table: string, rows: object[], ignoreDuplicates = false) {
   for (let i = 0; i < rows.length; i += BATCH) {
-    const { error } = await db.from(table).upsert(rows.slice(i, i + BATCH), { onConflict: 'id' });
+    const { error } = await db.from(table).upsert(rows.slice(i, i + BATCH), { onConflict: 'id', ignoreDuplicates });
     if (error) throw new Error(`${table}: ${error.message}`);
   }
 }
@@ -115,6 +115,21 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
       })),
     );
 
+    // The alerts' memory (004_showtimes_seen.sql): insert-only, so a show that
+    // drops out for a run and comes back keeps its first sighting.
+    await upsert(
+      db,
+      'showtimes_seen',
+      r.showtimes.map((s) => ({
+        id: showtimeId(s.cinemaId, s.filmId, s.start, s.format),
+        movie_id: catalog.filmToMovie[s.filmId],
+        cinema_id: s.cinemaId,
+        business_date: s.businessDate,
+        starts_at: s.start,
+      })),
+      true,
+    );
+
     const { error } = await db
       .from('showtimes')
       .delete()
@@ -133,6 +148,11 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
   }
 
   await removeOrphanMovies(db, new Set(catalog.movies.map((m) => m.id)));
+
+  // Over shows are no use to the alerts.
+  const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const { error } = await db.from('showtimes_seen').delete().lt('starts_at', dayAgo);
+  if (error) throw new Error(`showtimes_seen cleanup: ${error.message}`);
 }
 
 /**
