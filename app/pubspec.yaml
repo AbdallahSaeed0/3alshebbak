@@ -11,6 +11,7 @@ dependencies:
   firebase_messaging: ^17.0.1
   flutter:
     sdk: flutter
+  flutter_inappwebview: ^6.1.5
   flutter_localizations:
     sdk: flutter
   flutter_map: ^8.3.2
@@ -36,6 +37,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/
+    # Copied from scraper/src/sources/premiere.page.js; keep the two the same.
+    - assets/premiere/
 
 # App icon and native splash, from assets/brand/ (rendered by
 # scraper/scripts/render-brand.mjs). Regenerate with:

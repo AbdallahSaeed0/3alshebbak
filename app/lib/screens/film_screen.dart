@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
+import '../services/premiere_live.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -29,17 +30,44 @@ class _FilmScreenState extends State<FilmScreen> {
   String? _date;
   String? _format;
 
+  /// Premiere's shows, read on the phone (our servers can't reach its site).
+  PremiereShows _premiere = PremiereShows.none;
+  bool _readingPremiere = false;
+  bool _askedPremiere = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_askedPremiere || !PremiereLive.available) return;
+    _askedPremiere = true;
+    _readingPremiere = true;
+    PremiereLive.instance
+        .showtimesFor(widget.movie, AppScope.of(context).today)
+        .then((shows) {
+          if (!mounted) return;
+          setState(() {
+            _premiere = shows;
+            _readingPremiere = false;
+          });
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
     final movie = widget.movie;
-    final dates = data.dates(movieId: movie.id);
+    final dates = data.dates(movieId: movie.id, extra: _premiere.showtimes);
     final date = _date != null && dates.contains(_date)
         ? _date!
         : (dates.isEmpty ? null : dates.first);
     final schedule = date == null
         ? const <(Cinema, List<Showtime>)>[]
-        : data.movieSchedule(movie.id, date);
+        : data.movieSchedule(
+            movie.id,
+            date,
+            extra: _premiere.showtimes,
+            extraCinemas: _premiere.cinemas,
+          );
     final formats = {
       for (final (_, shows) in schedule)
         for (final s in shows) shortFormat(s.format),
@@ -147,6 +175,28 @@ class _FilmScreenState extends State<FilmScreen> {
                   Divider(color: AppColors.hairline, height: 1),
                   const SizedBox(height: 18),
                   Text(tr('المواعيد', 'Showtimes'), style: AppText.display(24)),
+                  if (_readingPremiere) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        SizedBox.square(
+                          dimension: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          tr(
+                            'بنشوف مواعيد بريمير كمان…',
+                            'Checking Premiere\'s times too…',
+                          ),
+                          style: AppText.body(12, color: AppColors.muted),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

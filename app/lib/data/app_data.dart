@@ -103,7 +103,19 @@ class AppData {
   /// Before 6 AM it's still last night's schedule.
   String get today => isoDate(cairoNow.subtract(const Duration(hours: 6)));
 
-  Cinema cinema(String id) => catalog.cinemas[id]!;
+  /// A cinema only a phone-read source mentions (premiere:<slug>) gets a name
+  /// from its id rather than failing.
+  Cinema cinema(String id) =>
+      catalog.cinemas[id] ??
+      Cinema(
+        id: id,
+        chain: id.startsWith('premiere:') ? 'Premiere' : 'Independent',
+        name: id
+            .substring(id.indexOf(':') + 1)
+            .split('-')
+            .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+            .join(' '),
+      );
   Movie movie(String id) => catalog.movies[id]!;
 
   /// What Home shows: my cinemas, or every cinema in the city picked there.
@@ -206,9 +218,14 @@ class AppData {
       s.startsAt.isAfter(now) && s.businessDate.compareTo(today) >= 0;
 
   /// Schedule days still ahead for a movie and/or cinema, earliest first.
-  List<String> dates({String? movieId, String? cinemaId}) {
+  /// [extra] are shows read on the phone (Premiere's, see premiere_live.dart).
+  List<String> dates({
+    String? movieId,
+    String? cinemaId,
+    List<Showtime> extra = const [],
+  }) {
     final days = <String>{
-      for (final s in catalog.showtimes)
+      for (final s in [...catalog.showtimes, ...extra])
         if ((movieId == null || s.movieId == movieId) &&
             (cinemaId == null || s.cinemaId == cinemaId) &&
             _upcoming(s))
@@ -218,13 +235,36 @@ class AppData {
   }
 
   /// A movie's shows on [date], per cinema: my cinemas first, then by name.
-  List<(Cinema, List<Showtime>)> movieSchedule(String movieId, String date) {
+  /// [extra] shows read on the phone fill in cinemas the catalog has nothing
+  /// for that day; where it has the day, the catalog wins. [extraCinemas]
+  /// names cinemas only they mention.
+  List<(Cinema, List<Showtime>)> movieSchedule(
+    String movieId,
+    String date, {
+    List<Showtime> extra = const [],
+    Map<String, Cinema> extraCinemas = const {},
+  }) {
     final byCinema = <String, List<Showtime>>{};
     for (final s in catalog.showtimes) {
       if (s.movieId == movieId && s.businessDate == date && _upcoming(s))
         (byCinema[s.cinemaId] ??= []).add(s);
     }
-    final list = [for (final e in byCinema.entries) (cinema(e.key), e.value)];
+    final listed = byCinema.keys.toSet();
+    for (final s in extra) {
+      final known =
+          catalog.cinemas.containsKey(s.cinemaId) ||
+          extraCinemas.containsKey(s.cinemaId);
+      if (s.movieId == movieId &&
+          s.businessDate == date &&
+          _upcoming(s) &&
+          known &&
+          !listed.contains(s.cinemaId))
+        (byCinema[s.cinemaId] ??= []).add(s);
+    }
+    final list = [
+      for (final e in byCinema.entries)
+        (catalog.cinemas[e.key] ?? extraCinemas[e.key]!, e.value),
+    ];
     list.sort((a, b) {
       final mine =
           (prefs.isMine(b.$1.id) ? 1 : 0) - (prefs.isMine(a.$1.id) ? 1 : 0);
