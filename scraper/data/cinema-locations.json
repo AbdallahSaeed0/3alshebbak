@@ -42,6 +42,13 @@
     "area": "Downtown",
     "query": "Metro Cinema, Talaat Harb, Cairo"
   },
+  "elcinema:cima-arkan": {
+    "lat": 30.02022,
+    "lng": 31.0033,
+    "city": "Cairo",
+    "area": "Sheikh Zayed",
+    "query": "Arkan Plaza, Sheikh Zayed"
+  },
   "elcinema:cine-max": {
     "lat": 30.0565,
     "lng": 30.9856,
@@ -233,6 +240,13 @@
     "city": "Cairo",
     "area": "6th of October",
     "query": "Mall of Egypt"
+  },
+  "elcinema:premiere-point90": {
+    "lat": 30.02026,
+    "lng": 31.49472,
+    "city": "Cairo",
+    "area": "New Cairo",
+    "query": "Point 90 Mall"
   },
   "elcinema:sea-cinema-amir": {
     "lat": 31.19689,

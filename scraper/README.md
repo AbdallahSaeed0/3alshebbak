@@ -65,7 +65,7 @@ step is skipped.
 |---|---|---|
 | `renaissance` | plain HTML, one page per branch per day | every time link carries its own data-* attributes |
 | `scene` | plain HTML per movie + `?business_day=…&ajax=1` per day | one site per venue (cfc, district5) |
-| `premiere` | headless Chromium, clicks through the pickers | showtime API is encrypted |
+| `premiere` | headless Chromium, clicks through the pickers | showtime API is encrypted; Cloudflare blocks GitHub's servers, so CI reads Premiere through elCinema (local use only) |
 
 ## Tier 2: elCinema.com
 

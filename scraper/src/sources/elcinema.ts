@@ -45,9 +45,17 @@ const THEATERS: Theater[] = [
   { id: '3101353', chain: 'VOX', venue: 'City Centre Almaza', city: 'Cairo', area: 'Heliopolis', fallbackBooking: voxBooking },
   { id: '3101271', chain: 'VOX', venue: 'Mall of Egypt', city: 'Cairo', area: '6th of October', fallbackBooking: voxBooking },
   { id: '3101027', chain: 'VOX', venue: 'City Centre Alexandria', city: 'Alexandria', area: 'Moharam Bek', fallbackBooking: voxBooking },
-  // Premiere — Americana isn't on Premiere's own now-showing page.
+  // Premiere — its own site (sources/premiere.ts) blocks the CI servers, so
+  // the pipeline reads Premiere here. elCinema has no Nile Cinema or Galaxy
+  // elManial. Don't sync the premiere source alongside: Point90 and Arkan
+  // would show up twice.
   { id: '3101133', chain: 'Premiere', venue: 'Americana Plaza', city: 'Cairo', area: '6th of October' },
   { id: '3101260', chain: 'Premiere', venue: 'Americana Plaza', hall: 'MX4D', city: 'Cairo', area: '6th of October' },
+  { id: '3101134', chain: 'Premiere', venue: 'Americana Plaza', hall: 'IMAX', city: 'Cairo', area: '6th of October' },
+  { id: '3101219', chain: 'Premiere', venue: 'Premiere Point90', city: 'Cairo', area: 'New Cairo' },
+  { id: '3101261', chain: 'Premiere', venue: 'Premiere Point90', hall: 'MX4D', city: 'Cairo', area: 'New Cairo' },
+  { id: '3101401', chain: 'Premiere', venue: 'Cima Arkan', city: 'Cairo', area: 'Sheikh Zayed' },
+  { id: '3101402', chain: 'Premiere', venue: 'Cima Arkan', hall: 'VIP', city: 'Cairo', area: 'Sheikh Zayed' },
   // Galaxy
   { id: '3101080', chain: 'Galaxy', venue: 'Galaxy El Maadi', city: 'Cairo', area: 'Maadi' },
   { id: '3101576', chain: 'Galaxy', venue: 'Galaxy El Maadi', hall: 'Dine-in', city: 'Cairo', area: 'Maadi' },

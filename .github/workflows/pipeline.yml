@@ -66,10 +66,11 @@ jobs:
           if [ -n "${{ github.event.inputs.sources }}" ]; then
             echo "list=${{ github.event.inputs.sources }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%M)" -lt 30 ]; then
-            # The first run of each hour includes elCinema.
-            echo "list=renaissance scene premiere elcinema" >> "$GITHUB_OUTPUT"
+            # The first run of each hour includes elCinema. Premiere comes
+            # through elCinema: its own site blocks these servers.
+            echo "list=renaissance scene elcinema" >> "$GITHUB_OUTPUT"
           else
-            echo "list=renaissance scene premiere" >> "$GITHUB_OUTPUT"
+            echo "list=renaissance scene" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Scrape and sync
