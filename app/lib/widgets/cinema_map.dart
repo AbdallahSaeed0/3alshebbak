@@ -11,10 +11,8 @@ import 'common.dart';
 import '../util/format.dart';
 import '../util/i18n.dart';
 
-/// Every cinema as a pin on a dark map (OpenStreetMap's tiles, darkened,
-/// credited in the corner). OSM's own tile servers are for light use only:
-/// before the app has many users, switch [_tiles] to a provider with a plan
-/// (Stadia Maps, MapTiler…). Gold pins are my cinemas; tapping a pin
+/// Every cinema as a pin on a Stadia Maps base map, light or dark with the
+/// app, credited in the corner. Gold pins are my cinemas; tapping a pin
 /// shows its next show and opens it.
 class CinemaMap extends StatefulWidget {
   const CinemaMap({super.key, required this.cinemas});
@@ -29,7 +27,18 @@ class _CinemaMapState extends State<CinemaMap> {
   final _map = MapController();
   Cinema? _selected;
 
-  static const _tiles = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  /// Stadia Maps' key, given at build time (--dart-define-from-file=
+  /// dart_defines.json, kept out of git). Without one the map falls back to
+  /// OpenStreetMap's own tiles, darkened, which are for light use only.
+  static const _stadiaKey = String.fromEnvironment('STADIA_API_KEY');
+
+  /// Alidade Smooth: quiet streets that leave the pins the loudest thing on
+  /// the map, with a native dark version.
+  String get _tiles => _stadiaKey.isEmpty
+      ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+      : 'https://tiles.stadiamaps.com/tiles/'
+            '${AppColors.isDark ? 'alidade_smooth_dark' : 'alidade_smooth'}'
+            '/{z}/{x}/{y}{r}.png?api_key=$_stadiaKey';
 
   /// Cairo, when we don't know where the user is.
   static const _cairo = LatLng(30.0444, 31.2357);
@@ -72,9 +81,15 @@ class _CinemaMapState extends State<CinemaMap> {
           ),
           children: [
             TileLayer(
+              // A new layer per style, so switching light/dark refetches.
+              key: ValueKey(_tiles),
               urlTemplate: _tiles,
+              retinaMode:
+                  _stadiaKey.isNotEmpty && RetinaMode.isHighDensity(context),
               userAgentPackageName: 'com.shebbak.shebbak',
-              tileBuilder: AppColors.isDark ? darkModeTileBuilder : null,
+              tileBuilder: _stadiaKey.isEmpty && AppColors.isDark
+                  ? darkModeTileBuilder
+                  : null,
             ),
             MarkerLayer(
               markers: [
@@ -102,7 +117,9 @@ class _CinemaMapState extends State<CinemaMap> {
             ),
             SimpleAttributionWidget(
               source: Text(
-                '© OpenStreetMap contributors',
+                _stadiaKey.isEmpty
+                    ? '© OpenStreetMap contributors'
+                    : '© Stadia Maps © OpenMapTiles © OpenStreetMap',
                 textDirection: TextDirection.ltr,
               ),
               backgroundColor: AppColors.glass,
