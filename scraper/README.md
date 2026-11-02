@@ -6,7 +6,7 @@ shape (`src/model.ts`): cinemas, films, showtimes with a real start time
 
 ```bash
 npm install
-npx playwright install chromium   # only VOX and Premiere need a browser
+npx playwright install chromium   # Premiere needs a browser
 npm run scrape                     # all sources → out/<source>.json
 npm run scrape -- renaissance scene
 ```
@@ -18,7 +18,7 @@ in the User-Agent of every plain HTTP request. Copy `.env.example` to `.env`.
 
 Supabase Cron on the existing project dispatches `.github/workflows/pipeline.yml`
 every 10 minutes (UTC minutes 7, 17, 27, 37, 47, 57). VOX presales run every
-time, Renaissance and Scene twice an hour, and elCinema once an hour. It
+time, Renaissance, Scene and Premiere twice an hour, and elCinema once an hour. It
 needs the repository secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
 `TMDB_API_KEY` and `SCRAPER_CONTACT`. Run it by hand from the Actions tab
 (optionally naming sources). GitHub's native cron is disabled; Supabase is
@@ -28,10 +28,13 @@ site failures and source coverage can still delay detecting a booking opening.
 The `shebbak-showtimes-every-10-minutes` job calls the private
 `shebbak_private.dispatch_pipeline()` function. GitHub authorization is kept in
 Supabase Vault as `shebbak_github_dispatch_token`; it must be rotated if revoked.
-The current credential is the existing GitHub CLI OAuth credential, not a
-repository-scoped token. A dedicated repository-scoped Actions-write token can
-replace it using `vault.update_secret` without changing the scheduler. Never
-put credentials into cron commands, committed SQL or logs.
+Use a dedicated fine-grained token scoped to this repository with Actions
+read/write, independent of `gh auth login`. Save it in the ignored local file
+`.env.scheduler-token`, then run `npx tsx src/install-scheduler-token.ts`. The
+installer verifies dispatch permission before replacing the Vault secret and
+records its expiry for the watchdog. Until this is done the earlier CLI OAuth
+credential remains active. Never put credentials into cron commands, committed
+SQL or logs.
 
 To inspect scheduling and delivery to GitHub (HTTP 204 means accepted):
 
@@ -51,6 +54,31 @@ synchronously with a 15-second timeout: authorization headers are never stored
 in a queue. A rejection or network error marks the cron run as failed; the next
 scheduled run tries again. These are private operational objects, separate from
 the application's exposed `shebbak` schema.
+
+## Independent monitoring and cinema transport
+
+`shebbak-pipeline-watchdog` runs from Supabase Cron every ten minutes, separately
+from GitHub. The private `pipeline-watchdog` Edge Function checks dispatch
+freshness, successful source uploads, alerts processing and token expiry. It
+notifies only the verified administrator device when the set of problems
+changes, and stays quiet while the state is unchanged. It retries a failed
+notification; it does not broadcast operational alerts to app users. Device
+token rotation requires updating the administrator fingerprint in its context
+function. Failed cron executions remain visible in `cron.job_run_details`.
+
+The pipeline provisions Firebase and Supabase credentials into Vault through
+the service-role-only `configure_pipeline_watchdog` RPC. The monitoring path
+does not use the GitHub dispatch credential and can report a revoked GitHub
+credential after dispatches become stale. The expiry warning starts seven days
+before the configured token expiry.
+
+In CI, `CINEMA_FETCH_URL` points to the private `cinema-fetch` Edge Function.
+Renaissance HTML and Premiere's anonymous browser requests are fetched from
+Supabase rather than GitHub IPs, pinned to `eu-west-1` so the caller's location
+does not change the transport region. The function requires service authorization,
+restricts destination hosts and redirects, and limits timeouts and payload size.
+Premiere continues to use its ordinary browser pickers; no API decryption or
+login is performed. Local runs without the relay read the sites directly.
 
 ## Sync: TMDB + Supabase
 
@@ -88,13 +116,20 @@ phone per day. Phones register through the `register_device` function
 `FIREBASE_SERVICE_ACCOUNT` (the service account key's JSON); without it the
 step is skipped.
 
+`notification_progress` remembers each phone/film's processed boundary. If one
+phone fails, successful phones retain their progress even when the shared retry
+crosses Cairo midnight. Updates intentionally suppressed by the daily rate limit
+are also consumed, so they cannot reappear the next day. As with most external
+push systems, an ambiguous network response or a crash between Firebase accepting
+a push and recording progress can still produce an at-least-once retry.
+
 ## Sources (tier 1: chains' own sites)
 
 | Source | How | Notes |
 |---|---|---|
 | `renaissance` | plain HTML, one page per branch per day | every time link carries its own data-* attributes |
 | `scene` | plain HTML per movie + `?business_day=…&ajax=1` per day | one site per venue (cfc, district5) |
-| `premiere` | headless Chromium, clicks through the pickers | showtime API is encrypted; Cloudflare blocks GitHub's servers, so CI reads Premiere through elCinema (local use only) |
+| `premiere` | headless Chromium, clicks through the pickers via the private Supabase transport | includes presales beyond elCinema's week and all dates for unlisted branches such as Nile Cinema |
 
 ## Tier 2: elCinema.com
 

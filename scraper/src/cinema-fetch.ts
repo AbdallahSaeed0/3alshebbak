@@ -8,7 +8,12 @@ export async function cinemaFetch(url: string, method = 'GET', headers: Record<s
   if (!cinemaRelayConfigured()) throw new Error('Cinema relay is not configured');
   const response = await fetch(process.env.CINEMA_FETCH_URL!, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+      // Keep the egress region stable regardless of the caller's location.
+      'x-region': process.env.CINEMA_FETCH_REGION || 'eu-west-1',
+    },
     body: JSON.stringify({ url, method, headers, body }),
     signal: AbortSignal.timeout(35_000),
   });
