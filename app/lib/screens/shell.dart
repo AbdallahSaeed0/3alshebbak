@@ -21,6 +21,22 @@ class Shell extends StatefulWidget {
 class _ShellState extends State<Shell> {
   int _tab = 0;
 
+  /// Explore's search box; Home's search bar lands you in it, keyboard up.
+  final _exploreSearch = FocusNode();
+
+  @override
+  void dispose() {
+    _exploreSearch.dispose();
+    super.dispose();
+  }
+
+  void _search() {
+    setState(() => _tab = 1);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _exploreSearch.requestFocus(),
+    );
+  }
+
   static List<_Tab> get _tabs => [
     (
       label: tr('الرئيسية', 'Home'),
@@ -52,8 +68,8 @@ class _ShellState extends State<Shell> {
       body: IndexedStack(
         index: _tab,
         children: [
-          HomeScreen(onSearch: () => setState(() => _tab = 1)),
-          const ExploreScreen(),
+          HomeScreen(onSearch: _search),
+          ExploreScreen(searchFocus: _exploreSearch),
           const CinemasScreen(),
           SettingsScreen(onExplore: () => setState(() => _tab = 1)),
         ],

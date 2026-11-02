@@ -15,7 +15,9 @@ import '../util/i18n.dart';
 /// by experience and by "my cinemas only". A search also lists the cinemas
 /// it matches.
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  const ExploreScreen({super.key, this.searchFocus});
+
+  final FocusNode? searchFocus;
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -64,6 +66,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _search,
+                    focusNode: widget.searchFocus,
+                    textInputAction: TextInputAction.search,
+                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
                     onChanged: (_) => setState(() {}),
                     style: AppText.body(14),
                     decoration: InputDecoration(

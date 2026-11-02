@@ -67,45 +67,6 @@ class PrivacyScreen extends StatelessWidget {
               'If you turn on "tickets are out" alerts, our server (Supabase) stores your device\'s notification token, the films you follow and the cinemas you picked, so we can tell you when booking opens. No name, phone number or location. Notifications are delivered through Google\'s Firebase Cloud Messaging. If you turn notifications off or uninstall the app, the token is deleted from our side as soon as it stops working.',
             ),
           ),
-          _Title(
-            tr('خدمات تانية التطبيق بيكلمها', 'Other services the app talks to'),
-          ),
-          _Bullet(
-            tr(
-              'Supabase: منها بنجيب المواعيد.',
-              'Supabase: where showtimes come from.',
-            ),
-          ),
-          _Bullet(
-            tr(
-              'TMDB: صور البوسترات وبيانات الأفلام والإعلانات. التطبيق بيستخدم TMDB API، بس مش معتمد ولا متوثّق من TMDB.',
-              'TMDB: posters, film details and trailers. This product uses the TMDB API but is not endorsed or certified by TMDB.',
-            ),
-          ),
-          _Bullet(
-            tr(
-              'Stadia Maps: صور الخريطة في تاب السينمات.',
-              'Stadia Maps: map images in the Cinemas tab.',
-            ),
-          ),
-          _Bullet(
-            tr(
-              'YouTube: لما تدوس «شوف الإعلان» بيفتح الإعلان على يوتيوب.',
-              'YouTube: "Watch trailer" opens the trailer on YouTube.',
-            ),
-          ),
-          _Bullet(
-            tr(
-              'مواقع السينمات: لما تدوس «احجز» بتفتح موقع السينما نفسه، والحجز والدفع بيتموا عندهم وبسياستهم.',
-              'Cinema websites: "Book" opens the cinema\'s own site; booking and payment happen there, under its policies.',
-            ),
-          ),
-          _Para(
-            tr(
-              'زي أي موقع، الخدمات دي بتشوف عنوان الـ IP بتاع جهازك وهي بتبعتله البيانات.',
-              'Like any website, these services see your device\'s IP address when they send it data.',
-            ),
-          ),
           _Title(tr('اللي مش بنعمله', 'What we don\'t do')),
           _Bullet(
             tr(
