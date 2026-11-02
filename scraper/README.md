@@ -108,6 +108,22 @@ A new cinema without one gets a warning in the run; add it with
 
 ## "Tickets are out" notifications
 
+### Additional elCinema booking presales
+
+`npm run scrape -- elcinema-presales` reads the public booking inventory and
+Premiere date/time dropdowns, including Americana Plaza and Cima Arkan presales
+that Premiere's own pages do not list. It reads selection data only, never
+seats, checkout or orders; requests run sequentially with a 1.5-second pause.
+Then `npm run sync -- elcinema-presales` uploads them through the usual alert
+pipeline. Only dates outside the ordinary theater-page week are added.
+
+This source currently requires an elCinema-permitted connection (verified
+locally in Egypt). GitHub and the current Supabase region receive the geographic
+unavailability page, so this source is intentionally **not scheduled** yet.
+Do not treat the extra booking inventory as automatically monitored until an
+eligible cloud runner is configured. Failed scrapes leave the existing data
+intact instead of uploading an empty result.
+
 After each upload, `src/notify.ts` finds films that opened a new day of
 showtimes at a cinema and pushes a notification (Firebase Cloud Messaging) to
 phones that follow the film and picked that cinema, at most once per film per
