@@ -63,11 +63,6 @@ class _FilmScreenState extends State<FilmScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(movie.displayTitle, style: AppText.display(34)),
-                  if (movie.subtitle != null)
-                    Text(
-                      movie.subtitle!,
-                      style: AppText.body(13, color: AppColors.muted),
-                    ),
                   if (meta.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Wrap(

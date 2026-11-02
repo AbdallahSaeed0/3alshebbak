@@ -36,7 +36,7 @@ void main() {
   });
 
   group('display title', () {
-    test('a foreign film shows its English title, Arabic underneath', () {
+    test('a foreign film shows its English title', () {
       const m = Movie(
         id: 'tmdb:1',
         tmdbId: 1,
@@ -44,10 +44,9 @@ void main() {
         titleAr: 'أفاتار: النار والرماد',
       );
       expect(m.displayTitle, 'Avatar: Fire and Ash');
-      expect(m.subtitle, 'أفاتار: النار والرماد');
     });
 
-    test('an Egyptian film shows its Arabic title, English underneath', () {
+    test('an Egyptian film shows its Arabic title', () {
       const m = Movie(
         id: 'tmdb:2',
         tmdbId: 2,
@@ -55,7 +54,6 @@ void main() {
         originalTitle: 'ولاد رزق 3',
       );
       expect(m.displayTitle, 'ولاد رزق 3');
-      expect(m.subtitle, 'Welad Rizk 3');
     });
 
     test('a Kurdish film is not Arabic, though its script looks it', () {

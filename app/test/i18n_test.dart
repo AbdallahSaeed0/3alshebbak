@@ -44,6 +44,5 @@ void main() {
     expect(m.displayTitle, 'مطلوب عائليا');
     Lang.english = true;
     expect(m.displayTitle, 'Family Wanted');
-    expect(m.subtitle, 'مطلوب عائليا');
   });
 }

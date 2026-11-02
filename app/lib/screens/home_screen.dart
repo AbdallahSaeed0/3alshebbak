@@ -618,7 +618,6 @@ class _TodayCard extends StatelessWidget {
     final movie = day.movie;
     final more = day.showtimes.length - _shown;
     final meta = [
-      if (movie.subtitle != null) movie.subtitle!,
       if (movie.runtime != null)
         tr('${movie.runtime} د', '${movie.runtime} min'),
       if (movie.genres.isNotEmpty) movie.genres.first,

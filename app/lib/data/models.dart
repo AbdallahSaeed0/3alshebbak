@@ -108,14 +108,6 @@ class Movie {
 
   bool get _arabicFirst => isArabic && !Lang.english;
 
-  /// The other title, shown under it when there is one.
-  String? get subtitle {
-    final other = _arabicFirst
-        ? title
-        : titleAr ?? (isArabic ? originalTitle : null);
-    return other != null && other != displayTitle ? other : null;
-  }
-
   String? get posterUrl => posterPath != null
       ? 'https://image.tmdb.org/t/p/w342$posterPath'
       : fallbackPosterUrl;

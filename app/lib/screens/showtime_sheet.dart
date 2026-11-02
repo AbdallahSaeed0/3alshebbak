@@ -86,14 +86,6 @@ class _ShowtimeSheet extends StatelessWidget {
                                 movie.displayTitle,
                                 style: AppText.display(26),
                               ),
-                              if (movie.subtitle != null)
-                                Text(
-                                  movie.subtitle!,
-                                  style: AppText.body(
-                                    12,
-                                    color: AppColors.muted,
-                                  ),
-                                ),
                             ],
                           ),
                         ),
