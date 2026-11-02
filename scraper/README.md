@@ -41,16 +41,16 @@ from cron.job_run_details r join cron.job j using (jobid)
 where j.jobname = 'shebbak-showtimes-every-10-minutes'
 order by r.start_time desc limit 10;
 
-select d.requested_at, d.sources, r.status_code, r.error_msg
-from shebbak_private.pipeline_dispatches d
-left join net._http_response r on r.id = d.request_id
-order by d.requested_at desc limit 10;
+select requested_at, sources, status_code
+from shebbak_private.pipeline_dispatches
+order by requested_at desc limit 10;
 ```
 
-Dispatch history is retained for 30 days; pg_net responses normally last six
-hours. Read access to pg_net's queue and responses is restricted to prevent
-client roles from reading authorization headers. These are private operational
-objects, separate from the application's exposed `shebbak` schema.
+Dispatch history is retained for 30 days. The HTTP extension sends requests
+synchronously with a 15-second timeout: authorization headers are never stored
+in a queue. A rejection or network error marks the cron run as failed; the next
+scheduled run tries again. These are private operational objects, separate from
+the application's exposed `shebbak` schema.
 
 ## Sync: TMDB + Supabase
 
