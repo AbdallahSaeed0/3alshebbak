@@ -28,6 +28,25 @@ export function toDmy(iso: string): string {
   return `${d}-${m}-${y}`;
 }
 
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+/** "Wednesday 16 Dec", "Wed 16 Dec" → the next such date on or after `today` (yyyy-mm-dd); sites give no year. */
+export function dayFromLabel(label: string, today: string): string | null {
+  const m = /(\d{1,2})\s+([A-Za-z]{3})/.exec(label);
+  const month = m ? MONTHS.indexOf(m[2].toLowerCase()) : -1;
+  if (!m || month < 0) return null;
+  const year = Number(today.slice(0, 4));
+  const iso = (y: number) => `${y}-${String(month + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  // A day a little in the past is still this year (yesterday's late show); far back means next year.
+  return iso(year) >= addDays(today, -7) ? iso(year) : iso(year + 1);
+}
+
+/**
+ * elCinema lists today and the six days after. VOX and Premiere's own sites
+ * only add presale days past that, so the two never list the same show.
+ */
+export const presaleFrom = () => addDays(cairoToday(), 7);
+
 /** "10:30 AM", "12:30 am", "22:15" → [hours, minutes] on a 24h clock. */
 export function parseClock(text: string): [number, number] | null {
   const m = /(\d{1,2}):(\d{2})\s*([AaPp][Mm])?/.exec(text);

@@ -11,7 +11,7 @@
 import * as cheerio from 'cheerio';
 import { clean, errorMessage, fetchText, pool, slugOf } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { addDays, cairoToday, fromDmy, showStart, toDmy } from '../time.js';
+import { cairoToday, dayFromLabel, fromDmy, showStart, toDmy } from '../time.js';
 
 const ORIGIN = 'https://rnscinemas.com';
 const PARALLEL = 3;
@@ -36,19 +36,6 @@ function dayUrls($: cheerio.CheerioAPI, branchUrl: string): string[] {
     if (fromDmy(href.slice(href.lastIndexOf('/') + 1))) urls.add(href);
   });
   return [...urls];
-}
-
-const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-
-/** "Wednesday 16 Dec" → the next such date on or after `today` (yyyy-mm-dd); the site gives no year. */
-export function dayFromLabel(label: string, today: string): string | null {
-  const m = /(\d{1,2})\s+([A-Za-z]{3})/.exec(label);
-  const month = m ? MONTHS.indexOf(m[2].toLowerCase()) : -1;
-  if (!m || month < 0) return null;
-  const year = Number(today.slice(0, 4));
-  const iso = (y: number) => `${y}-${String(month + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
-  // A day a little in the past is still this year (yesterday's late show); far back means next year.
-  return iso(year) >= addDays(today, -7) ? iso(year) : iso(year + 1);
 }
 
 /** Days any film is on sale, read off the film pages linked from the home page. */

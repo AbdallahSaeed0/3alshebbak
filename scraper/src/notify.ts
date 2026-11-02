@@ -13,7 +13,7 @@ import { Fcm, StaleToken } from './fcm.js';
 import { errorMessage } from './http.js';
 import { cairoToday } from './time.js';
 
-export type Seen = { movie_id: string; cinema_id: string; business_date: string };
+export type Seen = { movie_id: string; cinema_id: string; business_date: string; starts_at: string };
 type Device = { token: string; following: string[]; cinemas: string[] };
 
 export type Alert =
@@ -34,6 +34,7 @@ async function all<T>(query: () => any): Promise<T[]> {
 }
 
 const day = (r: Seen) => `${r.cinema_id}|${r.business_date}`;
+const show = (r: Seen) => `${r.cinema_id}|${Date.parse(r.starts_at)}`;
 const unique = <T>(xs: T[]) => [...new Set(xs)];
 
 /**
@@ -41,7 +42,11 @@ const unique = <T>(xs: T[]) => [...new Set(xs)];
  * showtimes and `before` the upcoming ones seen in earlier runs, both already
  * narrowed to the phone's cinemas.
  */
-export function alertFor(fresh: Seen[], before: Seen[]): Alert | null {
+export function alertFor(freshRows: Seen[], before: Seen[]): Alert | null {
+  // The same show under a new id is not news: a presale show passing from
+  // VOX's own site to elCinema's listing, say.
+  const known = new Set(before.map(show));
+  const fresh = freshRows.filter((r) => !known.has(show(r)));
   if (!fresh.length) return null;
   if (!before.length) return { kind: 'opened', cinemas: unique(fresh.map((r) => r.cinema_id)) };
 
@@ -90,16 +95,44 @@ export function showCount(n: number) {
   return `${n} حفلة جديدة`;
 }
 
+/** scrape_runs rows with this source mark how far alerts have been checked. */
+const ALERTS = 'alerts';
+const MAX_LOOKBACK_MS = 24 * 3600_000;
+
+/**
+ * Where the last alerts check stopped. Showtimes added since, by this run or
+ * by a sync that couldn't send pushes (Premiere's, from a home computer), are
+ * what's new now.
+ */
+async function lastCheck(db: SupabaseClient, runStartedAt: string): Promise<string> {
+  const { data } = await db
+    .from('scrape_runs')
+    .select('started_at')
+    .eq('source', ALERTS)
+    .order('started_at', { ascending: false })
+    .limit(1);
+  const last = data?.[0]?.started_at as string | undefined;
+  if (!last) return runStartedAt;
+  const floor = new Date(Date.now() - MAX_LOOKBACK_MS).toISOString();
+  return new Date(last).toISOString() > floor ? new Date(last).toISOString() : floor;
+}
+
 export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   const fcm = Fcm.fromEnv();
-  if (!fcm) return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped');
+  if (!fcm) return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped (the next run that can send picks these up)');
 
   const now = new Date().toISOString();
+  await announce(db, fcm, await lastCheck(db, runStartedAt), now);
+  await db.from('scrape_runs').insert({ source: ALERTS, started_at: now, ok: true });
+}
+
+async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string) {
   const fresh = await all<Seen>(() =>
     db
       .from('showtimes_seen')
-      .select('movie_id,cinema_id,business_date')
-      .gte('first_seen_at', runStartedAt)
+      .select('movie_id,cinema_id,business_date,starts_at')
+      .gte('first_seen_at', since)
+      .lt('first_seen_at', now)
       .gt('starts_at', now)
       .order('id'),
   );
@@ -115,9 +148,9 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   const before = await all<Seen>(() =>
     db
       .from('showtimes_seen')
-      .select('movie_id,cinema_id,business_date')
+      .select('movie_id,cinema_id,business_date,starts_at')
       .in('movie_id', followed)
-      .lt('first_seen_at', runStartedAt)
+      .lt('first_seen_at', since)
       .gt('starts_at', now)
       .order('id'),
   );

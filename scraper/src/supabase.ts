@@ -7,6 +7,10 @@ import { createHash } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { ScrapeResult } from './model.js';
 import type { Catalog } from './tmdb.js';
+import { presaleFrom } from './time.js';
+
+/** Sources that add only presale days to cinemas elCinema lists (vox.ts, premiere.ts). */
+const PRESALE_SOURCES = ['vox', 'premiere'];
 
 const BATCH = 500;
 
@@ -148,6 +152,16 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
   }
 
   await removeOrphanMovies(db, new Set(catalog.movies.map((m) => m.id)));
+
+  // A presale day that's now inside elCinema's week is elCinema's to list; the
+  // presale copy goes, whichever sources this run had.
+  const { error: overlap } = await db
+    .from('showtimes')
+    .delete()
+    .in('source', PRESALE_SOURCES)
+    .like('cinema_id', 'elcinema:%')
+    .lt('business_date', presaleFrom());
+  if (overlap) throw new Error(`presale cleanup: ${overlap.message}`);
 
   // Over shows are no use to the alerts.
   const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();

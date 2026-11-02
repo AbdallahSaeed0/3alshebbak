@@ -1,6 +1,7 @@
 # Keeps عالشباك's showtimes fresh: scrape the cinemas, match films to TMDB,
 # upload to Supabase. Every 30 minutes for the chains' own sites; elCinema
-# (VOX + the smaller cinemas, ~11 min of polite paging) once an hour.
+# (VOX + the smaller cinemas, ~11 min of polite paging) and VOX's presales
+# once an hour.
 
 name: Showtimes pipeline
 
@@ -66,9 +67,10 @@ jobs:
           if [ -n "${{ github.event.inputs.sources }}" ]; then
             echo "list=${{ github.event.inputs.sources }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%M)" -lt 30 ]; then
-            # The first run of each hour includes elCinema. Premiere comes
-            # through elCinema: its own site blocks these servers.
-            echo "list=renaissance scene elcinema" >> "$GITHUB_OUTPUT"
+            # The first run of each hour includes elCinema, and VOX's presale
+            # days past elCinema's week. Premiere's own site blocks these
+            # servers; its presales come from scripts/presales.ps1 at home.
+            echo "list=renaissance scene elcinema vox" >> "$GITHUB_OUTPUT"
           else
             echo "list=renaissance scene" >> "$GITHUB_OUTPUT"
           fi

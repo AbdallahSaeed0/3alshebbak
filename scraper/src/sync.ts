@@ -1,6 +1,7 @@
-// `npm run sync` — takes the latest out/<source>.json files, matches their films
-// to TMDB and writes everything to Supabase. Without Supabase credentials it
-// stops after matching and writes out/catalog.json instead (a dry run).
+// `npm run sync [-- vox premiere …]` — takes the latest out/<source>.json files
+// (only the named sources', when given), matches their films to TMDB and writes
+// everything to Supabase. Without Supabase credentials it stops after matching
+// and writes out/catalog.json instead (a dry run).
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { errorMessage } from './http.js';
@@ -13,8 +14,10 @@ import { buildCatalog } from './tmdb.js';
 /** Older scrape output is skipped: re-uploading it would mark stale shows as seen now. */
 const MAX_AGE_MS = 2 * 3600_000;
 
-async function freshResults(): Promise<ScrapeResult[]> {
-  const files = (await readdir('out')).filter((f) => f.endsWith('.json') && f !== 'catalog.json');
+async function freshResults(only: string[]): Promise<ScrapeResult[]> {
+  const files = (await readdir('out')).filter(
+    (f) => f.endsWith('.json') && f !== 'catalog.json' && (!only.length || only.includes(f.slice(0, -'.json'.length))),
+  );
   const results: ScrapeResult[] = [];
   for (const file of files) {
     const r = JSON.parse(await readFile(`out/${file}`, 'utf8')) as ScrapeResult;
@@ -32,7 +35,7 @@ async function main() {
     // No .env: credentials may come from the real environment.
   }
   const runStartedAt = new Date().toISOString();
-  const results = await freshResults();
+  const results = await freshResults(process.argv.slice(2));
   if (!results.length) throw new Error('Nothing fresh in out/ — run `npm run scrape` first');
 
   const films = results.flatMap((r) => r.films);

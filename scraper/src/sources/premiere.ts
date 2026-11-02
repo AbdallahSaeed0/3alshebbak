@@ -3,20 +3,42 @@
 // experience on the now-showing page. That costs a few seconds per movie, so a
 // few pages work through the movies side by side, each with its own copy of
 // the page so their clicks don't collide.
+//
+// For branches elCinema lists, this adds only presale days past elCinema's
+// week, filed under elCinema's cinema. Branches elCinema doesn't list (Nile
+// Cinema, Galaxy elManial) get every day, as premiere:* cinemas. Cloudflare
+// turns GitHub's runners away from this site, so it runs from a home computer
+// (scripts/presales.ps1) rather than in the GitHub workflow.
 
 import { fileURLToPath } from 'node:url';
 import type { Page } from 'playwright';
 import { newContext } from '../browser.js';
-import { errorMessage } from '../http.js';
+import { errorMessage, hallName } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { addDays, cairoToday, showStart } from '../time.js';
+import { addDays, cairoToday, presaleFrom, showStart } from '../time.js';
+import { elcinemaCinemaId } from './elcinema.js';
 
 const ORIGIN = 'https://www.premiere-cinemas.com';
 const NOW_SHOWING = `${ORIGIN}/en/now-showing`;
 const PAGE_SCRIPT = fileURLToPath(new URL('./premiere.page.js', import.meta.url));
 const PAGES = 3;
-const DAYS_AHEAD = 7;
+/** How far past elCinema's week to look for presale date tiles. */
+const PRESALE_DAYS = 60;
 const PAGE_TIMEOUT_MS = 60_000;
+/** Premiere's branch names where elCinema calls the venue something else. */
+const ELCINEMA_VENUE: Record<string, string> = { 'Premiere Plaza': 'Americana Plaza' };
+
+const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/** "2D · PREMIUM" → "Standard", as elCinema names the same halls; "2D · MX4D" → "MX4D". */
+export function premiereFormat(name: string): string {
+  const parts = name
+    .split('·')
+    .map((p) => p.trim())
+    .filter((p) => p && p !== '2D')
+    .map((p) => (/^premium$/i.test(p) ? 'Standard' : hallName(p)));
+  return parts.join(' · ') || 'Standard';
+}
 
 interface Listing { id: string; title: string; posterUrl: string | null; info: string | null; cinemas: string[]; url: string }
 type Days = Record<string, { name: string; formats: { name: string; times: string[] }[] }[]>;
@@ -41,7 +63,6 @@ async function openNowShowing(page: Page): Promise<Listing[]> {
   }
 }
 
-const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export const premiere: Source = {
   id: 'premiere',
@@ -49,8 +70,10 @@ export const premiere: Source = {
     const out = new ResultBuilder('premiere');
     const context = await newContext();
     await context.addInitScript({ path: PAGE_SCRIPT });
+    const from = presaleFrom();
+    // From today: branches elCinema doesn't list (Nile Cinema, Galaxy elManial) need every day.
     const today = cairoToday();
-    const dates = Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today, i));
+    const dates = Array.from({ length: 7 + PRESALE_DAYS }, (_, i) => addDays(today, i));
 
     try {
       const pages = await Promise.all(Array.from({ length: PAGES }, () => context.newPage()));
@@ -75,12 +98,16 @@ export const premiere: Source = {
               const filmId = `premiere:${movie.id}`;
               for (const [date, branches] of Object.entries(days)) {
                 for (const b of branches) {
-                  const cinemaId = out.cinema({ slug: slug(b.name), chain: 'Premiere', name: b.name });
+                  const listed = elcinemaCinemaId('Premiere', ELCINEMA_VENUE[b.name] ?? b.name);
+                  // elCinema has this branch's week; only the days past it are ours.
+                  if (listed && date < from) continue;
+                  const cinemaId = listed ?? out.cinema({ slug: slug(b.name), chain: 'Premiere', name: b.name });
                   for (const f of b.formats) {
+                    const format = premiereFormat(f.name);
                     for (const t of f.times) {
                       const start = showStart(date, t);
                       // Times are buttons on the movie page, not links; book from there.
-                      if (start) out.showtime({ cinemaId, filmId, businessDate: date, start, format: f.name, bookingUrl: movie.url });
+                      if (start) out.showtime({ cinemaId, filmId, businessDate: date, start, format, bookingUrl: movie.url });
                     }
                   }
                 }
@@ -97,8 +124,7 @@ export const premiere: Source = {
       await context.close();
     }
 
-    const result = out.build();
-    if (!result.showtimes.length) throw new Error("Site layout changed: Premiere's pages loaded but no showtimes were read");
-    return result;
+    // No presales anywhere is a normal week, not a failure.
+    return out.build();
   },
 };

@@ -47,6 +47,12 @@ export function clean(s: string | undefined | null): string {
   return (s ?? '').replace(/\s+/g, ' ').trim();
 }
 
+/** Some chains shout hall names ("GOLD", "PREMIUM"); elCinema writes them "Gold". Acronyms stay. */
+export function hallName(name: string): string {
+  const n = clean(name) || 'Standard';
+  return /^[A-Z]{4,}$/.test(n) && n !== 'IMAX' ? n[0] + n.slice(1).toLowerCase() : n;
+}
+
 /** Last path segment of a URL, without an extension: ".../movie/clayface" → "clayface". */
 export function slugOf(url: string): string {
   const path = new URL(url).pathname.replace(/\/+$/, '');

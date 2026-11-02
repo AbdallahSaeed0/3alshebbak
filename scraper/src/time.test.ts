@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { dayFromLabel } from './renaissance.js';
+import { dayFromLabel } from './time.js';
 
 test('a day label without a year is the next such date', () => {
   assert.equal(dayFromLabel('Wednesday 16 Dec', '2026-11-02'), '2026-12-16');

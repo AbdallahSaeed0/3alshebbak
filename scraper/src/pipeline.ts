@@ -1,6 +1,6 @@
 // `npm run pipeline [-- renaissance scene …]` — scrape the named sources (all by
-// default), then sync. Sync runs even when a source failed: it uploads whatever
-// is fresh in out/ and skips the rest.
+// default), then sync them. Sync runs even when a source failed: it uploads
+// whichever of them is fresh in out/ and skips the rest.
 // (A plain `a; b` npm script doesn't work on Windows, where npm uses cmd.exe.)
 
 import { spawnSync } from 'node:child_process';
@@ -11,5 +11,5 @@ function step(script: string, args: string[] = []): number {
 }
 
 const scraped = step('src/run.ts', process.argv.slice(2));
-const synced = step('src/sync.ts');
+const synced = step('src/sync.ts', process.argv.slice(2));
 process.exitCode = scraped || synced;

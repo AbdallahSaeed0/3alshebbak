@@ -123,6 +123,15 @@ function scheduleDates($: cheerio.CheerioAPI): string[] {
     .filter((v) => /^\d{4}-\d{2}-\d{2}$/.test(v));
 }
 
+/**
+ * The id this source gives a chain's venue, for sources that add presale days
+ * to the same cinema (vox.ts, premiere.ts). Null for a venue elCinema doesn't list.
+ */
+export function elcinemaCinemaId(chain: string, venue: string): string | null {
+  const s = slugify(venue);
+  return THEATERS.some((t) => t.chain === chain && slugify(t.venue) === s) ? `elcinema:${s}` : null;
+}
+
 function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, theater: Theater, date: string) {
   // The picker shows the day actually rendered; a date past the schedule falls back to today.
   const shown = $('#theater-showtimes-date-selector option[selected]').attr('value');

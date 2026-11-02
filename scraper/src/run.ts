@@ -10,10 +10,11 @@ import { elcinema } from './sources/elcinema.js';
 import { premiere } from './sources/premiere.js';
 import { renaissance } from './sources/renaissance.js';
 import { scene } from './sources/scene.js';
+import { vox } from './sources/vox.js';
 
-// VOX comes through elcinema: its own site's bot protection rejects automated
-// browsers. sources/vox.ts stays for if VOX ever gives us access.
-const SOURCES: Record<string, Source> = { renaissance, scene, premiere, elcinema };
+// VOX's and Premiere's week comes through elcinema; their own sources add only
+// presale days past it (see time.ts presaleFrom).
+const SOURCES: Record<string, Source> = { renaissance, scene, premiere, elcinema, vox };
 
 async function main() {
   try {

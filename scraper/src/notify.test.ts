@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { alertFor, dayName, message, showCount, type Seen } from './notify.js';
 
-const show = (business_date: string, cinema_id = 'scene:cfc'): Seen => ({
+const show = (business_date: string, cinema_id = 'scene:cfc', time = '19:00'): Seen => ({
   movie_id: 'tmdb:1',
   cinema_id,
   business_date,
+  starts_at: `${business_date}T${time}:00+02:00`,
 });
 
 test('nothing new, nothing to say', () => {
@@ -33,11 +34,18 @@ test('a day already on sale at one cinema is new at another', () => {
 
 test('more showtimes on days already on sale', () => {
   const before = [show('2026-11-05'), show('2026-11-06')];
-  assert.deepEqual(alertFor([show('2026-11-05'), show('2026-11-06')], before), {
+  assert.deepEqual(alertFor([show('2026-11-05', 'scene:cfc', '22:00'), show('2026-11-06', 'scene:cfc', '22:00')], before), {
     kind: 'shows',
     cinemas: ['scene:cfc'],
     count: 2,
   });
+});
+
+test('the same show listed by another source is not news', () => {
+  // VOX's presale copy of a show, then elCinema's: same cinema, same start.
+  const before = [show('2026-12-16', 'elcinema:mall-of-egypt')];
+  const fresh = [{ ...show('2026-12-16', 'elcinema:mall-of-egypt'), starts_at: '2026-12-16T17:00:00Z' }];
+  assert.equal(alertFor(fresh, before), null);
 });
 
 test('the messages read naturally', () => {
