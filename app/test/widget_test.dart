@@ -5,6 +5,7 @@ import 'package:shebbak/data/models.dart';
 import 'package:shebbak/data/prefs.dart';
 import 'package:shebbak/data/repository.dart';
 import 'package:shebbak/screens/home_screen.dart';
+import 'package:shebbak/screens/shell.dart';
 import 'package:shebbak/util/format.dart';
 
 Showtime _show(
@@ -76,6 +77,25 @@ void main() {
       ),
     );
     expect(find.text('الجاي في سينماتك'), findsOneWidget);
+    expect(find.text('Clayface'), findsWidgets);
+  });
+
+  testWidgets('home\'s search bar opens Explore ready to type', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Directionality(
+          textDirection: TextDirection.rtl,
+          child: AppScope(data: data, child: const Shell()),
+        ),
+      ),
+    );
+    await tester.tap(find.text('دوّر على فيلم أو سينما'));
+    await tester.pumpAndSettle();
+
+    final field = find.byType(TextField);
+    expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
+    await tester.enterText(field, 'clay');
+    await tester.pump();
     expect(find.text('Clayface'), findsWidgets);
   });
 }
