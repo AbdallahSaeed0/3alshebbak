@@ -9,6 +9,7 @@ import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
 import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
+import '../util/i18n.dart';
 
 /// "What's on", most urgent first: starting soon, tickets just opened,
 /// everything still showing today, then what's coming.
@@ -25,7 +26,9 @@ class HomeScreen extends StatelessWidget {
     final today = data.showingToday();
     final coming = data.upcoming(minDaysAhead: 8, maxDaysAhead: 365);
     final city = data.prefs.homeCity;
-    final where = city == null ? 'سينماتك' : 'سينمات ${cityName(city)}';
+    final where = city == null
+        ? tr('سينماتك', 'your cinemas')
+        : tr('سينمات ${cityName(city)}', '${cityName(city)} cinemas');
 
     return CustomScrollView(
       slivers: [
@@ -33,16 +36,23 @@ class HomeScreen extends StatelessWidget {
         _gap(24),
         SliverToBoxAdapter(
           child: SectionHeader(
-            title: 'قرّب يبدأ',
-            leading: const _Dot(color: AppColors.amber),
-            subtitle:
-                'حفلات في $where خلال ٣ ساعات · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+            title: tr('قرّب يبدأ', 'Starting soon'),
+            leading: _Dot(color: AppColors.amber),
+            subtitle: tr(
+              'حفلات في $where خلال ٣ ساعات · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+              'Shows at $where in the next 3 hours · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+            ),
           ),
         ),
         _gap(8),
         SliverToBoxAdapter(
           child: soon.isEmpty
-              ? _Empty('مفيش حفلات في $where خلال الـ٣ ساعات الجاية')
+              ? _Empty(
+                  tr(
+                    'مفيش حفلات في $where خلال الـ٣ ساعات الجاية',
+                    'No shows at $where in the next 3 hours',
+                  ),
+                )
               : SizedBox(
                   height: 132,
                   child: ListView.separated(
@@ -60,12 +70,15 @@ class HomeScreen extends StatelessWidget {
         ),
         if (opened.isNotEmpty) ...[
           _gap(24),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: SectionHeader(
-              title: 'التذاكر نزلت!',
+              title: tr('التذاكر نزلت!', 'Tickets are out!'),
               color: AppColors.gold,
               leading: MarqueeBulbs(),
-              subtitle: 'الحجز لسه فاتح · اسبق الزحمة',
+              subtitle: tr(
+                'الحجز لسه فاتح · اسبق الزحمة',
+                'Booking just opened · beat the rush',
+              ),
             ),
           ),
           _gap(12),
@@ -85,14 +98,23 @@ class HomeScreen extends StatelessWidget {
         _gap(28),
         SliverToBoxAdapter(
           child: SectionHeader(
-            title: 'النهارده في السينما',
-            subtitle:
-                '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
+            title: tr('النهارده في السينما', 'Today at the cinema'),
+            subtitle: tr(
+              '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
+              '${dayLabel(data.today)} · at $where (${data.homeCinemaCount})',
+            ),
           ),
         ),
         _gap(12),
         if (today.isEmpty)
-          SliverToBoxAdapter(child: _Empty('خلصت حفلات النهارده في $where'))
+          SliverToBoxAdapter(
+            child: _Empty(
+              tr(
+                'خلصت حفلات النهارده في $where',
+                'Today\'s shows at $where are over',
+              ),
+            ),
+          )
         else
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -104,10 +126,13 @@ class HomeScreen extends StatelessWidget {
           ),
         if (coming.isNotEmpty) ...[
           _gap(28),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: SectionHeader(
-              title: 'قريبًا',
-              subtitle: 'تابِع الفيلم ونقولك أول ما التذاكر تنزل',
+              title: tr('قريبًا', 'Coming soon'),
+              subtitle: tr(
+                'تابِع الفيلم ونقولك أول ما التذاكر تنزل',
+                'Follow a film and we\'ll tell you when tickets go on sale',
+              ),
             ),
           ),
           _gap(12),
@@ -124,7 +149,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ],
-        _gap(32),
+        _gap(barSpace(context) + 16),
       ],
     );
   }
@@ -169,30 +194,23 @@ class _Header extends StatelessWidget {
                 const Spacer(),
                 _PillButton(
                   onPressed: () => showCityPicker(context),
-                  tooltip: 'السينمات اللي تظهر هنا',
+                  tooltip: tr('السينمات اللي تظهر هنا', 'Cinemas shown here'),
                   child: Row(
                     children: [
                       Text(switch (AppScope.of(context).prefs.homeCity) {
-                        null => 'سينماتي',
+                        null => tr('سينماتي', 'My cinemas'),
                         final city => cityName(city),
                       }, style: AppText.body(13, weight: FontWeight.w600)),
-                      const Icon(
-                        Icons.expand_more,
-                        size: 16,
-                        color: AppColors.muted,
-                      ),
+                      Icon(Icons.expand_more, size: 16, color: AppColors.muted),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Material(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: const BorderSide(color: AppColors.hairline),
-              ),
+            TapCard(
+              radius: 14,
+
               child: InkWell(
                 onTap: onSearch,
                 borderRadius: BorderRadius.circular(14),
@@ -201,14 +219,10 @@ class _Header extends StatelessWidget {
                   child: Row(
                     children: [
                       const SizedBox(width: 16),
-                      const Icon(
-                        Icons.search,
-                        size: 18,
-                        color: AppColors.muted,
-                      ),
+                      Icon(Icons.search, size: 18, color: AppColors.muted),
                       const SizedBox(width: 10),
                       Text(
-                        'دوّر على فيلم أو سينما',
+                        tr('دوّر على فيلم أو سينما', 'Search a film or cinema'),
                         style: AppText.body(14, color: AppColors.muted),
                       ),
                     ],
@@ -238,7 +252,7 @@ class _PillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final button = Material(
       color: AppColors.surface,
-      shape: const StadiumBorder(side: BorderSide(color: AppColors.hairline)),
+      shape: StadiumBorder(side: BorderSide(color: AppColors.hairline)),
       child: InkWell(
         onTap: onPressed,
         customBorder: const StadiumBorder(),
@@ -299,12 +313,9 @@ class _SoonCard extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Material(
-            color: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: const BorderSide(color: AppColors.hairline),
-            ),
+          TapCard(
+            radius: 14,
+
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: () => showShowtimeSheet(context, showtime),
@@ -370,9 +381,9 @@ class _SoonCard extends StatelessWidget {
                               style: AppText.numerals(34),
                             ),
                             Text(
-                              period(showtime.wallClock) == 'م'
-                                  ? 'مساءً'
-                                  : 'صباحًا',
+                              showtime.wallClock.hour >= 12
+                                  ? tr('مساءً', 'PM')
+                                  : tr('صباحًا', 'AM'),
                               style: AppText.body(12, color: AppColors.muted),
                             ),
                             Text(
@@ -410,7 +421,7 @@ class _FormatTag extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
     decoration: BoxDecoration(
-      border: Border.all(color: const Color(0xFF5C4520)),
+      border: Border.all(color: AppColors.goldEdge),
       borderRadius: BorderRadius.circular(6),
     ),
     child: Text(
@@ -449,11 +460,7 @@ class _OpenedCard extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.hairline),
-              ),
+              decoration: AppDecor.card(radius: 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -478,7 +485,7 @@ class _OpenedCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            'جديد',
+                            tr('جديد', 'New'),
                             style: AppText.body(
                               11,
                               color: AppColors.onGold,
@@ -511,7 +518,10 @@ class _OpenedCard extends StatelessWidget {
                           style: AppText.body(12, color: AppColors.muted),
                         ),
                         Text(
-                          'من ${dayLabel(item.firstDate)}',
+                          tr(
+                            'من ${dayLabel(item.firstDate)}',
+                            'From ${dayLabel(item.firstDate)}',
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppText.body(
@@ -548,16 +558,13 @@ class _TodayCard extends StatelessWidget {
     final more = day.showtimes.length - _shown;
     final meta = [
       if (movie.subtitle != null) movie.subtitle!,
-      if (movie.runtime != null) '${movie.runtime} د',
+      if (movie.runtime != null)
+        tr('${movie.runtime} د', '${movie.runtime} min'),
       if (movie.genres.isNotEmpty) movie.genres.first,
     ].join(' · ');
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.hairline),
-      ),
+      decoration: AppDecor.card(radius: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -580,7 +587,10 @@ class _TodayCard extends StatelessWidget {
                 if (meta.isNotEmpty)
                   Text(meta, style: AppText.body(12, color: AppColors.muted)),
                 Text(
-                  'في ${cinemaCount(day.cinemaCount)}',
+                  tr(
+                    'في ${cinemaCount(day.cinemaCount)}',
+                    'In ${cinemaCount(day.cinemaCount)}',
+                  ),
                   style: AppText.body(12, color: AppColors.muted),
                 ),
                 const SizedBox(height: 8),
@@ -675,7 +685,7 @@ class _ComingCard extends StatelessWidget {
                 size: 16,
               ),
               label: Text(
-                following ? 'بتتابعه' : 'تابِع',
+                following ? tr('بتتابعه', 'Following') : tr('تابِع', 'Follow'),
                 style: AppText.body(
                   13,
                   weight: FontWeight.w700,
@@ -684,7 +694,7 @@ class _ComingCard extends StatelessWidget {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.gold,
-                side: const BorderSide(color: AppColors.gold),
+                side: BorderSide(color: AppColors.gold),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

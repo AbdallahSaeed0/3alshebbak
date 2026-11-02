@@ -2,6 +2,8 @@
 /// joined across chains) and showtimes pointing at both.
 library;
 
+import '../util/i18n.dart';
+
 class Cinema {
   const Cinema({
     required this.id,
@@ -98,14 +100,19 @@ class Movie {
   /// in Arabic script but the film isn't Arabic.
   static final _otherScriptLetters = RegExp(r'[پ-ۿ]');
 
-  /// Arabic films by their Arabic title, foreign films by their English one —
-  /// the name on the cinema's poster.
+  /// In Arabic, Arabic films by their Arabic title and foreign films by
+  /// their English one — the name on the cinema's poster. In English,
+  /// everything by its English title.
   String get displayTitle =>
-      isArabic ? titleAr ?? originalTitle ?? title : title;
+      _arabicFirst ? titleAr ?? originalTitle ?? title : title;
+
+  bool get _arabicFirst => isArabic && !Lang.english;
 
   /// The other title, shown under it when there is one.
   String? get subtitle {
-    final other = isArabic ? title : titleAr;
+    final other = _arabicFirst
+        ? title
+        : titleAr ?? (isArabic ? originalTitle : null);
     return other != null && other != displayTitle ? other : null;
   }
 

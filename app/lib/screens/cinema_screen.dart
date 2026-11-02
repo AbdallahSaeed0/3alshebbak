@@ -8,6 +8,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/schedule.dart';
 import 'film_screen.dart';
+import '../util/i18n.dart';
 
 void openCinema(BuildContext context, Cinema cinema) => Navigator.of(
   context,
@@ -55,14 +56,16 @@ class _CinemaScreenState extends State<CinemaScreen> {
                   children: [
                     CircleIconButton(
                       icon: Icons.arrow_back,
-                      tooltip: 'رجوع',
+                      tooltip: tr('رجوع', 'Back'),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const Spacer(),
                     CircleIconButton(
                       icon: mine ? Icons.star : Icons.star_border,
                       color: mine ? AppColors.gold : AppColors.text,
-                      tooltip: mine ? 'شيلها من سينماتي' : 'ضيفها لسينماتي',
+                      tooltip: mine
+                          ? tr('شيلها من سينماتي', 'Remove from my cinemas')
+                          : tr('ضيفها لسينماتي', 'Add to my cinemas'),
                       onPressed: () => data.prefs.toggleCinema(cinema.id),
                     ),
                   ],
@@ -109,12 +112,15 @@ class _CinemaScreenState extends State<CinemaScreen> {
                       icon: const Icon(Icons.open_in_new, size: 16),
                       label: Text(
                         cinema.attribution != null
-                            ? 'صفحتها على ${cinema.attribution}'
-                            : 'موقع السينما',
+                            ? tr(
+                                'صفحتها على ${cinema.attribution}',
+                                'Its page on ${cinema.attribution}',
+                              )
+                            : tr('موقع السينما', 'Cinema website'),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.text,
-                        side: const BorderSide(color: AppColors.perforation),
+                        side: BorderSide(color: AppColors.perforation),
                         minimumSize: const Size(0, 44),
                         textStyle: AppText.body(13, weight: FontWeight.w600),
                         shape: RoundedRectangleBorder(
@@ -133,7 +139,10 @@ class _CinemaScreenState extends State<CinemaScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'مفيش حفلات جاية في السينما دي دلوقتي',
+                  tr(
+                    'مفيش حفلات جاية في السينما دي دلوقتي',
+                    'No upcoming shows at this cinema right now',
+                  ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),
               ),
@@ -199,7 +208,10 @@ class _CinemaScreenState extends State<CinemaScreen> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                 child: Text(
-                  'مواعيد السينما دي من ${cinema.attribution}',
+                  tr(
+                    'مواعيد السينما دي من ${cinema.attribution}',
+                    'Showtimes for this cinema from ${cinema.attribution}',
+                  ),
                   style: AppText.body(12, color: AppColors.muted),
                 ),
               ),

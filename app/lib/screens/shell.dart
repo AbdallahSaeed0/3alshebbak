@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../util/i18n.dart';
 import 'cinemas_screen.dart';
 import 'explore_screen.dart';
 import 'home_screen.dart';
 import 'settings_screen.dart';
 
-/// The four tabs. Tabs keep their state (scroll position…) when you switch away.
+typedef _Tab = ({String label, IconData icon, IconData activeIcon});
+
+/// The four tabs under a floating glass bar that pages scroll behind. Tabs
+/// keep their state (scroll position…) when you switch away.
 class Shell extends StatefulWidget {
   const Shell({super.key});
 
@@ -17,16 +21,34 @@ class Shell extends StatefulWidget {
 class _ShellState extends State<Shell> {
   int _tab = 0;
 
-  static const _tabs = [
-    (label: 'الرئيسية', icon: Icons.home_outlined),
-    (label: 'استكشف', icon: Icons.search),
-    (label: 'السينمات', icon: Icons.place_outlined),
-    (label: 'الإعدادات', icon: Icons.settings_outlined),
+  static List<_Tab> get _tabs => [
+    (
+      label: tr('الرئيسية', 'Home'),
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+    ),
+    (
+      label: tr('استكشف', 'Explore'),
+      icon: Icons.search,
+      activeIcon: Icons.search,
+    ),
+    (
+      label: tr('السينمات', 'Cinemas'),
+      icon: Icons.place_outlined,
+      activeIcon: Icons.place,
+    ),
+    (
+      label: tr('الإعدادات', 'Settings'),
+      icon: Icons.settings_outlined,
+      activeIcon: Icons.settings,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Pages run under the bar, so it frosts whatever scrolls past.
+      extendBody: true,
       body: IndexedStack(
         index: _tab,
         children: [
@@ -36,7 +58,8 @@ class _ShellState extends State<Shell> {
           SettingsScreen(onExplore: () => setState(() => _tab = 1)),
         ],
       ),
-      bottomNavigationBar: _TabBar(
+      bottomNavigationBar: _GlassTabBar(
+        tabs: _tabs,
         current: _tab,
         onSelect: (i) => setState(() => _tab = i),
       ),
@@ -44,34 +67,43 @@ class _ShellState extends State<Shell> {
   }
 }
 
-class _TabBar extends StatelessWidget {
-  const _TabBar({required this.current, required this.onSelect});
+class _GlassTabBar extends StatelessWidget {
+  const _GlassTabBar({
+    required this.tabs,
+    required this.current,
+    required this.onSelect,
+  });
 
+  final List<_Tab> tabs;
   final int current;
   final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0xFF110F0C),
-        border: Border(top: BorderSide(color: AppColors.hairline)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: [
-              for (var i = 0; i < _ShellState._tabs.length; i++)
-                Expanded(
-                  child: _TabItem(
-                    tab: _ShellState._tabs[i],
-                    active: i == current,
-                    onTap: () => onSelect(i),
-                  ),
-                ),
-            ],
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Glass(
+          radius: 30,
+          child: SizedBox(
+            height: 64,
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Row(
+                children: [
+                  for (var i = 0; i < tabs.length; i++)
+                    Expanded(
+                      child: _TabItem(
+                        tab: tabs[i],
+                        active: i == current,
+                        onTap: () => onSelect(i),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -86,7 +118,7 @@ class _TabItem extends StatelessWidget {
     required this.onTap,
   });
 
-  final ({String label, IconData icon}) tab;
+  final _Tab tab;
   final bool active;
   final VoidCallback onTap;
 
@@ -97,32 +129,52 @@ class _TabItem extends StatelessWidget {
       selected: active,
       button: true,
       label: tab.label,
-      child: InkResponse(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: ExcludeSemantics(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // The lit bulb over the current tab.
-              Container(
-                width: 5,
-                height: 5,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: active ? AppColors.gold : Colors.transparent,
-                  boxShadow: active
-                      ? const [BoxShadow(color: AppColors.gold, blurRadius: 8)]
+          // The current tab sits in a lit capsule, like iOS's.
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: active
+                  ? AppColors.gold.withValues(
+                      alpha: AppColors.isDark ? 0.16 : 0.12,
+                    )
+                  : Colors.transparent,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  active ? tab.activeIcon : tab.icon,
+                  color: color,
+                  size: 23,
+                  shadows: active
+                      ? [
+                          Shadow(
+                            color: AppColors.gold.withValues(alpha: 0.6),
+                            blurRadius: 12,
+                          ),
+                        ]
                       : null,
                 ),
-              ),
-              const SizedBox(height: 3),
-              Icon(tab.icon, color: color, size: 24),
-              const SizedBox(height: 2),
-              Text(
-                tab.label,
-                style: AppText.body(11, color: color, weight: FontWeight.w600),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  tab.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: AppText.body(
+                    10.5,
+                    color: color,
+                    weight: active ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -7,6 +7,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/schedule.dart';
 import 'cinema_screen.dart';
+import '../util/i18n.dart';
 
 void openFilm(BuildContext context, Movie movie) => Navigator.of(
   context,
@@ -46,7 +47,8 @@ class _FilmScreenState extends State<FilmScreen> {
 
     final meta = [
       if (movie.releaseDate != null) movie.releaseDate!.substring(0, 4),
-      if (movie.runtime != null) '${movie.runtime} د',
+      if (movie.runtime != null)
+        tr('${movie.runtime} د', '${movie.runtime} min'),
       ...movie.genres.take(2),
     ];
 
@@ -84,7 +86,12 @@ class _FilmScreenState extends State<FilmScreen> {
                       size: 18,
                     ),
                     label: Text(
-                      following ? 'بتتابعه · هنبلغك بالجديد' : 'تابِع الفيلم',
+                      following
+                          ? tr(
+                              'بتتابعه · هنبلغك بالجديد',
+                              'Following · we\'ll tell you what\'s new',
+                            )
+                          : tr('تابِع الفيلم', 'Follow this film'),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: following
@@ -96,7 +103,7 @@ class _FilmScreenState extends State<FilmScreen> {
                       minimumSize: const Size.fromHeight(52),
                       textStyle: AppText.body(15, weight: FontWeight.w700),
                       side: following
-                          ? const BorderSide(color: AppColors.gold)
+                          ? BorderSide(color: AppColors.gold)
                           : null,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -109,14 +116,14 @@ class _FilmScreenState extends State<FilmScreen> {
                       movie.overview!,
                       style: AppText.body(
                         14,
-                        color: const Color(0xFFD9D0C2),
+                        color: AppColors.text.withValues(alpha: 0.85),
                       ).copyWith(height: 1.8),
                     ),
                   ],
                   const SizedBox(height: 22),
-                  const Divider(color: AppColors.hairline, height: 1),
+                  Divider(color: AppColors.hairline, height: 1),
                   const SizedBox(height: 18),
-                  Text('المواعيد', style: AppText.display(24)),
+                  Text(tr('المواعيد', 'Showtimes'), style: AppText.display(24)),
                 ],
               ),
             ),
@@ -126,7 +133,10 @@ class _FilmScreenState extends State<FilmScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'مفيش حفلات جاية للفيلم ده دلوقتي. تابعه ونبلغك أول ما التذاكر تنزل.',
+                  tr(
+                    'مفيش حفلات جاية للفيلم ده دلوقتي. تابعه ونبلغك أول ما التذاكر تنزل.',
+                    'No upcoming shows for this film right now. Follow it and we\'ll tell you when tickets go on sale.',
+                  ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),
               ),
@@ -197,20 +207,20 @@ class _Hero extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => const SizedBox(),
                   )
-                : const DecoratedBox(
+                : DecoratedBox(
                     decoration: BoxDecoration(color: AppColors.raised),
                   ),
           ),
           // Fade into the page so the title below reads cleanly.
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0x330B0A08),
-                    Color(0x990B0A08),
+                    AppColors.background.withValues(alpha: 0.2),
+                    AppColors.background.withValues(alpha: 0.6),
                     AppColors.background,
                   ],
                   stops: [0, 0.6, 1],
@@ -223,7 +233,7 @@ class _Hero extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: CircleIconButton(
                 icon: Icons.arrow_back,
-                tooltip: 'رجوع',
+                tooltip: tr('رجوع', 'Back'),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -308,7 +318,9 @@ class _CinemaBlock extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: mine ? 'شيلها من سينماتي' : 'ضيفها لسينماتي',
+                tooltip: mine
+                    ? tr('شيلها من سينماتي', 'Remove from my cinemas')
+                    : tr('ضيفها لسينماتي', 'Add to my cinemas'),
                 onPressed: () => prefs.toggleCinema(cinema.id),
                 icon: Icon(
                   mine ? Icons.star : Icons.star_border,

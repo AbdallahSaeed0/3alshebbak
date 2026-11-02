@@ -6,6 +6,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
+import '../util/i18n.dart';
 
 /// Films I follow and where each one stands. Push notifications (tickets
 /// opened, new showtimes) arrive once the backend sends them.
@@ -28,7 +29,10 @@ class FollowingScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Text('متابعاتي', style: AppText.display(32)),
+              child: Text(
+                tr('متابعاتي', 'Following'),
+                style: AppText.display(32),
+              ),
             ),
           ),
           if (ids.isEmpty)
@@ -44,10 +48,19 @@ class FollowingScreen extends StatelessWidget {
                       child: TicketMark(size: 120, glow: [0, 0, 0]),
                     ),
                     const SizedBox(height: 16),
-                    Text('لسه مش بتتابع أي فيلم', style: AppText.display(22)),
+                    Text(
+                      tr(
+                        'لسه مش بتتابع أي فيلم',
+                        'You\'re not following any films yet',
+                      ),
+                      style: AppText.display(22),
+                    ),
                     const SizedBox(height: 6),
                     Text(
-                      'تابِع فيلم ونقولك أول ما التذاكر تنزل أو تنزل حفلات جديدة.',
+                      tr(
+                        'تابِع فيلم ونقولك أول ما التذاكر تنزل أو تنزل حفلات جديدة.',
+                        'Follow a film and we\'ll tell you when tickets go on sale or new shows are added.',
+                      ),
                       textAlign: TextAlign.center,
                       style: AppText.body(14, color: AppColors.muted),
                     ),
@@ -60,7 +73,7 @@ class FollowingScreen extends StatelessWidget {
                         minimumSize: const Size(160, 48),
                         textStyle: AppText.body(14, weight: FontWeight.w700),
                       ),
-                      child: const Text('استكشف الأفلام'),
+                      child: Text(tr('استكشف الأفلام', 'Explore films')),
                     ),
                   ],
                 ),
@@ -76,19 +89,25 @@ class FollowingScreen extends StatelessWidget {
                   final movie = data.movie(ids[i]);
                   final next = data.nextShow(movieId: movie.id);
                   final (status, color) = next == null
-                      ? ('مستنيين التذاكر تنزل', AppColors.gold)
+                      ? (
+                          tr('مستنيين التذاكر تنزل', 'Waiting for tickets'),
+                          AppColors.gold,
+                        )
                       : next.businessDate == data.today
-                      ? ('بيتعرض النهارده', AppColors.fourDx)
+                      ? (
+                          tr('بيتعرض النهارده', 'Showing today'),
+                          AppColors.fourDx,
+                        )
                       : (
-                          'التذاكر نزلت · من ${dayLabel(next.businessDate)}',
+                          tr(
+                            'التذاكر نزلت · من ${dayLabel(next.businessDate)}',
+                            'Tickets out · from ${dayLabel(next.businessDate)}',
+                          ),
                           AppColors.fourDx,
                         );
-                  return Material(
-                    color: AppColors.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: const BorderSide(color: AppColors.hairline),
-                    ),
+                  return TapCard(
+                    radius: 14,
+
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
                       onTap: () => openFilm(context, movie),
@@ -148,10 +167,10 @@ class FollowingScreen extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              tooltip: 'بطّل تتابع',
+                              tooltip: tr('بطّل تتابع', 'Unfollow'),
                               onPressed: () =>
                                   data.prefs.toggleFollow(movie.id),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.notifications_off_outlined,
                                 color: AppColors.muted,
                               ),

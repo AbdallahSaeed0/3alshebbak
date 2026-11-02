@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../data/prefs.dart';
+import '../util/i18n.dart';
 
 /// Why we couldn't get a fix — each gets its own wording on screen.
 enum LocationProblem { serviceOff, denied, deniedForever, unavailable }
@@ -54,11 +55,22 @@ Future<void> openFixFor(LocationProblem problem) async {
 }
 
 String describe(LocationProblem problem) => switch (problem) {
-  LocationProblem.serviceOff => 'اللوكيشن مقفول في الموبايل. افتحه وجرّب تاني.',
-  LocationProblem.denied => 'من غير اللوكيشن مش هنعرف أقرب سينما ليك.',
-  LocationProblem.deniedForever =>
+  LocationProblem.serviceOff => tr(
+    'اللوكيشن مقفول في الموبايل. افتحه وجرّب تاني.',
+    'Location is off on your phone. Turn it on and try again.',
+  ),
+  LocationProblem.denied => tr(
+    'من غير اللوكيشن مش هنعرف أقرب سينما ليك.',
+    'Without your location we can\'t find your nearest cinema.',
+  ),
+  LocationProblem.deniedForever => tr(
     'اللوكيشن مرفوض للتطبيق. تقدر تسمح بيه من الإعدادات.',
-  LocationProblem.unavailable => 'معرفناش نحدد مكانك دلوقتي. جرّب تاني.',
+    'Location is blocked for the app. You can allow it in settings.',
+  ),
+  LocationProblem.unavailable => tr(
+    'معرفناش نحدد مكانك دلوقتي. جرّب تاني.',
+    'We couldn\'t find your location just now. Try again.',
+  ),
 };
 
 /// Reads the location again and keeps it (Cinemas tab's "near me" button).

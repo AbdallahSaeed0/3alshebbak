@@ -7,12 +7,13 @@ import '../data/models.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import '../util/i18n.dart';
 
 Future<void> showShowtimeSheet(BuildContext context, Showtime showtime) {
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0xB8050403),
+    barrierColor: AppColors.scrim,
     isScrollControlled: true,
     builder: (_) => _ShowtimeSheet(showtime: showtime),
   );
@@ -26,7 +27,7 @@ String bookingSite(String url) {
   if (host.contains('rnscinemas')) return 'Renaissance';
   if (host.contains('scenecinemas')) return 'Scene';
   if (host.contains('elcinema')) return 'elCinema';
-  return 'السينما';
+  return tr('السينما', 'Cinema');
 }
 
 /// The show as a ticket: movie, a big start time, the details, a tear line,
@@ -155,22 +156,38 @@ class _ShowtimeSheet extends StatelessWidget {
                           children: [
                             Expanded(
                               child: field(
-                                'اليوم',
+                                tr('اليوم', 'Day'),
                                 dayLabel(showtime.businessDate),
                               ),
                             ),
-                            Expanded(child: field('السينما', cinema.label)),
+                            Expanded(
+                              child: field(
+                                tr('السينما', 'Cinema'),
+                                cinema.label,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 14),
                         Row(
                           children: [
-                            Expanded(child: field('النوع', showtime.format)),
+                            Expanded(
+                              child: field(
+                                tr('النوع', 'Format'),
+                                showtime.format,
+                              ),
+                            ),
                             Expanded(
                               child: showtime.priceEgp != null
-                                  ? field('السعر', '${showtime.priceEgp} جنيه')
+                                  ? field(
+                                      tr('السعر', 'Price'),
+                                      tr(
+                                        '${showtime.priceEgp} جنيه',
+                                        'EGP ${showtime.priceEgp}',
+                                      ),
+                                    )
                                   : field(
-                                      'المنطقة',
+                                      tr('المنطقة', 'Area'),
                                       cinema.area ?? cinema.city ?? '—',
                                     ),
                             ),
@@ -196,7 +213,10 @@ class _ShowtimeSheet extends StatelessWidget {
                             ),
                             icon: const Icon(Icons.open_in_new, size: 18),
                             label: Text(
-                              'احجز على موقع ${bookingSite(booking)}',
+                              tr(
+                                'احجز على موقع ${bookingSite(booking)}',
+                                'Book on ${bookingSite(booking)}',
+                              ),
                             ),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.gold,
@@ -216,18 +236,16 @@ class _ShowtimeSheet extends StatelessWidget {
                           onPressed: () => SharePlus.instance.share(
                             ShareParams(
                               text:
-                                  '${movie.displayTitle} — ${clock(wall)} ${period(wall)}، '
+                                  '${movie.displayTitle} — ${clock(wall)} ${period(wall)}${tr('،', ',')} '
                                   '${dayLabel(showtime.businessDate)}\n${cinema.label} · ${showtime.format}'
                                   '${booking != null ? '\n$booking' : ''}',
                             ),
                           ),
                           icon: const Icon(Icons.ios_share, size: 18),
-                          label: const Text('ابعتها لصحابك'),
+                          label: Text(tr('ابعتها لصحابك', 'Send to friends')),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.text,
-                            side: const BorderSide(
-                              color: AppColors.perforation,
-                            ),
+                            side: BorderSide(color: AppColors.perforation),
                             minimumSize: const Size.fromHeight(48),
                             textStyle: AppText.body(
                               14,
@@ -241,8 +259,14 @@ class _ShowtimeSheet extends StatelessWidget {
                         const SizedBox(height: 10),
                         Text(
                           cinema.attribution != null
-                              ? 'المواعيد من ${cinema.attribution} · الحجز والدفع على موقع السينما'
-                              : 'الحجز والدفع بيتم على موقع السينما نفسه',
+                              ? tr(
+                                  'المواعيد من ${cinema.attribution} · الحجز والدفع على موقع السينما',
+                                  'Times from ${cinema.attribution} · booking and payment on the cinema\'s site',
+                                )
+                              : tr(
+                                  'الحجز والدفع بيتم على موقع السينما نفسه',
+                                  'Booking and payment happen on the cinema\'s own site',
+                                ),
                           textAlign: TextAlign.center,
                           style: AppText.body(12, color: AppColors.muted),
                         ),

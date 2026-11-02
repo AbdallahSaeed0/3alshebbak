@@ -7,7 +7,9 @@ import '../data/models.dart';
 import '../data/prefs.dart';
 import '../screens/cinema_screen.dart';
 import '../theme.dart';
+import 'common.dart';
 import '../util/format.dart';
+import '../util/i18n.dart';
 
 /// Every cinema as a pin on a dark map (OpenStreetMap's tiles, darkened,
 /// credited in the corner). OSM's own tile servers are for light use only:
@@ -72,7 +74,7 @@ class _CinemaMapState extends State<CinemaMap> {
             TileLayer(
               urlTemplate: _tiles,
               userAgentPackageName: 'com.shebbak.shebbak',
-              tileBuilder: darkModeTileBuilder,
+              tileBuilder: AppColors.isDark ? darkModeTileBuilder : null,
             ),
             MarkerLayer(
               markers: [
@@ -98,12 +100,12 @@ class _CinemaMapState extends State<CinemaMap> {
                   ),
               ],
             ),
-            const SimpleAttributionWidget(
+            SimpleAttributionWidget(
               source: Text(
                 '© OpenStreetMap contributors',
                 textDirection: TextDirection.ltr,
               ),
-              backgroundColor: Color(0xAA0B0A08),
+              backgroundColor: AppColors.glass,
             ),
           ],
         ),
@@ -111,8 +113,8 @@ class _CinemaMapState extends State<CinemaMap> {
           Positioned(
             left: 16,
             right: 16,
-            // Clear of the attribution line.
-            bottom: 30,
+            // Clear of the attribution line and the glass tab bar.
+            bottom: barSpace(context) + 14,
             child: _PinCard(cinema: c),
           ),
       ],
@@ -126,7 +128,7 @@ class _YouAreHere extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'مكانك',
+      label: tr('مكانك', 'You'),
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -200,13 +202,9 @@ class _PinCard extends StatelessWidget {
       if (cinema.city != null) cityName(cinema.city!),
       if (km != null) distance(km),
     ]);
-    return Material(
-      color: AppColors.surface,
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: mine ? AppColors.gold : AppColors.hairline),
-      ),
+    return TapCard(
+      radius: 16,
+      mine: mine,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => openCinema(context, cinema),
@@ -230,7 +228,10 @@ class _PinCard extends StatelessWidget {
                       ),
                     if (next != null)
                       Text(
-                        'الجاية: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                        tr(
+                          'الجاية: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                          'Next: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppText.body(12, color: AppColors.gold),
@@ -239,14 +240,20 @@ class _PinCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: mine ? 'شيلها من سينماتي' : 'ضيفها لسينماتي',
+                tooltip: mine
+                    ? tr('شيلها من سينماتي', 'Remove from my cinemas')
+                    : tr('ضيفها لسينماتي', 'Add to my cinemas'),
                 onPressed: () => data.prefs.toggleCinema(cinema.id),
                 icon: Icon(
                   mine ? Icons.star : Icons.star_border,
                   color: mine ? AppColors.gold : AppColors.muted,
                 ),
               ),
-              const Icon(Icons.chevron_left, color: AppColors.muted),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 15,
+                color: AppColors.muted,
+              ),
             ],
           ),
         ),

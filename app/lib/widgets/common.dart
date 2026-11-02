@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import '../data/models.dart';
 import '../theme.dart';
 import '../util/format.dart';
+import '../util/i18n.dart';
 
 /// A movie poster, or — when there's no image yet — a warm block with the
 /// title on it, so a card never looks broken.
+/// Room to leave at the bottom of a tab's page so its last item scrolls
+/// clear of the floating glass tab bar (the bar's height is already in the
+/// bottom padding, since the Shell extends pages under it).
+double barSpace(BuildContext context) =>
+    MediaQuery.paddingOf(context).bottom + 16;
+
 class Poster extends StatelessWidget {
   const Poster({
     super.key,
@@ -108,7 +115,7 @@ class SectionHeader extends StatelessWidget {
                 minimumSize: const Size(44, 44),
               ),
               child: Text(
-                'الكل',
+                tr('الكل', 'All'),
                 style: AppText.body(
                   13,
                   color: AppColors.gold,
@@ -138,13 +145,11 @@ class MarqueeBulbs extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              margin: const EdgeInsetsDirectional.only(end: 6),
+              margin: EdgeInsetsDirectional.only(end: 6),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.gold.withValues(alpha: i.isEven ? 1 : 0.45),
-                boxShadow: const [
-                  BoxShadow(color: AppColors.gold, blurRadius: 8),
-                ],
+                boxShadow: [BoxShadow(color: AppColors.gold, blurRadius: 8)],
               ),
             ),
         ],
@@ -164,13 +169,15 @@ class TimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label:
-          '${clock(showtime.wallClock)} ${period(showtime.wallClock)}، ${shortFormat(showtime.format)}',
+      label: tr(
+        '${clock(showtime.wallClock)} ${period(showtime.wallClock)}، ${shortFormat(showtime.format)}',
+        '${clock(showtime.wallClock)} ${period(showtime.wallClock)}, ${shortFormat(showtime.format)}',
+      ),
       child: Material(
         color: AppColors.raised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: AppColors.perforation),
+          side: BorderSide(color: AppColors.perforation),
         ),
         child: InkWell(
           onTap: onTap,
@@ -230,7 +237,7 @@ class Notch extends StatelessWidget {
     child: Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.background,
         shape: BoxShape.circle,
       ),

@@ -4,9 +4,11 @@ import '../data/app_data.dart';
 import '../data/models.dart';
 import '../services/location.dart';
 import '../theme.dart';
+import '../widgets/common.dart';
 import '../util/format.dart';
 import '../widgets/cinema_map.dart';
 import 'cinema_screen.dart';
+import '../util/i18n.dart';
 
 /// Every cinema we cover, as a list or on a map. The list puts mine (starred)
 /// first, then the rest nearest first when we know where the user is, or by
@@ -36,7 +38,7 @@ class _CinemasScreenState extends State<CinemasScreen> {
               problem == LocationProblem.deniedForever ||
                   problem == LocationProblem.serviceOff
               ? SnackBarAction(
-                  label: 'الإعدادات',
+                  label: tr('الإعدادات', 'Settings'),
                   onPressed: () => openFixFor(problem),
                 )
               : null,
@@ -67,10 +69,14 @@ class _CinemasScreenState extends State<CinemasScreen> {
     final sections = <String, List<Cinema>>{};
     if (spot != null) {
       double d(Cinema c) => data.distanceKm(c) ?? double.infinity;
-      sections['الأقرب ليك'] = rest..sort((a, b) => d(a).compareTo(d(b)));
+      sections[tr('الأقرب ليك', 'Nearest to you')] = rest
+        ..sort((a, b) => d(a).compareTo(d(b)));
     } else {
       for (final c in rest) {
-        (sections[c.city != null ? cityName(c.city!) : 'أماكن تانية'] ??= [])
+        (sections[c.city != null
+                    ? cityName(c.city!)
+                    : tr('أماكن تانية', 'Other places')] ??=
+                [])
             .add(c);
       }
     }
@@ -82,9 +88,14 @@ class _CinemasScreenState extends State<CinemasScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: Text('السينمات', style: AppText.display(32))),
+              Expanded(
+                child: Text(
+                  tr('السينمات', 'Cinemas'),
+                  style: AppText.display(32),
+                ),
+              ),
               IconButton(
-                tooltip: 'السينمات القريبة مني',
+                tooltip: tr('السينمات القريبة مني', 'Cinemas near me'),
                 onPressed: _locating ? null : _nearMe,
                 icon: _locating
                     ? const SizedBox.square(
@@ -105,7 +116,10 @@ class _CinemasScreenState extends State<CinemasScreen> {
             ],
           ),
           Text(
-            '${data.catalog.cinemas.length} سينما في مصر · النجمة تضيفها لسينماتك',
+            tr(
+              '${data.catalog.cinemas.length} سينما في مصر · النجمة تضيفها لسينماتك',
+              '${data.catalog.cinemas.length} cinemas in Egypt · the star adds one to yours',
+            ),
             style: AppText.body(12, color: AppColors.muted),
           ),
           const SizedBox(height: 12),
@@ -114,14 +128,17 @@ class _CinemasScreenState extends State<CinemasScreen> {
             onChanged: (_) => setState(() {}),
             style: AppText.body(14),
             decoration: InputDecoration(
-              hintText: 'دوّر على سينما أو منطقة',
+              hintText: tr(
+                'دوّر على سينما أو منطقة',
+                'Search a cinema or area',
+              ),
               hintStyle: AppText.body(14, color: AppColors.muted),
-              prefixIcon: const Icon(Icons.search, color: AppColors.muted),
+              prefixIcon: Icon(Icons.search, color: AppColors.muted),
               filled: true,
               fillColor: AppColors.surface,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.hairline),
+                borderSide: BorderSide(color: AppColors.hairline),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -144,10 +161,11 @@ class _CinemasScreenState extends State<CinemasScreen> {
           : CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(child: header),
-                if (mine.isNotEmpty) ..._section('سينماتي', mine, data),
+                if (mine.isNotEmpty)
+                  ..._section(tr('سينماتي', 'My cinemas'), mine, data),
                 for (final e in sections.entries)
                   ..._section(e.key, e.value, data),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                SliverToBoxAdapter(child: SizedBox(height: barSpace(context))),
               ],
             ),
     );
@@ -161,7 +179,9 @@ class _CinemasScreenState extends State<CinemasScreen> {
           title,
           style: AppText.display(
             20,
-            color: title == 'سينماتي' ? AppColors.gold : AppColors.text,
+            color: title == tr('سينماتي', 'My cinemas')
+                ? AppColors.gold
+                : AppColors.text,
           ),
         ),
       ),
@@ -191,14 +211,9 @@ class _CinemaRow extends StatelessWidget {
     final next = data.nextShow(cinemaId: cinema.id);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Material(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(
-            color: mine ? const Color(0xFF5C4520) : AppColors.hairline,
-          ),
-        ),
+      child: TapCard(
+        radius: 14,
+        mine: mine,
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () => openCinema(context, cinema),
@@ -221,7 +236,10 @@ class _CinemaRow extends StatelessWidget {
                         ),
                       if (next != null)
                         Text(
-                          'الجاية: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                          tr(
+                            'الجاية: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                            'Next: ${data.movie(next.movieId).displayTitle} · ${clock(next.wallClock)} ${period(next.wallClock)}',
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppText.body(12, color: AppColors.gold),
@@ -230,7 +248,9 @@ class _CinemaRow extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: mine ? 'شيلها من سينماتي' : 'ضيفها لسينماتي',
+                  tooltip: mine
+                      ? tr('شيلها من سينماتي', 'Remove from my cinemas')
+                      : tr('ضيفها لسينماتي', 'Add to my cinemas'),
                   onPressed: () => data.prefs.toggleCinema(cinema.id),
                   icon: Icon(
                     mine ? Icons.star : Icons.star_border,
@@ -282,16 +302,12 @@ class _ViewToggle extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: AppColors.hairline),
-      ),
+      decoration: AppDecor.card(radius: 13),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          segment(false, Icons.view_list_rounded, 'قائمة'),
-          segment(true, Icons.map_outlined, 'خريطة'),
+          segment(false, Icons.view_list_rounded, tr('قائمة', 'List')),
+          segment(true, Icons.map_outlined, tr('خريطة', 'Map')),
         ],
       ),
     );

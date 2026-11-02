@@ -9,6 +9,7 @@ import '../widgets/common.dart';
 import '../widgets/schedule.dart';
 import 'cinema_screen.dart';
 import 'film_screen.dart';
+import '../util/i18n.dart';
 
 /// Browse and search: what's showing this week (or opening later), filtered
 /// by experience and by "my cinemas only". A search also lists the cinemas
@@ -59,49 +60,49 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('استكشف', style: AppText.display(32)),
+                  Text(tr('استكشف', 'Explore'), style: AppText.display(32)),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _search,
                     onChanged: (_) => setState(() {}),
                     style: AppText.body(14),
                     decoration: InputDecoration(
-                      hintText: 'فيلم أو سينما، عربي أو إنجليزي',
-                      hintStyle: AppText.body(14, color: AppColors.muted),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: AppColors.muted,
+                      hintText: tr(
+                        'فيلم أو سينما، عربي أو إنجليزي',
+                        'Film or cinema, Arabic or English',
                       ),
+                      hintStyle: AppText.body(14, color: AppColors.muted),
+                      prefixIcon: Icon(Icons.search, color: AppColors.muted),
                       suffixIcon: query.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: 'امسح',
-                              icon: const Icon(
-                                Icons.close,
-                                color: AppColors.muted,
-                              ),
+                              tooltip: tr('امسح', 'Delete'),
+                              icon: Icon(Icons.close, color: AppColors.muted),
                               onPressed: () => setState(_search.clear),
                             ),
                       filled: true,
                       fillColor: AppColors.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.hairline),
+                        borderSide: BorderSide(color: AppColors.hairline),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.hairline),
+                        borderSide: BorderSide(color: AppColors.hairline),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   SegmentedButton<bool>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: false,
-                        label: Text('في السينما دلوقتي'),
+                        label: Text(tr('في السينما دلوقتي', 'In cinemas now')),
                       ),
-                      ButtonSegment(value: true, label: Text('قريبًا')),
+                      ButtonSegment(
+                        value: true,
+                        label: Text(tr('قريبًا', 'Coming soon')),
+                      ),
                     ],
                     selected: {_comingSoon},
                     onSelectionChanged: (s) =>
@@ -112,7 +113,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       selectedForegroundColor: AppColors.onGold,
                       backgroundColor: AppColors.surface,
                       foregroundColor: AppColors.muted,
-                      side: const BorderSide(color: AppColors.hairline),
+                      side: BorderSide(color: AppColors.hairline),
                       textStyle: AppText.body(14, weight: FontWeight.w700),
                       minimumSize: const Size.fromHeight(44),
                     ),
@@ -140,7 +141,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   itemCount: cinemas.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (context, i) => ActionChip(
-                    avatar: const Icon(
+                    avatar: Icon(
                       Icons.theaters,
                       size: 16,
                       color: AppColors.gold,
@@ -150,7 +151,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       style: AppText.body(13, weight: FontWeight.w600),
                     ),
                     backgroundColor: AppColors.surface,
-                    side: const BorderSide(color: AppColors.hairline),
+                    side: BorderSide(color: AppColors.hairline),
                     onPressed: () => openCinema(context, cinemas[i]),
                   ),
                 ),
@@ -163,7 +164,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: FilterPills(
                 options: AppData.formatFilters,
                 selected: _format,
-                allLabel: 'كل الأنواع',
+                allLabel: tr('كل الأنواع', 'All formats'),
                 onSelect: (f) => setState(() => _format = f),
               ),
             ),
@@ -174,7 +175,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   value: _mineOnly,
                   onChanged: (v) => setState(() => _mineOnly = v),
                   title: Text(
-                    'سينماتي بس',
+                    tr('سينماتي بس', 'My cinemas only'),
                     style: AppText.body(14, weight: FontWeight.w600),
                   ),
                   activeThumbColor: AppColors.gold,
@@ -188,8 +189,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: Text(
                 _comingSoon
-                    ? '$count فيلم جايين'
-                    : '$count فيلم الأسبوع ده${_format != null ? ' · $_format' : ''}',
+                    ? tr('$count فيلم جايين', '$count films coming')
+                    : tr('$count فيلم الأسبوع ده', '$count films this week') +
+                          (_format != null ? ' · $_format' : ''),
                 style: AppText.body(12, color: AppColors.muted),
               ),
             ),
@@ -199,14 +201,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'مفيش أفلام بالشكل ده. جرّب تشيل فلتر.',
+                  tr(
+                    'مفيش أفلام بالشكل ده. جرّب تشيل فلتر.',
+                    'No films match. Try removing a filter.',
+                  ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),
               ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, barSpace(context)),
               sliver: SliverGrid.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -220,8 +225,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       ? showing[i].movie
                       : upcoming![i].movie;
                   final sub = showing != null
-                      ? 'في ${cinemaCount(showing[i].cinemaCount)}'
-                      : 'من ${dayLabel(upcoming![i].firstDate)}';
+                      ? tr(
+                          'في ${cinemaCount(showing[i].cinemaCount)}',
+                          'In ${cinemaCount(showing[i].cinemaCount)}',
+                        )
+                      : tr(
+                          'من ${dayLabel(upcoming![i].firstDate)}',
+                          'From ${dayLabel(upcoming[i].firstDate)}',
+                        );
                   return InkWell(
                     onTap: () => openFilm(context, movie),
                     borderRadius: BorderRadius.circular(10),

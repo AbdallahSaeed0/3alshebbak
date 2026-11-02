@@ -278,8 +278,8 @@ class AppData {
     c.label,
     c.nameAr,
     c.chain,
-    if (c.area != null) ...[c.area, areaName(c.area!)],
-    if (c.city != null) ...[c.city, cityName(c.city!)],
+    if (c.area != null) ...[c.area, areaNameAr(c.area!)],
+    if (c.city != null) ...[c.city, cityNameAr(c.city!)],
   ]);
 
   /// All cinemas: mine first, then by city and name.

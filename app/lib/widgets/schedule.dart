@@ -5,6 +5,7 @@ import '../screens/showtime_sheet.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import 'common.dart';
+import '../util/i18n.dart';
 
 /// Day picker: "النهارده", "بكرة", then weekday + date.
 class DateStrip extends StatelessWidget {
@@ -27,17 +28,17 @@ class DateStrip extends StatelessWidget {
       height: 64,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         itemCount: dates.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => SizedBox(width: 8),
         itemBuilder: (context, i) {
           final date = dates[i];
           final on = date == selected;
           final d = DateTime.parse(date);
           final name = date == today
-              ? 'النهارده'
+              ? tr('النهارده', 'Today')
               : d.difference(DateTime.parse(today)).inHours ~/ 24 == 1
-              ? 'بكرة'
+              ? tr('بكرة', 'Tomorrow')
               : dayLabel(date).split(' ').first;
           return Semantics(
             selected: on,
@@ -95,13 +96,15 @@ class FilterPills extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onSelect,
-    this.allLabel = 'الكل',
+    this.allLabel,
   });
 
   final List<String> options;
   final String? selected;
   final ValueChanged<String?> onSelect;
-  final String allLabel;
+
+  /// The first pill, which clears the choice. "All" unless given.
+  final String? allLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +147,11 @@ class FilterPills extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-          pill(allLabel, selected == null, () => onSelect(null)),
+          pill(
+            allLabel ?? tr('الكل', 'All'),
+            selected == null,
+            () => onSelect(null),
+          ),
           for (final o in options)
             pill(o, selected == o, () => onSelect(selected == o ? null : o)),
         ],
@@ -223,11 +230,7 @@ class Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: padding,
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColors.hairline),
-    ),
+    decoration: AppDecor.card(radius: 16),
     child: child,
   );
 }
@@ -253,7 +256,7 @@ class CircleIconButton extends StatelessWidget {
     onPressed: onPressed,
     icon: Icon(icon, color: color ?? AppColors.text, size: 20),
     style: IconButton.styleFrom(
-      backgroundColor: const Color(0x990B0A08),
+      backgroundColor: AppColors.glass,
       minimumSize: const Size(44, 44),
     ),
   );

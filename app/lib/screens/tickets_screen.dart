@@ -8,6 +8,7 @@ import '../data/tickets.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import '../util/i18n.dart';
 
 void openTickets(BuildContext context) => Navigator.of(
   context,
@@ -43,14 +44,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
       if (movie == null) return; // Dismissed: nothing added.
       await store.add(bytes, movieId: movie.id.isEmpty ? null : movie.id);
       messenger.showSnackBar(
-        SnackBar(content: Text('اتحفظت', style: AppText.body(13))),
+        SnackBar(content: Text(tr('اتحفظت', 'Saved'), style: AppText.body(13))),
       );
     } catch (e) {
       debugPrint('Adding a ticket failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'معرفناش نحفظ الصورة. لو على الويب، المساحة ممكن تكون خلصت.',
+            tr(
+              'معرفناش نحفظ الصورة. لو على الويب، المساحة ممكن تكون خلصت.',
+              'Couldn\'t save the image. On the web, storage may be full.',
+            ),
             style: AppText.body(13),
           ),
         ),
@@ -64,7 +68,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('تذاكري', style: AppText.display(24)),
+        title: Text(tr('تذاكري', 'My tickets'), style: AppText.display(24)),
         backgroundColor: AppColors.background,
       ),
       body: FutureBuilder<TicketStore>(
@@ -75,7 +79,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
             return snap.hasError
                 ? Center(
                     child: Text(
-                      'معرفناش نفتح تذاكرك',
+                      tr('معرفناش نفتح تذاكرك', 'Couldn\'t open your tickets'),
                       style: AppText.body(14, color: AppColors.muted),
                     ),
                   )
@@ -95,7 +99,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     child: FilledButton.icon(
                       onPressed: _adding ? null : () => _add(store),
                       icon: _adding
-                          ? const SizedBox.square(
+                          ? SizedBox.square(
                               dimension: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
@@ -103,7 +107,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               ),
                             )
                           : const Icon(Icons.add_photo_alternate_outlined),
-                      label: const Text('ضيف اسكرين تذكرة'),
+                      label: Text(
+                        tr('ضيف اسكرين تذكرة', 'Add a ticket screenshot'),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.gold,
                         foregroundColor: AppColors.onGold,
@@ -145,17 +151,20 @@ Future<Movie?> _askFilm(BuildContext context, AppData data) {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Text('التذكرة دي لفيلم إيه؟', style: AppText.display(22)),
+            child: Text(
+              tr('التذكرة دي لفيلم إيه؟', 'Which film is this ticket for?'),
+              style: AppText.display(22),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.confirmation_number_outlined),
             title: Text(
-              'من غير فيلم',
+              tr('من غير فيلم', 'No film'),
               style: AppText.body(15, weight: FontWeight.w600),
             ),
             onTap: () => Navigator.of(context).pop(none),
           ),
-          const Divider(color: AppColors.hairline, indent: 20, endIndent: 20),
+          Divider(color: AppColors.hairline, indent: 20, endIndent: 20),
           for (final m in films)
             ListTile(
               leading: Poster(movie: m, width: 32, height: 48, radius: 4),
@@ -185,20 +194,23 @@ class _TicketGrid extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.confirmation_number_outlined,
                 size: 56,
                 color: AppColors.gold,
               ),
               const SizedBox(height: 16),
               Text(
-                'مفيش تذاكر لسه',
+                tr('مفيش تذاكر لسه', 'No tickets yet'),
                 style: AppText.display(22),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                'حجزت؟ خد اسكرين للتذكرة وحطها هنا، تلاقيها بسرعة على باب السينما. بتتحفظ على موبايلك بس.',
+                tr(
+                  'حجزت؟ خد اسكرين للتذكرة وحطها هنا، تلاقيها بسرعة على باب السينما. بتتحفظ على موبايلك بس.',
+                  'Booked? Screenshot the ticket and add it here to find it fast at the cinema door. It stays on your phone only.',
+                ),
                 style: AppText.body(14, color: AppColors.muted),
                 textAlign: TextAlign.center,
               ),
@@ -248,13 +260,16 @@ class _TicketGrid extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                movie?.displayTitle ?? 'تذكرة',
+                movie?.displayTitle ?? tr('تذكرة', 'Ticket'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppText.body(13, weight: FontWeight.w700),
               ),
               Text(
-                'اتضافت ${dayLabel(isoDate(t.addedAt))}',
+                tr(
+                  'اتضافت ${dayLabel(isoDate(t.addedAt))}',
+                  'Added ${dayLabel(isoDate(t.addedAt))}',
+                ),
                 style: AppText.body(11, color: AppColors.muted),
               ),
             ],
@@ -278,21 +293,27 @@ class _TicketView extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'تمسح التذكرة دي؟',
+          tr('تمسح التذكرة دي؟', 'Delete this ticket?'),
           style: AppText.body(17, weight: FontWeight.w700),
         ),
         content: Text(
-          'هتتمسح من التطبيق بس، مش من صور الموبايل.',
+          tr(
+            'هتتمسح من التطبيق بس، مش من صور الموبايل.',
+            'It\'s removed from the app only, not from your photos.',
+          ),
           style: AppText.body(14, color: AppColors.muted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('لأ'),
+            child: Text(tr('لأ', 'No')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('امسح', style: TextStyle(color: AppColors.amber)),
+            child: Text(
+              tr('امسح', 'Delete'),
+              style: TextStyle(color: AppColors.amber),
+            ),
           ),
         ],
       ),
@@ -308,22 +329,24 @@ class _TicketView extends StatelessWidget {
     final path = store.path(ticket);
     return Scaffold(
       backgroundColor: Colors.black,
+      // Always black, light mode too: the ticket is what you look at.
       appBar: AppBar(
         backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: Text(
-          movie?.displayTitle ?? 'تذكرة',
-          style: AppText.body(17, weight: FontWeight.w700),
+          movie?.displayTitle ?? tr('تذكرة', 'Ticket'),
+          style: AppText.body(17, weight: FontWeight.w700, color: Colors.white),
         ),
         actions: [
           if (path != null)
             IconButton(
-              tooltip: 'شارك',
+              tooltip: tr('شارك', 'Share'),
               icon: const Icon(Icons.ios_share),
               onPressed: () =>
                   SharePlus.instance.share(ShareParams(files: [XFile(path)])),
             ),
           IconButton(
-            tooltip: 'امسح',
+            tooltip: tr('امسح', 'Delete'),
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _delete(context),
           ),

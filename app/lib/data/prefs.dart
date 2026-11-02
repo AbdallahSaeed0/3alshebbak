@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Where the phone was when the user last shared their location.
 typedef Spot = ({double lat, double lng});
 
+/// Light, dark, or whatever the phone is set to.
+enum Appearance { system, light, dark }
+
 /// What the user picked, kept on the device: their cinemas, the films they
 /// follow, where they are, which city Home shows, and whether they've been
 /// through onboarding.
@@ -16,6 +19,8 @@ class Prefs extends ChangeNotifier {
     this._spot,
     this._onboarded,
     this._homeCity,
+    this._appearance,
+    this._english,
   );
 
   /// In-memory only, for tests.
@@ -25,18 +30,24 @@ class Prefs extends ChangeNotifier {
     Spot? spot,
     bool onboarded = true,
     String? homeCity,
+    Appearance appearance = Appearance.system,
+    bool english = false,
   }) : _store = null,
        _cinemas = cinemas ?? {...defaultCinemas},
        _following = following ?? {},
        _spot = spot,
        _onboarded = onboarded,
-       _homeCity = homeCity;
+       _homeCity = homeCity,
+       _appearance = appearance,
+       _english = english;
 
   static const _cinemasKey = 'my_cinemas';
   static const _followingKey = 'following';
   static const _spotKey = 'spot';
   static const _onboardedKey = 'onboarded';
   static const _homeCityKey = 'home_city';
+  static const _appearanceKey = 'appearance';
+  static const _englishKey = 'english';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -67,6 +78,9 @@ class Prefs extends ChangeNotifier {
           : null,
       store.getBool(_onboardedKey) ?? false,
       store.getString(_homeCityKey),
+      Appearance.values.asNameMap()[store.getString(_appearanceKey)] ??
+          Appearance.system,
+      store.getBool(_englishKey) ?? false,
     );
   }
 
@@ -76,6 +90,8 @@ class Prefs extends ChangeNotifier {
   Spot? _spot;
   bool _onboarded;
   String? _homeCity;
+  Appearance _appearance;
+  bool _english;
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
@@ -84,6 +100,11 @@ class Prefs extends ChangeNotifier {
 
   /// Home shows every cinema in this city; null shows my cinemas.
   String? get homeCity => _homeCity;
+
+  Appearance get appearance => _appearance;
+
+  /// The app in English instead of Arabic.
+  bool get english => _english;
 
   bool isMine(String cinemaId) => _cinemas.contains(cinemaId);
   bool isFollowing(String movieId) => _following.contains(movieId);
@@ -127,6 +148,18 @@ class Prefs extends ChangeNotifier {
     } else {
       _store?.setString(_homeCityKey, city);
     }
+    notifyListeners();
+  }
+
+  void setAppearance(Appearance a) {
+    _appearance = a;
+    _store?.setString(_appearanceKey, a.name);
+    notifyListeners();
+  }
+
+  void setEnglish(bool english) {
+    _english = english;
+    _store?.setBool(_englishKey, english);
     notifyListeners();
   }
 

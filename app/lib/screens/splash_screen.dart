@@ -7,6 +7,7 @@ import '../data/prefs.dart';
 import '../data/repository.dart';
 import '../theme.dart';
 import '../widgets/ticket_mark.dart';
+import '../util/i18n.dart';
 
 /// Shows the mark with its stub lights chasing while the catalog loads, then
 /// hands the loaded [AppData] on. Stays at least [_minimum] so it never flashes.
@@ -74,11 +75,11 @@ class _SplashScreenState extends State<SplashScreen>
     final reduceMotion = MediaQuery.of(context).disableAnimations;
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(0, -0.16),
             radius: 0.9,
-            colors: [Color(0xFF1E1710), AppColors.background],
+            colors: [AppColors.raised, AppColors.background],
           ),
         ),
         child: SizedBox.expand(
@@ -143,17 +144,23 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'كل حفلات السينما في مصر… في مكان واحد',
+                      tr(
+                        'كل حفلات السينما في مصر… في مكان واحد',
+                        'Every cinema showtime in Egypt… in one place',
+                      ),
                       style: AppText.body(14, color: AppColors.muted),
                     ),
                   ] else ...[
                     Text(
-                      'مقدرناش نحمّل المواعيد',
+                      tr(
+                        'مقدرناش نحمّل المواعيد',
+                        'We couldn\'t load the showtimes',
+                      ),
                       style: AppText.body(14, color: AppColors.muted),
                     ),
                     TextButton(
                       onPressed: _load,
-                      child: const Text('جرّب تاني'),
+                      child: Text(tr('جرّب تاني', 'Try again')),
                     ),
                   ],
                   const SizedBox(height: 64),

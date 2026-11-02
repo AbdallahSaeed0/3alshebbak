@@ -7,6 +7,7 @@ import '../services/push.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/ticket_mark.dart';
+import '../util/i18n.dart';
 
 /// First open: welcome → where are you (to sort cinemas by distance) → pick
 /// your cinemas → turn on "tickets are out" notifications (when push is set
@@ -98,7 +99,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     TextButton(
                       onPressed: _step == _Step.welcome ? _finish : _next,
                       child: Text(
-                        _step == _Step.welcome ? 'تخطي' : 'بعدين',
+                        _step == _Step.welcome
+                            ? tr('تخطي', 'Skip')
+                            : tr('بعدين', 'Later'),
                         style: AppText.body(14, color: AppColors.muted),
                       ),
                     ),
@@ -149,7 +152,7 @@ class _Progress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'خطوة ${at + 1} من $count',
+      label: tr('خطوة ${at + 1} من $count', 'Step ${at + 1} of $count'),
       child: Row(
         children: [
           for (var i = 0; i < count; i++)
@@ -157,12 +160,12 @@ class _Progress extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               width: i == at ? 22 : 7,
               height: 7,
-              margin: const EdgeInsetsDirectional.only(end: 6),
+              margin: EdgeInsetsDirectional.only(end: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
                 color: i <= at ? AppColors.gold : AppColors.perforation,
                 boxShadow: i <= at
-                    ? const [BoxShadow(color: AppColors.gold, blurRadius: 6)]
+                    ? [BoxShadow(color: AppColors.gold, blurRadius: 6)]
                     : null,
               ),
             ),
@@ -235,7 +238,7 @@ class _GoldButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: busy
-          ? const SizedBox.square(
+          ? SizedBox.square(
               dimension: 22,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
@@ -301,11 +304,17 @@ class _Welcome extends StatelessWidget {
     final data = AppScope.of(context);
     return _Page(
       art: const TicketMark(size: 150),
-      title: 'أهلاً بيك عالشباك',
-      body:
-          'مواعيد ${cinemaCount(data.catalog.cinemas.length)} في مصر في مكان واحد، '
-          'وأول ما تذاكر فيلم مستنيه تنزل، نقولك.',
-      primary: _GoldButton(label: 'يلا بينا', onPressed: onStart),
+      title: tr('أهلاً بيك عالشباك', 'Welcome to 3al Shebbak'),
+      body: tr(
+        'مواعيد ${cinemaCount(data.catalog.cinemas.length)} في مصر في مكان واحد، '
+            'وأول ما تذاكر فيلم مستنيه تنزل، نقولك.',
+        'Showtimes for ${cinemaCount(data.catalog.cinemas.length)} in Egypt in one place, '
+            "and the moment tickets for a film you're waiting on go on sale, we tell you.",
+      ),
+      primary: _GoldButton(
+        label: tr('يلا بينا', 'Let\'s go'),
+        onPressed: onStart,
+      ),
     );
   }
 }
@@ -330,10 +339,13 @@ class _Location extends StatelessWidget {
         p == LocationProblem.deniedForever || p == LocationProblem.serviceOff;
     return _Page(
       art: const _Badge(Icons.near_me_outlined),
-      title: 'فين أقرب سينما ليك؟',
-      body:
-          'هنستخدم مكانك عشان نرتبلك السينمات من الأقرب للأبعد. '
-          'مكانك بيفضل على موبايلك، مش بنبعته لحد.',
+      title: tr('فين أقرب سينما ليك؟', 'Where\'s your nearest cinema?'),
+      body: tr(
+        'هنستخدم مكانك عشان نرتبلك السينمات من الأقرب للأبعد. '
+            'مكانك بيفضل على موبايلك، مش بنبعته لحد.',
+        'We use your location to sort cinemas from nearest to farthest. '
+            'It stays on your phone; we never send it anywhere.',
+      ),
       note: p == null
           ? null
           : Container(
@@ -354,7 +366,7 @@ class _Location extends StatelessWidget {
                     TextButton(
                       onPressed: () => openFixFor(p),
                       child: Text(
-                        'افتح الإعدادات',
+                        tr('افتح الإعدادات', 'Open settings'),
                         style: AppText.body(
                           13,
                           color: AppColors.gold,
@@ -366,11 +378,16 @@ class _Location extends StatelessWidget {
               ),
             ),
       primary: _GoldButton(
-        label: p == null ? 'استخدم موقعي' : 'جرّب تاني',
+        label: p == null
+            ? tr('استخدم موقعي', 'Use my location')
+            : tr('جرّب تاني', 'Try again'),
         busy: locating,
         onPressed: onLocate,
       ),
-      secondary: _QuietButton(label: 'هختار بنفسي', onPressed: onManual),
+      secondary: _QuietButton(
+        label: tr('هختار بنفسي', 'I\'ll choose myself'),
+        onPressed: onManual,
+      ),
     );
   }
 }
@@ -418,14 +435,23 @@ class _PickCinemasState extends State<_PickCinemas> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-          child: Text('سينماتك', style: AppText.display(32)),
+          child: Text(
+            tr('سينماتك', 'your cinemas'),
+            style: AppText.display(32),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             spot != null
-                ? 'رتبناها من الأقرب ليك، واخترنالك الأقرب. غيّر براحتك.'
-                : 'اختار السينمات اللي بتروحها، عشان نوريك مواعيدها الأول.',
+                ? tr(
+                    'رتبناها من الأقرب ليك، واخترنالك الأقرب. غيّر براحتك.',
+                    'Sorted nearest first, with the closest picked for you. Change them as you like.',
+                  )
+                : tr(
+                    'اختار السينمات اللي بتروحها، عشان نوريك مواعيدها الأول.',
+                    'Pick the cinemas you go to, so we show their times first.',
+                  ),
             style: AppText.body(13, color: AppColors.muted),
           ),
         ),
@@ -530,8 +556,11 @@ class _PickCinemasState extends State<_PickCinemas> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: _GoldButton(
             label: widget.picked.isEmpty
-                ? 'بعدين'
-                : 'تمام (${cinemaCount(widget.picked.length)})',
+                ? tr('بعدين', 'Later')
+                : tr(
+                    'تمام (${cinemaCount(widget.picked.length)})',
+                    'Done (${cinemaCount(widget.picked.length)})',
+                  ),
             onPressed: widget.onDone,
           ),
         ),
@@ -589,12 +618,24 @@ class _Notifications extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Page(
       art: const _Badge(Icons.notifications_active_outlined),
-      title: 'نقولك أول ما التذاكر تنزل؟',
-      body:
-          'تابع أي فيلم، وأول ما سينما من سينماتك تفتح الحجز ليه هيوصلك إشعار. '
-          'مرة واحدة في اليوم بالكتير لكل فيلم.',
-      primary: _GoldButton(label: 'أيوه، بلغني', onPressed: onEnable),
-      secondary: _QuietButton(label: 'مش دلوقتي', onPressed: onLater),
+      title: tr(
+        'نقولك أول ما التذاكر تنزل؟',
+        'Tell you when tickets go on sale?',
+      ),
+      body: tr(
+        'تابع أي فيلم، وأول ما سينما من سينماتك تفتح الحجز ليه هيوصلك إشعار. '
+            'مرة واحدة في اليوم بالكتير لكل فيلم.',
+        'Follow any film, and when one of your cinemas opens booking for it '
+            'you get a notification. At most once a day per film.',
+      ),
+      primary: _GoldButton(
+        label: tr('أيوه، بلغني', 'Yes, notify me'),
+        onPressed: onEnable,
+      ),
+      secondary: _QuietButton(
+        label: tr('مش دلوقتي', 'Not now'),
+        onPressed: onLater,
+      ),
     );
   }
 }
