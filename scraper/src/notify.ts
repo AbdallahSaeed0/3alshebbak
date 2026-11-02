@@ -97,7 +97,6 @@ export function showCount(n: number) {
 
 /** scrape_runs rows with this source mark how far alerts have been checked. */
 const ALERTS = 'alerts';
-const MAX_LOOKBACK_MS = 24 * 3600_000;
 
 /**
  * Where the last alerts check stopped. Showtimes added since, by this run or
@@ -114,8 +113,9 @@ async function lastCheck(db: SupabaseClient, runStartedAt: string): Promise<stri
   if (error) throw new Error(`alerts checkpoint: ${error.message}`);
   const last = data?.[0]?.started_at as string | undefined;
   if (!last) return runStartedAt;
-  const floor = new Date(Date.now() - MAX_LOOKBACK_MS).toISOString();
-  return new Date(last).toISOString() > floor ? new Date(last).toISOString() : floor;
+  // Per-device progress prevents replay. Do not silently drop an unsent,
+  // still-upcoming show just because an outage lasted more than 24 hours.
+  return new Date(last).toISOString();
 }
 
 export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
@@ -196,7 +196,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     for (const movieId of device.following) {
       const through = checked.get(`${device.token}|${movieId}`);
       const rows = mine(freshBy.get(movieId) ?? []);
-      const handled = (row: Seen) => !!through && !!row.first_seen_at && row.first_seen_at < through;
+      const handled = (row: Seen) => !!through && !!row.first_seen_at && Date.parse(row.first_seen_at) < Date.parse(through);
       const alert = alertFor(rows.filter((r) => !handled(r)), [
         ...mine(beforeBy.get(movieId) ?? []), ...rows.filter(handled),
       ]);
