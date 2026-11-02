@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/app_data.dart';
 import '../data/models.dart';
 import '../services/hidden_page.dart';
+import '../services/follow_film.dart';
 import '../services/live_shows.dart';
 import '../services/live_source.dart';
 import '../services/premiere_live.dart';
@@ -69,7 +70,10 @@ class _FilmScreenState extends State<FilmScreen> {
       for (final s in data.catalog.showtimes)
         if (s.movieId == widget.movie.id) '${s.cinemaId}|${s.businessDate}',
     };
-    for (final source in <LiveSource>[PremiereLive.instance, VoxLive.instance]) {
+    for (final source in <LiveSource>[
+      PremiereLive.instance,
+      VoxLive.instance,
+    ]) {
       _reading.add(source.id);
       _watching.add(
         source
@@ -180,36 +184,42 @@ class _FilmScreenState extends State<FilmScreen> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () => data.prefs.toggleFollow(movie.id),
-                    icon: Icon(
-                      following
-                          ? Icons.notifications_active
-                          : Icons.notifications_none,
-                      size: 18,
-                    ),
-                    label: Text(
-                      following
-                          ? tr(
-                              'بتتابعه · هنبلغك بالجديد',
-                              'Following · we\'ll tell you what\'s new',
+                  FilmFollowAction(
+                    prefs: data.prefs,
+                    movieId: movie.id,
+                    builder: (onPressed, busy) => FilledButton.icon(
+                      onPressed: onPressed,
+                      icon: busy
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : tr('تابِع الفيلم', 'Follow this film'),
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: following
-                          ? AppColors.raised
-                          : AppColors.gold,
-                      foregroundColor: following
-                          ? AppColors.gold
-                          : AppColors.onGold,
-                      minimumSize: const Size.fromHeight(52),
-                      textStyle: AppText.body(15, weight: FontWeight.w700),
-                      side: following
-                          ? BorderSide(color: AppColors.gold)
-                          : null,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                          : Icon(
+                              following
+                                  ? Icons.notifications_active
+                                  : Icons.notifications_none,
+                              size: 18,
+                            ),
+                      label: Text(
+                        following
+                            ? tr('بتتابع الفيلم', 'Following this film')
+                            : tr('تابِع الفيلم', 'Follow this film'),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: following
+                            ? AppColors.raised
+                            : AppColors.gold,
+                        foregroundColor: following
+                            ? AppColors.gold
+                            : AppColors.onGold,
+                        minimumSize: const Size.fromHeight(52),
+                        textStyle: AppText.body(15, weight: FontWeight.w700),
+                        side: following
+                            ? BorderSide(color: AppColors.gold)
+                            : null,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                     ),
                   ),

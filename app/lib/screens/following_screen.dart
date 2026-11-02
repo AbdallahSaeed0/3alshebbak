@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/follow_film.dart';
 
 import '../data/app_data.dart';
 import '../theme.dart';
@@ -168,8 +169,11 @@ class FollowingScreen extends StatelessWidget {
                             ),
                             IconButton(
                               tooltip: tr('بطّل تتابع', 'Unfollow'),
-                              onPressed: () =>
-                                  data.prefs.toggleFollow(movie.id),
+                              onPressed: () => toggleFilmFollow(
+                                context,
+                                data.prefs,
+                                movie.id,
+                              ),
                               icon: Icon(
                                 Icons.notifications_off_outlined,
                                 color: AppColors.muted,

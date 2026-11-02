@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
+import '../services/follow_film.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -746,27 +747,38 @@ class _ComingCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 44,
-            child: OutlinedButton.icon(
-              onPressed: () => prefs.toggleFollow(item.movie.id),
-              icon: Icon(
-                following
-                    ? Icons.notifications_active
-                    : Icons.notifications_none,
-                size: 16,
-              ),
-              label: Text(
-                following ? tr('بتتابعه', 'Following') : tr('تابِع', 'Follow'),
-                style: AppText.body(
-                  13,
-                  weight: FontWeight.w700,
-                  color: AppColors.gold,
+            child: FilmFollowAction(
+              prefs: prefs,
+              movieId: item.movie.id,
+              builder: (onPressed, busy) => OutlinedButton.icon(
+                onPressed: onPressed,
+                icon: busy
+                    ? const SizedBox.square(
+                        dimension: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        following
+                            ? Icons.notifications_active
+                            : Icons.notifications_none,
+                        size: 16,
+                      ),
+                label: Text(
+                  following
+                      ? tr('بتتابعه', 'Following')
+                      : tr('تابِع', 'Follow'),
+                  style: AppText.body(
+                    13,
+                    weight: FontWeight.w700,
+                    color: AppColors.gold,
+                  ),
                 ),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.gold,
-                side: BorderSide(color: AppColors.gold),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.gold,
+                  side: BorderSide(color: AppColors.gold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),

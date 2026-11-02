@@ -70,6 +70,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() => _applyLook();
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) Push.instance.refresh();
+  }
+
   /// Light or dark and Arabic or English, from Settings (or the phone).
   /// Colours and strings are read while building, so on a change every
   /// widget rebuilds — const ones included.
