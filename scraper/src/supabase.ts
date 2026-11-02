@@ -162,11 +162,41 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
     .like('cinema_id', 'elcinema:%')
     .lt('business_date', presaleFrom());
   if (overlap) throw new Error(`presale cleanup: ${overlap.message}`);
+  await removeBookingDuplicates(db);
 
   // Over shows are no use to the alerts.
   const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
   const { error } = await db.from('showtimes_seen').delete().lt('starts_at', dayAgo);
   if (error) throw new Error(`showtimes_seen cleanup: ${error.message}`);
+}
+
+/**
+ * elCinema's booking page and Premiere's own site list the same presale show
+ * at a Premiere branch, one as "2D" and one as "Standard", so the app would
+ * show it twice. Premiere's copy stays: it runs in the cloud, the booking
+ * page only from a local machine.
+ */
+export async function removeBookingDuplicates(db: SupabaseClient) {
+  const rows: { id: string; source: string; movie_id: string; cinema_id: string; starts_at: string }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db
+      .from('showtimes')
+      .select('id,source,movie_id,cinema_id,starts_at')
+      .in('source', ['premiere', 'elcinema-presales'])
+      .like('cinema_id', 'elcinema:%')
+      .order('id')
+      .range(from, from + 999);
+    if (error) throw new Error(`booking duplicates: ${error.message}`);
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  const show = (r: (typeof rows)[number]) => `${r.movie_id}|${r.cinema_id}|${Date.parse(r.starts_at)}`;
+  const premiere = new Set(rows.filter((r) => r.source === 'premiere').map(show));
+  const dupes = rows.filter((r) => r.source === 'elcinema-presales' && premiere.has(show(r))).map((r) => r.id);
+  for (let i = 0; i < dupes.length; i += 200) {
+    const { error } = await db.from('showtimes').delete().in('id', dupes.slice(i, i + 200));
+    if (error) throw new Error(`booking duplicates: ${error.message}`);
+  }
 }
 
 /**

@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Approximate is enough: cinemas are only sorted by distance. -->
+    <!-- Precise when allowed, so the map's "you are here" dot is where you
+         are; Android still lets the user grant approximate only. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- "Tickets are out" notifications (Android 13+ asks the user). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application

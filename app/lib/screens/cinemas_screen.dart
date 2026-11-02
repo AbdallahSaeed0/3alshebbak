@@ -25,6 +25,15 @@ class _CinemasScreenState extends State<CinemasScreen> {
   bool _map = false;
   bool _locating = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // The kept spot may be from days ago; refresh it if we're allowed to.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) refreshSpotQuietly(AppScope.of(context).prefs);
+    });
+  }
+
   Future<void> _nearMe() async {
     setState(() => _locating = true);
     final problem = await refreshSpot(AppScope.of(context).prefs);
