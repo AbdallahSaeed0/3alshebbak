@@ -36,6 +36,17 @@ abstract class LiveSource {
     void Function(LiveShows) partial,
   );
 
+  /// Reads [movie] afresh and keeps it on the phone, for the background
+  /// refresh (background_refresh.dart). Failures are left for next time.
+  Future<void> refresh(Movie movie, String today, Set<String> known) async {
+    try {
+      final shows = await read(movie, today, known, (_) {});
+      await (await LiveCache.open())?.write(id, movie.id, shows);
+    } catch (e) {
+      debugPrint('$id background refresh of ${movie.title}: $e');
+    }
+  }
+
   Stream<LiveShows> watch(
     Movie movie,
     String today, {

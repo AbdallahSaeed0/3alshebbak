@@ -12,6 +12,7 @@ import 'screens/film_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'screens/splash_screen.dart';
+import 'services/background_refresh.dart';
 import 'services/home_widget_sync.dart';
 import 'services/premiere_live.dart';
 import 'services/push.dart';
@@ -26,6 +27,8 @@ void main() {
   // early doesn't wait for them.
   PremiereLive.instance.warmUp();
   VoxLive.instance.warmUp();
+  // And about hourly in the background, so they're fresh without opening the app.
+  BackgroundRefresh.schedule();
   runApp(
     App(
       repository: FallbackShowtimesRepository(

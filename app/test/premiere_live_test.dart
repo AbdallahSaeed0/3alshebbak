@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:html/parser.dart' as html;
 import 'package:shebbak/data/models.dart';
+import 'package:shebbak/services/background_refresh.dart';
 import 'package:shebbak/services/live_shows.dart';
 import 'package:shebbak/services/premiere_live.dart';
 import 'package:shebbak/services/vox_live.dart';
@@ -160,6 +161,34 @@ void main() {
       await cache.read('premiere', 'tmdb:1', now: saved.add(const Duration(hours: 13))),
       isNull,
     );
+  });
+
+  test('the background refresh reads followed films first, then recent ones', () {
+    final films = BackgroundRefresh.films(
+      following: ['tmdb:1', 'tmdb:gone'],
+      recent: ['tmdb:2', 'tmdb:1', 'tmdb:3'],
+      inCatalog: (id) => id != 'tmdb:gone',
+    );
+    expect(films, ['tmdb:1', 'tmdb:2', 'tmdb:3']);
+    expect(
+      BackgroundRefresh.films(
+        following: [for (var i = 0; i < 20; i++) 'tmdb:$i'],
+        recent: const [],
+        inCatalog: (_) => true,
+      ),
+      hasLength(BackgroundRefresh.maxFilms),
+    );
+  });
+
+  test('the phone cache knows which films were read lately', () async {
+    final dir = await Directory.systemTemp.createTemp('live');
+    addTearDown(() => dir.delete(recursive: true));
+    final cache = LiveCache.at(dir);
+    final now = DateTime(2026, 11, 2, 20);
+    await cache.write('vox', 'tmdb:old', LiveShows.none, now: now.subtract(const Duration(days: 9)));
+    await cache.write('vox', 'tmdb:a', LiveShows.none, now: now.subtract(const Duration(days: 2)));
+    await cache.write('premiere', 'tmdb:b', LiveShows.none, now: now.subtract(const Duration(hours: 1)));
+    expect(await cache.recentMovies(now: now), ['tmdb:b', 'tmdb:a']);
   });
 
   test('Cairo is UTC+3 in summer time, +2 otherwise', () {

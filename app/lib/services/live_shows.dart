@@ -108,6 +108,7 @@ class LiveCache {
       await tmp.writeAsString(
         jsonEncode({
           'savedAt': (now ?? DateTime.now()).toIso8601String(),
+          'movieId': movieId,
           'shows': shows.toJson(),
         }),
       );
@@ -115,6 +116,33 @@ class LiveCache {
     } catch (e) {
       debugPrint('Live-shows cache not written: $e');
     }
+  }
+
+  /// Films read in the last [within] (opened, or refreshed since), newest first.
+  Future<List<String>> recentMovies({
+    Duration within = const Duration(days: 7),
+    DateTime? now,
+  }) async {
+    final since = (now ?? DateTime.now()).subtract(within);
+    final found = <String, DateTime>{};
+    try {
+      await for (final f in _dir.list()) {
+        if (f is! File || !f.path.endsWith('.json')) continue;
+        try {
+          final saved = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
+          final id = saved['movieId'] as String?;
+          final at = DateTime.parse(saved['savedAt'] as String);
+          if (id != null && at.isAfter(since) && (found[id]?.isBefore(at) ?? true)) {
+            found[id] = at;
+          }
+        } catch (_) {
+          // A half-written or old file: skip it.
+        }
+      }
+    } catch (e) {
+      debugPrint('Live-shows cache unlistable: $e');
+    }
+    return found.keys.toList()..sort((a, b) => found[b]!.compareTo(found[a]!));
   }
 }
 
