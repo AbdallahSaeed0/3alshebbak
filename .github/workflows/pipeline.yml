@@ -33,6 +33,7 @@ jobs:
       SCRAPER_CONTACT: ${{ secrets.SCRAPER_CONTACT }}
       # Optional: without it the run skips push notifications.
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      CINEMA_FETCH_URL: https://enmcbbwunzhjxgwehzuf.supabase.co/functions/v1/cinema-fetch
     steps:
       - uses: actions/checkout@v4
 
@@ -43,6 +44,9 @@ jobs:
           cache-dependency-path: scraper/package-lock.json
 
       - run: npm ci
+
+      - name: Configure independent pipeline watchdog
+        run: npx tsx src/configure-watchdog.ts
 
       # No browser to install: Premiere, the one source that needs it, blocks
       # these servers (the app reads it on the phone).

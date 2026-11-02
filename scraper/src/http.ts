@@ -1,5 +1,6 @@
 // Polite HTTP for the plain-HTML sources: identifies itself honestly, caps
 // concurrency per run, and retries a page once or twice before giving up on it.
+import { cinemaFetch, cinemaRelayConfigured } from './cinema-fetch.js';
 
 // `||`: CI passes an unset secret as an empty string.
 const CONTACT = process.env.SCRAPER_CONTACT || 'https://github.com/AbdallahSaeed0/3alshebbak';
@@ -11,6 +12,11 @@ export async function fetchText(url: string, retries = 2): Promise<string> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      if (new URL(url).hostname.endsWith('rnscinemas.com') && cinemaRelayConfigured()) {
+        const response = await cinemaFetch(url, 'GET', { 'accept-language': 'en' });
+        if (response.status !== 200) throw new Error(`HTTP ${response.status}`);
+        return response.body;
+      }
       const res = await fetch(url, {
         headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en' },
         signal: AbortSignal.timeout(TIMEOUT_MS),

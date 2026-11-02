@@ -14,6 +14,7 @@
 import { fileURLToPath } from 'node:url';
 import type { Page } from 'playwright';
 import { newContext } from '../browser.js';
+import { cinemaFetch, cinemaRelayConfigured } from '../cinema-fetch.js';
 import { errorMessage, hallName } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
 import { addDays, cairoToday, presaleFrom, showStart } from '../time.js';
@@ -70,6 +71,23 @@ export const premiere: Source = {
   async scrape() {
     const out = new ResultBuilder('premiere');
     const context = await newContext();
+    if (cinemaRelayConfigured()) {
+      await context.route('**/*', async (route) => {
+        const request = route.request();
+        const host = new URL(request.url()).hostname;
+        if (['image', 'media', 'font', 'stylesheet'].includes(request.resourceType()) ||
+            !['www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com'].includes(host)) {
+          return route.abort();
+        }
+        try {
+          const response = await cinemaFetch(request.url(), request.method(), await request.allHeaders(), request.postData() ?? undefined);
+          await route.fulfill({ status: response.status, headers: response.headers, body: response.body });
+        } catch (error) {
+          out.warn(`Premiere transport: ${errorMessage(error)}`);
+          await route.abort();
+        }
+      });
+    }
     await context.addInitScript({ path: PAGE_SCRIPT });
     const from = presaleFrom();
     // From today: branches elCinema doesn't list (Nile Cinema, Galaxy elManial) need every day.

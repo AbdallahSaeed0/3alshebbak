@@ -13,7 +13,7 @@ import { Fcm, StaleToken } from './fcm.js';
 import { errorMessage } from './http.js';
 import { cairoToday } from './time.js';
 
-export type Seen = { movie_id: string; cinema_id: string; business_date: string; starts_at: string };
+export type Seen = { movie_id: string; cinema_id: string; business_date: string; starts_at: string; first_seen_at?: string };
 type Device = { token: string; following: string[]; cinemas: string[] };
 
 export type Alert =
@@ -132,7 +132,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const fresh = await all<Seen>(() =>
     db
       .from('showtimes_seen')
-      .select('movie_id,cinema_id,business_date,starts_at')
+      .select('movie_id,cinema_id,business_date,starts_at,first_seen_at')
       .gte('first_seen_at', since)
       .lt('first_seen_at', now)
       .gt('starts_at', now)
@@ -145,6 +145,20 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     db.from('devices').select('token,following,cinemas').overlaps('following', movieIds).order('token'),
   );
   if (!devices.length) return console.log(`  notifications: ${movieIds.length} films got showtimes, nobody follows them`);
+
+  // Successful devices advance independently of failed devices. This survives
+  // midnight, unlike the per-day rate limit in notifications_sent.
+  const progress = await all<{ token: string; movie_id: string; checked_through: string }>(() =>
+    db.from('notification_progress').select('token,movie_id,checked_through')
+      .in('movie_id', movieIds).order('token').order('movie_id'),
+  );
+  const checked = new Map(progress.map((p) => [`${p.token}|${p.movie_id}`, p.checked_through]));
+  const advance = async (token: string, movie_id: string) => {
+    const { error } = await db.from('notification_progress').upsert(
+      { token, movie_id, checked_through: now }, { onConflict: 'token,movie_id' },
+    );
+    if (error) throw new Error(`save device notification progress: ${error.message}`);
+  };
 
   const followed = movieIds.filter((id) => devices.some((d) => d.following.includes(id)));
   const before = await all<Seen>(() =>
@@ -180,7 +194,12 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       device.cinemas.length ? rows.filter((r) => device.cinemas.includes(r.cinema_id)) : rows;
 
     for (const movieId of device.following) {
-      const alert = alertFor(mine(freshBy.get(movieId) ?? []), mine(beforeBy.get(movieId) ?? []));
+      const through = checked.get(`${device.token}|${movieId}`);
+      const rows = mine(freshBy.get(movieId) ?? []);
+      const handled = (row: Seen) => !!through && !!row.first_seen_at && row.first_seen_at < through;
+      const alert = alertFor(rows.filter((r) => !handled(r)), [
+        ...mine(beforeBy.get(movieId) ?? []), ...rows.filter(handled),
+      ]);
       if (!alert) continue;
 
       // The primary key makes this the once-a-day check: a second insert fails.
@@ -188,7 +207,12 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
         .from('notifications_sent')
         .insert({ token: device.token, movie_id: movieId, sent_on: today });
       if (seen) {
-        if (seen.code === '23505') continue;
+        if (seen.code === '23505') {
+          // Consume updates intentionally suppressed by today's rate limit,
+          // so another phone's retry cannot resurrect them tomorrow.
+          await advance(device.token, movieId);
+          continue;
+        }
         throw new Error(`reserve notification: ${seen.message}`);
       }
 
@@ -198,7 +222,6 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
           ...message(alert, title.get(movieId) ?? movieId, (id) => label.get(id) ?? id),
           data: { movieId },
         });
-        counts[alert.kind]++;
       } catch (e) {
         // A failed send must not consume today's notification or advance the
         // checkpoint: the next run needs to pick this alert up again.
@@ -212,7 +235,10 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
         }
         failed = true;
         console.log(`  ! notification to …${device.token.slice(-6)}: ${errorMessage(e)}`);
+        continue;
       }
+      await advance(device.token, movieId);
+      counts[alert.kind]++;
     }
   }
   console.log(
