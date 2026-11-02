@@ -1,5 +1,6 @@
-// Renaissance Cinemas (rnscinemas.com). Plain server-rendered HTML, no bot
-// protection: one page per branch per day, `/en/cinemas/<branch>/<dd-mm-yyyy>`.
+// Renaissance Cinemas (rnscinemas.com). Plain server-rendered HTML:
+// one page per branch per day, `/en/cinemas/<branch>/<dd-mm-yyyy>`.
+// CI uses the private Supabase transport because GitHub IPs are unreliable.
 // Every showtime link carries its own data-* attributes (branch, day, time,
 // after-midnight flag, booking URL), so parsing doesn't depend on layout classes
 // beyond the per-movie block.

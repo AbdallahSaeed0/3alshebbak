@@ -7,9 +7,9 @@
 // For branches elCinema lists, this adds only presale days past elCinema's
 // week, filed under elCinema's cinema. Branches elCinema doesn't list (Nile
 // Cinema, Galaxy elManial) get every day, as premiere:* cinemas. Cloudflare
-// turns GitHub's runners away from this site, so the workflow doesn't run it:
-// the app reads Premiere on the phone instead (app/lib/services/premiere_live.dart,
-// with a copy of premiere.page.js). This stays for running by hand.
+// turns GitHub's runners away from this site, so in CI the anonymous browser
+// requests are transported through the private Supabase cinema-fetch function.
+// The phone still supports reading it directly as well.
 
 import { fileURLToPath } from 'node:url';
 import type { Page } from 'playwright';

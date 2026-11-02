@@ -48,9 +48,6 @@ jobs:
       - name: Configure independent pipeline watchdog
         run: npx tsx src/configure-watchdog.ts
 
-      # No browser to install: Premiere, the one source that needs it, blocks
-      # these servers (the app reads it on the phone).
-
       # TMDB lookups are cached for a week; keep the cache between runs.
       - name: Restore TMDB cache
         uses: actions/cache/restore@v4
@@ -67,17 +64,19 @@ jobs:
           if [ -n "$REQUESTED_SOURCES" ]; then
             for source in $REQUESTED_SOURCES; do
               case "$source" in
-                renaissance|scene|elcinema|vox) ;;
+                renaissance|scene|elcinema|vox|premiere) ;;
                 *) echo "Unknown source: $source"; exit 1 ;;
               esac
             done
             # Normalize whitespace before passing the allowlisted names on.
             echo "list=$(echo $REQUESTED_SOURCES)" >> "$GITHUB_OUTPUT"
           else
-            # First slot of the hour: everything. Premiere's own site blocks
-            # these servers; the app reads Premiere on the phone instead.
-            echo "list=renaissance scene elcinema vox" >> "$GITHUB_OUTPUT"
+            echo "list=renaissance scene elcinema vox premiere" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Install Premiere browser
+        if: contains(steps.sources.outputs.list, 'premiere')
+        run: npx playwright install --with-deps chromium
 
       - name: Scrape and sync
         run: npm run pipeline -- ${{ steps.sources.outputs.list }}
