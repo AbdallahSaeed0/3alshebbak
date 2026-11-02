@@ -59,7 +59,7 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
         'lat,lng,location_approximate',
       ),
       _get(
-        'movies?select=id,tmdb_id,title,title_ar,overview,poster_path,backdrop_path,'
+        'movies?select=id,tmdb_id,title,title_ar,original_title,overview,poster_path,backdrop_path,'
         'release_date,runtime,genres,fallback_poster_url',
       ),
       // The first page also says how many rows there are in all.
@@ -114,6 +114,7 @@ CatalogData _parse(List<String> bodies) {
         tmdbId: m['tmdb_id'] as int?,
         title: m['title'] as String,
         titleAr: m['title_ar'] as String?,
+        originalTitle: m['original_title'] as String?,
         overview: m['overview'] as String?,
         posterPath: m['poster_path'] as String?,
         backdropPath: m['backdrop_path'] as String?,

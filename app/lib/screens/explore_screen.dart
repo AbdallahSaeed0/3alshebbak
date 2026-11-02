@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
+import '../data/models.dart';
 import '../theme.dart';
 import '../util/format.dart';
+import '../util/search.dart';
 import '../widgets/common.dart';
 import '../widgets/schedule.dart';
+import 'cinema_screen.dart';
 import 'film_screen.dart';
 
 /// Browse and search: what's showing this week (or opening later), filtered
-/// by experience and by "my cinemas only".
+/// by experience and by "my cinemas only". A search also lists the cinemas
+/// it matches.
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
 
@@ -32,17 +36,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
     final query = _search.text;
+    final q = SearchQuery(query);
     final showing = _comingSoon
         ? null
         : data.nowShowing(query: query, format: _format, mineOnly: _mineOnly);
     final upcoming = _comingSoon
         ? [
             for (final u in data.upcoming(minDaysAhead: 1, maxDaysAhead: 365))
-              if (query.isEmpty ||
-                  u.movie.title.toLowerCase().contains(query.toLowerCase()))
-                u,
+              if (AppData.movieMatches(u.movie, q)) u,
           ]
         : null;
+    final cinemas = q.isEmpty ? const <Cinema>[] : data.cinemas(query: query);
     final count = showing?.length ?? upcoming!.length;
 
     return SafeArea(
@@ -62,7 +66,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     onChanged: (_) => setState(() {}),
                     style: AppText.body(14),
                     decoration: InputDecoration(
-                      hintText: 'اسم الفيلم',
+                      hintText: 'فيلم أو سينما، عربي أو إنجليزي',
                       hintStyle: AppText.body(14, color: AppColors.muted),
                       prefixIcon: const Icon(
                         Icons.search,
@@ -117,6 +121,42 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
           ),
+          if (cinemas.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+                child: Text(
+                  cinemaCount(cinemas.length),
+                  style: AppText.body(12, color: AppColors.muted),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 40,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: cinemas.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) => ActionChip(
+                    avatar: const Icon(
+                      Icons.theaters,
+                      size: 16,
+                      color: AppColors.gold,
+                    ),
+                    label: Text(
+                      cinemas[i].label,
+                      style: AppText.body(13, weight: FontWeight.w600),
+                    ),
+                    backgroundColor: AppColors.surface,
+                    side: const BorderSide(color: AppColors.hairline),
+                    onPressed: () => openCinema(context, cinemas[i]),
+                  ),
+                ),
+              ),
+            ),
+          ],
           if (!_comingSoon) ...[
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
             SliverToBoxAdapter(

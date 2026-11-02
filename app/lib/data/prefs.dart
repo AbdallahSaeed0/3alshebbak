@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 typedef Spot = ({double lat, double lng});
 
 /// What the user picked, kept on the device: their cinemas, the films they
-/// follow, where they are, and whether they've been through onboarding.
+/// follow, where they are, which city Home shows, and whether they've been
+/// through onboarding.
 /// Screens rebuild when it changes (see AppScope).
 class Prefs extends ChangeNotifier {
   Prefs._(
@@ -14,6 +15,7 @@ class Prefs extends ChangeNotifier {
     this._following,
     this._spot,
     this._onboarded,
+    this._homeCity,
   );
 
   /// In-memory only, for tests.
@@ -22,22 +24,25 @@ class Prefs extends ChangeNotifier {
     Set<String>? following,
     Spot? spot,
     bool onboarded = true,
+    String? homeCity,
   }) : _store = null,
        _cinemas = cinemas ?? {...defaultCinemas},
        _following = following ?? {},
        _spot = spot,
-       _onboarded = onboarded;
+       _onboarded = onboarded,
+       _homeCity = homeCity;
 
   static const _cinemasKey = 'my_cinemas';
   static const _followingKey = 'following';
   static const _spotKey = 'spot';
   static const _onboardedKey = 'onboarded';
+  static const _homeCityKey = 'home_city';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
     'elcinema:city-centre-almaza',
     'elcinema:mall-of-egypt',
-    'premiere:premiere-point90',
+    'elcinema:premiere-point90',
     'scene:cfc',
     'renaissance:downtown',
   };
@@ -61,6 +66,7 @@ class Prefs extends ChangeNotifier {
           ? (lat: double.parse(spot[0]), lng: double.parse(spot[1]))
           : null,
       store.getBool(_onboardedKey) ?? false,
+      store.getString(_homeCityKey),
     );
   }
 
@@ -69,11 +75,15 @@ class Prefs extends ChangeNotifier {
   final Set<String> _following;
   Spot? _spot;
   bool _onboarded;
+  String? _homeCity;
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
   Spot? get spot => _spot;
   bool get onboarded => _onboarded;
+
+  /// Home shows every cinema in this city; null shows my cinemas.
+  String? get homeCity => _homeCity;
 
   bool isMine(String cinemaId) => _cinemas.contains(cinemaId);
   bool isFollowing(String movieId) => _following.contains(movieId);
@@ -101,6 +111,22 @@ class Prefs extends ChangeNotifier {
   void setSpot(Spot spot) {
     _spot = spot;
     _store?.setStringList(_spotKey, ['${spot.lat}', '${spot.lng}']);
+    notifyListeners();
+  }
+
+  void clearSpot() {
+    _spot = null;
+    _store?.remove(_spotKey);
+    notifyListeners();
+  }
+
+  void setHomeCity(String? city) {
+    _homeCity = city;
+    if (city == null) {
+      _store?.remove(_homeCityKey);
+    } else {
+      _store?.setString(_homeCityKey, city);
+    }
     notifyListeners();
   }
 

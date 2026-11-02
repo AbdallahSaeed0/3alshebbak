@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -62,6 +64,7 @@ class _AppState extends State<App> {
       navigatorKey: _navigator,
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
+      scrollBehavior: const _DragToScroll(),
       // Arabic-first: the whole app lays out right-to-left.
       locale: const Locale('ar', 'EG'),
       supportedLocales: const [Locale('ar', 'EG'), Locale('en')],
@@ -81,4 +84,17 @@ class _AppState extends State<App> {
       ),
     );
   }
+}
+
+/// Rows of pills and cards drag with a mouse too, not only a finger — on the
+/// web a horizontal list otherwise only moves with a trackpad or shift+wheel.
+class _DragToScroll extends MaterialScrollBehavior {
+  const _DragToScroll();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    ...super.dragDevices,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+  };
 }

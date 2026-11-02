@@ -31,7 +31,9 @@ void main() {
 
   AppData dataAt(Spot? spot) => AppData(
     CatalogData(
-      cinemas: {for (final c in [alex, unpinned, almaza, cfc]) c.id: c},
+      cinemas: {
+        for (final c in [alex, unpinned, almaza, cfc]) c.id: c,
+      },
       movies: const {},
       showtimes: const [],
     ),
@@ -46,10 +48,12 @@ void main() {
   test('cinemas sort nearest first, unpinned ones last', () {
     // Standing in New Cairo, a few hundred metres from Festival City.
     final data = dataAt((lat: 30.03, lng: 31.41));
-    expect(
-      data.byDistance(data.prefs.spot!).map((c) => c.id),
-      [cfc.id, almaza.id, alex.id, unpinned.id],
-    );
+    expect(data.byDistance(data.prefs.spot!).map((c) => c.id), [
+      cfc.id,
+      almaza.id,
+      alex.id,
+      unpinned.id,
+    ]);
     expect(distance(data.distanceKm(cfc)!), '300 م');
   });
 

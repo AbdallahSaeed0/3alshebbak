@@ -7,6 +7,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
+import 'settings_screen.dart';
 import 'showtime_sheet.dart';
 
 /// "What's on", most urgent first: starting soon, tickets just opened,
@@ -23,6 +24,8 @@ class HomeScreen extends StatelessWidget {
     final opened = data.upcoming(minDaysAhead: 1, maxDaysAhead: 7);
     final today = data.showingToday();
     final coming = data.upcoming(minDaysAhead: 8, maxDaysAhead: 365);
+    final city = data.prefs.homeCity;
+    final where = city == null ? 'سينماتك' : 'سينمات ${cityName(city)}';
 
     return CustomScrollView(
       slivers: [
@@ -33,13 +36,13 @@ class HomeScreen extends StatelessWidget {
             title: 'قرّب يبدأ',
             leading: const _Dot(color: AppColors.amber),
             subtitle:
-                'حفلات في سينماتك خلال ٣ ساعات · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+                'حفلات في $where خلال ٣ ساعات · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
           ),
         ),
         _gap(8),
         SliverToBoxAdapter(
           child: soon.isEmpty
-              ? const _Empty('مفيش حفلات في سينماتك خلال الـ٣ ساعات الجاية')
+              ? _Empty('مفيش حفلات في $where خلال الـ٣ ساعات الجاية')
               : SizedBox(
                   height: 132,
                   child: ListView.separated(
@@ -84,14 +87,12 @@ class HomeScreen extends StatelessWidget {
           child: SectionHeader(
             title: 'النهارده في السينما',
             subtitle:
-                '${dayLabel(data.today)} · في سينماتك الـ${data.myCinemaIds.length}',
+                '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
           ),
         ),
         _gap(12),
         if (today.isEmpty)
-          const SliverToBoxAdapter(
-            child: _Empty('خلصت حفلات النهارده في سينماتك'),
-          )
+          SliverToBoxAdapter(child: _Empty('خلصت حفلات النهارده في $where'))
         else
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -167,13 +168,14 @@ class _Header extends StatelessWidget {
                 ),
                 const Spacer(),
                 _PillButton(
-                  onPressed: () {},
+                  onPressed: () => showCityPicker(context),
+                  tooltip: 'السينمات اللي تظهر هنا',
                   child: Row(
                     children: [
-                      Text(
-                        'القاهرة',
-                        style: AppText.body(13, weight: FontWeight.w600),
-                      ),
+                      Text(switch (AppScope.of(context).prefs.homeCity) {
+                        null => 'سينماتي',
+                        final city => cityName(city),
+                      }, style: AppText.body(13, weight: FontWeight.w600)),
                       const Icon(
                         Icons.expand_more,
                         size: 16,
@@ -184,7 +186,7 @@ class _Header extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 _PillButton(
-                  onPressed: () {},
+                  onPressed: () => openSettings(context),
                   tooltip: 'الإعدادات',
                   child: const Icon(Icons.settings_outlined, size: 20),
                 ),

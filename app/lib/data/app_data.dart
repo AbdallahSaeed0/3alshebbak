@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../util/format.dart';
+import '../util/search.dart';
 import 'models.dart';
 import 'prefs.dart';
 import 'repository.dart';
@@ -101,9 +103,33 @@ class AppData {
   Cinema cinema(String id) => catalog.cinemas[id]!;
   Movie movie(String id) => catalog.movies[id]!;
 
-  bool _isMine(Showtime s) => prefs.isMine(s.cinemaId);
+  /// What Home shows: my cinemas, or every cinema in the city picked there.
+  bool _onHome(Showtime s) {
+    final city = prefs.homeCity;
+    return city == null
+        ? prefs.isMine(s.cinemaId)
+        : catalog.cinemas[s.cinemaId]?.city == city;
+  }
 
-  /// The next show of each movie at my cinemas within [window], soonest first.
+  /// How many cinemas Home covers.
+  int get homeCinemaCount {
+    final city = prefs.homeCity;
+    return city == null
+        ? prefs.myCinemas.where(catalog.cinemas.containsKey).length
+        : catalog.cinemas.values.where((c) => c.city == city).length;
+  }
+
+  /// Cities with cinemas and how many, most first.
+  List<(String, int)> get cities {
+    final counts = <String, int>{};
+    for (final c in catalog.cinemas.values) {
+      if (c.city case final city?) counts[city] = (counts[city] ?? 0) + 1;
+    }
+    return [for (final e in counts.entries) (e.key, e.value)]
+      ..sort((a, b) => b.$2.compareTo(a.$2));
+  }
+
+  /// The next show of each movie on Home within [window], soonest first.
   List<Showtime> startingSoon({Duration window = const Duration(hours: 3)}) {
     final until = now.add(window);
     final seen = <String>{};
@@ -111,17 +137,17 @@ class AppData {
       for (final s in catalog.showtimes)
         if (s.startsAt.isAfter(now) &&
             !s.startsAt.isAfter(until) &&
-            _isMine(s) &&
+            _onHome(s) &&
             seen.add(s.movieId))
           s,
     ];
   }
 
-  /// Movies with shows still to come today at my cinemas, busiest first.
+  /// Movies with shows still to come today on Home, busiest first.
   List<MovieDay> showingToday() {
     final byMovie = <String, List<Showtime>>{};
     for (final s in catalog.showtimes) {
-      if (s.businessDate == today && s.startsAt.isAfter(now) && _isMine(s)) {
+      if (s.businessDate == today && s.startsAt.isAfter(now) && _onHome(s)) {
         (byMovie[s.movieId] ??= []).add(s);
       }
     }
@@ -218,7 +244,7 @@ class AppData {
     bool mineOnly = false,
   }) {
     final weekEnd = isoDate(DateTime.parse(today).add(const Duration(days: 7)));
-    final q = query.trim().toLowerCase();
+    final q = SearchQuery(query);
     final cinemas = <String, Set<String>>{};
     final shows = <String, int>{};
     for (final s in catalog.showtimes) {
@@ -232,7 +258,7 @@ class AppData {
     }
     final list = [
       for (final e in cinemas.entries)
-        if (q.isEmpty || _matches(movie(e.key), q))
+        if (movieMatches(movie(e.key), q))
           MovieSummary(movie(e.key), e.value.length, shows[e.key]!),
     ];
     list.sort(
@@ -243,20 +269,25 @@ class AppData {
     return list;
   }
 
-  static bool _matches(Movie m, String q) =>
-      m.title.toLowerCase().contains(q) || (m.titleAr?.contains(q) ?? false);
+  /// By any of its titles, Arabic or English, or its genre.
+  static bool movieMatches(Movie m, SearchQuery q) =>
+      q.matches([m.title, m.titleAr, m.originalTitle, ...m.genres]);
+
+  /// By name (either language), chain, area or city.
+  static bool cinemaMatches(Cinema c, SearchQuery q) => q.matches([
+    c.label,
+    c.nameAr,
+    c.chain,
+    if (c.area != null) ...[c.area, areaName(c.area!)],
+    if (c.city != null) ...[c.city, cityName(c.city!)],
+  ]);
 
   /// All cinemas: mine first, then by city and name.
   List<Cinema> cinemas({String query = ''}) {
-    final q = query.trim().toLowerCase();
+    final q = SearchQuery(query);
     final list = [
       for (final c in catalog.cinemas.values)
-        if (q.isEmpty ||
-            c.label.toLowerCase().contains(q) ||
-            (c.nameAr?.contains(q) ?? false) ||
-            (c.area?.toLowerCase().contains(q) ?? false) ||
-            (c.city?.toLowerCase().contains(q) ?? false))
-          c,
+        if (cinemaMatches(c, q)) c,
     ];
     list.sort((a, b) {
       final mine = (prefs.isMine(b.id) ? 1 : 0) - (prefs.isMine(a.id) ? 1 : 0);

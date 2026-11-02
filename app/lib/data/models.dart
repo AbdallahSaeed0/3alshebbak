@@ -59,6 +59,7 @@ class Movie {
     required this.title,
     this.tmdbId,
     this.titleAr,
+    this.originalTitle,
     this.overview,
     this.posterPath,
     this.backdropPath,
@@ -72,6 +73,9 @@ class Movie {
   final int? tmdbId;
   final String title;
   final String? titleAr;
+
+  /// TMDB's original title, when it differs from [title].
+  final String? originalTitle;
   final String? overview;
   final String? posterPath;
   final String? backdropPath;
@@ -80,11 +84,30 @@ class Movie {
   final List<String> genres;
   final String? fallbackPosterUrl;
 
-  /// Arabic title when there is one; the app is Arabic-first.
-  String get displayTitle => titleAr ?? title;
+  /// Made in Arabic: its original title is written in Arabic letters. Films
+  /// TMDB doesn't know only have the chain's title, Arabic when it's Arabic.
+  bool get isArabic {
+    final original = originalTitle ?? (tmdbId == null ? titleAr ?? '' : title);
+    return _arabicLetters.hasMatch(original) &&
+        !_otherScriptLetters.hasMatch(original);
+  }
 
-  /// Shown under the Arabic title when the two differ.
-  String? get subtitle => titleAr != null ? title : null;
+  static final _arabicLetters = RegExp(r'[ء-ي]');
+
+  /// Letters Persian, Kurdish and Urdu add (پ ژ ک ی ە…): a Kurdish title is
+  /// in Arabic script but the film isn't Arabic.
+  static final _otherScriptLetters = RegExp(r'[پ-ۿ]');
+
+  /// Arabic films by their Arabic title, foreign films by their English one —
+  /// the name on the cinema's poster.
+  String get displayTitle =>
+      isArabic ? titleAr ?? originalTitle ?? title : title;
+
+  /// The other title, shown under it when there is one.
+  String? get subtitle {
+    final other = isArabic ? title : titleAr;
+    return other != null && other != displayTitle ? other : null;
+  }
 
   String? get posterUrl => posterPath != null
       ? 'https://image.tmdb.org/t/p/w342$posterPath'
@@ -95,6 +118,7 @@ class Movie {
     tmdbId: j['tmdbId'] as int?,
     title: j['title'] as String,
     titleAr: j['titleAr'] as String?,
+    originalTitle: j['originalTitle'] as String?,
     overview: j['overview'] as String?,
     posterPath: j['posterPath'] as String?,
     backdropPath: j['backdropPath'] as String?,

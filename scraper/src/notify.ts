@@ -78,10 +78,10 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   if (!devices.length) return console.log(`  notifications: ${movieIds.length} films opened days, nobody follows them`);
 
   const [{ data: movies }, { data: cinemas }] = await Promise.all([
-    db.from('movies').select('id,title,title_ar').in('id', movieIds),
+    db.from('movies').select('id,tmdb_id,title,title_ar,original_title').in('id', movieIds),
     db.from('cinemas').select('id,chain,name').in('id', [...new Set([...opened.values()].flatMap((s) => [...s]))]),
   ]);
-  const title = new Map((movies ?? []).map((m) => [m.id, (m.title_ar ?? m.title) as string]));
+  const title = new Map((movies ?? []).map((m) => [m.id, displayTitle(m)]));
   const cinemaLabel = new Map(
     (cinemas ?? []).map((c) => [c.id, c.chain === 'Independent' ? c.name : `${c.chain} · ${c.name}`]),
   );
@@ -121,4 +121,15 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
     }
   }
   console.log(`✓ notifications: ${opened.size} films opened days, ${sent} sent`);
+}
+
+const ARABIC_LETTERS = /[ء-ي]/;
+/** Letters Persian, Kurdish and Urdu add: a Kurdish title is in Arabic script but isn't Arabic. */
+const OTHER_SCRIPT_LETTERS = /[پ-ۿ]/;
+
+/** As the app shows it (Movie.displayTitle): Arabic films by their Arabic title, foreign ones in English. */
+function displayTitle(m: { tmdb_id: number | null; title: string; title_ar: string | null; original_title: string | null }) {
+  const original = m.original_title ?? (m.tmdb_id == null ? (m.title_ar ?? '') : m.title);
+  const arabic = ARABIC_LETTERS.test(original) && !OTHER_SCRIPT_LETTERS.test(original);
+  return arabic ? (m.title_ar ?? m.original_title ?? m.title) : m.title;
 }

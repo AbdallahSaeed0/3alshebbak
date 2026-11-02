@@ -105,3 +105,37 @@ const _cities = {
 
 /// The city in Arabic when we have it.
 String cityName(String city) => _cities[city] ?? city;
+
+const _areas = {
+  '6th of October': '6 أكتوبر',
+  'Agamy': 'العجمي',
+  'Ain Shams': 'عين شمس',
+  'Ain Sokhna': 'العين السخنة',
+  'Corniche': 'الكورنيش',
+  'Dokki': 'الدقي',
+  'Downtown': 'وسط البلد',
+  'El Gouna': 'الجونة',
+  'Garden City': 'جاردن سيتي',
+  'Haram': 'الهرم',
+  'Heliopolis': 'مصر الجديدة',
+  'Maadi': 'المعادي',
+  'Madinaty': 'مدينتي',
+  'Manial': 'المنيل',
+  'Moharam Bek': 'محرم بك',
+  'Montazah': 'المنتزه',
+  'Nasr City': 'مدينة نصر',
+  'New Cairo': 'التجمع',
+  'New Sohag': 'سوهاج الجديدة',
+  'Obour City': 'العبور',
+  'Port Tawfik': 'بور توفيق',
+  'Rehab City': 'الرحاب',
+  'Roshdy': 'رشدي',
+  'San Stefano': 'سان ستيفانو',
+  'Shebin El Kom': 'شبين الكوم',
+  'Sheikh Zayed': 'الشيخ زايد',
+  'Smouha': 'سموحة',
+  'Zamalek': 'الزمالك',
+};
+
+/// The area in Arabic when we have it.
+String areaName(String area) => _areas[area] ?? area;
