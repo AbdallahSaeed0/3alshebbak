@@ -1,13 +1,13 @@
 # Keeps عالشباك's showtimes fresh: scrape the cinemas, match films to TMDB,
-# upload to Supabase. Every 30 minutes for the chains' own sites; elCinema
-# (VOX + the smaller cinemas, ~11 min of polite paging) and VOX's presales
-# once an hour.
+# upload to Supabase. VOX's presales every 10 minutes (about a minute of
+# polite paging, so a new release's booking shows up fast); Renaissance and
+# Scene every 30; elCinema (VOX's week + the smaller cinemas, ~11 min) hourly.
 
 name: Showtimes pipeline
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       sources:
@@ -45,13 +45,8 @@ jobs:
 
       - run: npm ci
 
-      # Premiere needs a real browser (its showtime API is encrypted).
-      - name: Cache Playwright browser
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
-      - run: npx playwright install --with-deps chromium
+      # No browser to install: Premiere, the one source that needs it, blocks
+      # these servers (the app reads it on the phone).
 
       # TMDB lookups are cached for a week; keep the cache between runs.
       - name: Restore TMDB cache
@@ -64,15 +59,18 @@ jobs:
       - name: Pick sources
         id: sources
         run: |
+          # Scheduled runs start a few minutes late, so go by the 10-minute slot.
+          slot=$(( 10#$(date -u +%M) / 10 ))
           if [ -n "${{ github.event.inputs.sources }}" ]; then
             echo "list=${{ github.event.inputs.sources }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%M)" -lt 30 ]; then
-            # The first run of each hour includes elCinema, and VOX's presale
-            # days past elCinema's week. Premiere's own site blocks these
-            # servers; its presales come from scripts/presales.ps1 at home.
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$slot" -eq 0 ]; then
+            # First slot of the hour: everything. Premiere's own site blocks
+            # these servers; the app reads Premiere on the phone instead.
             echo "list=renaissance scene elcinema vox" >> "$GITHUB_OUTPUT"
+          elif [ "$slot" -eq 3 ]; then
+            echo "list=renaissance scene vox" >> "$GITHUB_OUTPUT"
           else
-            echo "list=renaissance scene" >> "$GITHUB_OUTPUT"
+            echo "list=vox" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Scrape and sync

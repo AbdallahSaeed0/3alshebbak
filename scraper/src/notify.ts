@@ -101,8 +101,8 @@ const MAX_LOOKBACK_MS = 24 * 3600_000;
 
 /**
  * Where the last alerts check stopped. Showtimes added since, by this run or
- * by a sync that couldn't send pushes (Premiere's, from a home computer), are
- * what's new now.
+ * by a sync that couldn't send pushes (one run by hand without the Firebase
+ * key), are what's new now.
  */
 async function lastCheck(db: SupabaseClient, runStartedAt: string): Promise<string> {
   const { data } = await db
