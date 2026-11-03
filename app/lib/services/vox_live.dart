@@ -49,7 +49,8 @@ class VoxLive extends LiveSource {
     final started = DateTime.now();
     try {
       final listing = voxListing(await _get('/movies/whatson'));
-      if (listing.isEmpty) throw Exception('no films on VOX\'s what\'s-on page');
+      if (listing.isEmpty)
+        throw Exception('no films on VOX\'s what\'s-on page');
       debugPrint(
         'vox: listing in ${DateTime.now().difference(started).inMilliseconds} ms',
       );
@@ -124,7 +125,10 @@ List<VoxListing> voxListing(dom.Document doc) => [
 ];
 
 /// One cinema's halls and times on a VOX film page.
-typedef VoxCinema = ({String name, List<({String hall, List<String> times})> halls});
+typedef VoxCinema = ({
+  String name,
+  List<({String hall, List<String> times})> halls,
+});
 
 /// A VOX film page: the day it shows, links to its other days, and the times.
 class VoxFilmPage {
@@ -181,7 +185,8 @@ const _listedCinemas = {
 LiveShows voxShows({
   required String movieId,
   required String today,
-  required List<(VoxListing, VoxFilmPage, List<(String, List<VoxCinema>)>)> films,
+  required List<(VoxListing, VoxFilmPage, List<(String, List<VoxCinema>)>)>
+  films,
 }) {
   final shows = <Showtime>[];
   final cinemas = <String, Cinema>{};
@@ -201,7 +206,9 @@ LiveShows voxShows({
             cinemaId: cinemaId,
             businessDate: date,
             clock: t,
-            format: film.experience == null ? hall : '$hall · ${film.experience}',
+            format: film.experience == null
+                ? hall
+                : '$hall · ${film.experience}',
             bookingUrl: 'https://egy.voxcinemas.com/movies/${film.slug}',
           );
           if (show != null) shows.add(show);
@@ -213,7 +220,11 @@ LiveShows voxShows({
   for (final (film, first, rest) in films) {
     add(dayFromLabel(first.shownLabel, today), first.cinemas, film);
     for (final (ymd, onDay) in rest) {
-      add('${ymd.substring(0, 4)}-${ymd.substring(4, 6)}-${ymd.substring(6)}', onDay, film);
+      add(
+        '${ymd.substring(0, 4)}-${ymd.substring(4, 6)}-${ymd.substring(6)}',
+        onDay,
+        film,
+      );
     }
   }
   shows.sort((a, b) => a.startsAt.compareTo(b.startsAt));

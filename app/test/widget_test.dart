@@ -49,6 +49,17 @@ void main() {
     expect(data.showingToday().single.showtimes.length, 3);
   });
 
+  test('once tonight\'s last show has started, Home is about tomorrow', () {
+    expect(data.homeDay, '2026-11-01');
+    final late = AppData(
+      catalog,
+      Prefs.memory(cinemas: {'scene:cfc'}),
+      now: DateTime.parse('2026-11-02T01:00:00+02:00'),
+    );
+    expect(late.today, '2026-11-01');
+    expect(late.homeDay, '2026-11-02');
+  });
+
   test('up next is each film\'s next show at my cinemas, soonest first', () {
     final soon = data.nextAtMyCinemas();
     expect(soon.first.wallClock.hour, 19);

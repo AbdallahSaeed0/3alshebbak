@@ -34,7 +34,8 @@ class LiveShows {
         },
     ],
     'cinemas': [
-      for (final c in cinemas.values) {'id': c.id, 'chain': c.chain, 'name': c.name},
+      for (final c in cinemas.values)
+        {'id': c.id, 'chain': c.chain, 'name': c.name},
     ],
   };
 
@@ -81,14 +82,20 @@ class LiveCache {
 
   final Directory _dir;
 
-  File _file(String source, String movieId) =>
-      File('${_dir.path}/$source-${movieId.replaceAll(RegExp(r'[^\w.-]'), '_')}.json');
+  File _file(String source, String movieId) => File(
+    '${_dir.path}/$source-${movieId.replaceAll(RegExp(r'[^\w.-]'), '_')}.json',
+  );
 
-  Future<LiveShows?> read(String source, String movieId, {DateTime? now}) async {
+  Future<LiveShows?> read(
+    String source,
+    String movieId, {
+    DateTime? now,
+  }) async {
     try {
       final file = _file(source, movieId);
       if (!await file.exists()) return null;
-      final saved = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      final saved =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       final at = DateTime.parse(saved['savedAt'] as String);
       if ((now ?? DateTime.now()).difference(at) > maxAge) return null;
       return LiveShows.fromJson(
@@ -101,7 +108,12 @@ class LiveCache {
     }
   }
 
-  Future<void> write(String source, String movieId, LiveShows shows, {DateTime? now}) async {
+  Future<void> write(
+    String source,
+    String movieId,
+    LiveShows shows, {
+    DateTime? now,
+  }) async {
     try {
       final file = _file(source, movieId);
       final tmp = File('${file.path}.tmp');
@@ -129,10 +141,13 @@ class LiveCache {
       await for (final f in _dir.list()) {
         if (f is! File || !f.path.endsWith('.json')) continue;
         try {
-          final saved = jsonDecode(await f.readAsString()) as Map<String, dynamic>;
+          final saved =
+              jsonDecode(await f.readAsString()) as Map<String, dynamic>;
           final id = saved['movieId'] as String?;
           final at = DateTime.parse(saved['savedAt'] as String);
-          if (id != null && at.isAfter(since) && (found[id]?.isBefore(at) ?? true)) {
+          if (id != null &&
+              at.isAfter(since) &&
+              (found[id]?.isBefore(at) ?? true)) {
             found[id] = at;
           }
         } catch (_) {
@@ -149,7 +164,13 @@ class LiveCache {
 /// "2026-12-16T22:30:00+02:00" for a Cairo wall-clock time.
 String cairoIso(DateTime wall) {
   final offset = cairoUtcOffsetHours(wall);
-  final local = DateTime.utc(wall.year, wall.month, wall.day, wall.hour, wall.minute);
+  final local = DateTime.utc(
+    wall.year,
+    wall.month,
+    wall.day,
+    wall.hour,
+    wall.minute,
+  );
   return '${local.toIso8601String().substring(0, 19)}+0$offset:00';
 }
 
@@ -165,7 +186,13 @@ int cairoUtcOffsetHours(DateTime wall) {
     return d;
   }
 
-  final at = DateTime.utc(wall.year, wall.month, wall.day, wall.hour, wall.minute);
+  final at = DateTime.utc(
+    wall.year,
+    wall.month,
+    wall.day,
+    wall.hour,
+    wall.minute,
+  );
   final start = lastWeekday(wall.year, 4, DateTime.friday);
   final end = lastWeekday(
     wall.year,
@@ -242,7 +269,20 @@ String addDays(String isoDate, int days) {
   return d.toIso8601String().substring(0, 10);
 }
 
-const _months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const _months = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+];
 
 /// "Wed 16 Dec" → the next such date on or after [today] (yyyy-mm-dd); sites
 /// give no year.
@@ -253,5 +293,7 @@ String? dayFromLabel(String label, String today) {
   final year = int.parse(today.substring(0, 4));
   String iso(int y) =>
       '$y-${'${month + 1}'.padLeft(2, '0')}-${m.group(1)!.padLeft(2, '0')}';
-  return iso(year).compareTo(addDays(today, -7)) >= 0 ? iso(year) : iso(year + 1);
+  return iso(year).compareTo(addDays(today, -7)) >= 0
+      ? iso(year)
+      : iso(year + 1);
 }

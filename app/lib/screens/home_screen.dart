@@ -24,7 +24,8 @@ class HomeScreen extends StatelessWidget {
     final data = AppScope.of(context);
     final soon = data.nextAtMyCinemas();
     final opened = data.upcoming(minDaysAhead: 1, maxDaysAhead: 7);
-    final today = data.showingToday();
+    final day = data.homeDay;
+    final today = data.showingOn(day);
     final coming = data.upcoming(minDaysAhead: 8, maxDaysAhead: 365);
     final city = data.prefs.homeCity;
     final where = city == null
@@ -106,10 +107,10 @@ class HomeScreen extends StatelessWidget {
           _gap(28),
           SliverToBoxAdapter(
             child: SectionHeader(
-              title: tr('النهارده في السينما', 'Today at the cinema'),
+              title: _dayTitle(data, day),
               subtitle: tr(
-                '${dayLabel(data.today)} · في $where الـ${data.homeCinemaCount}',
-                '${dayLabel(data.today)} · at $where (${data.homeCinemaCount})',
+                '${dayLabel(day)} · في $where الـ${data.homeCinemaCount}',
+                '${dayLabel(day)} · at $where (${data.homeCinemaCount})',
               ),
             ),
           ),
@@ -118,8 +119,8 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: _Empty(
                 tr(
-                  'خلصت حفلات النهارده في $where',
-                  'Today\'s shows at $where are over',
+                  'مفيش حفلات النهارده ولا بكره في $where',
+                  'No shows today or tomorrow at $where',
                 ),
               ),
             )
@@ -207,13 +208,11 @@ class _TodayPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
-    final today = data.showingToday();
+    final day = data.homeDay;
+    final today = data.showingOn(day);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          tr('النهارده في السينما', 'Today at the cinema'),
-          style: AppText.display(24),
-        ),
+        title: Text(_dayTitle(data, day), style: AppText.display(24)),
       ),
       body: ListView.separated(
         padding: EdgeInsets.fromLTRB(
@@ -788,3 +787,7 @@ class _ComingCard extends StatelessWidget {
     );
   }
 }
+
+String _dayTitle(AppData data, String day) => day == data.today
+    ? tr('النهارده في السينما', 'Today at the cinema')
+    : tr('بكره في السينما', 'Tomorrow at the cinema');

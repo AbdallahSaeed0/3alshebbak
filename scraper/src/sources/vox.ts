@@ -13,7 +13,7 @@
 import * as cheerio from 'cheerio';
 import { clean, errorMessage, fetchText, hallName, slugOf } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { cairoToday, dayFromLabel, presaleFrom, showStart } from '../time.js';
+import { cairoToday, dayFromLabel, showStart } from '../time.js';
 import { elcinemaCinemaId } from './elcinema.js';
 
 const ORIGIN = 'https://egy.voxcinemas.com';
@@ -35,10 +35,12 @@ async function filmPages(): Promise<string[]> {
   return [...new Set(urls.filter((u) => /^https:\/\/egy\.voxcinemas\.com\/movies\/[^/?#]+$/.test(u)))];
 }
 
-function parseFilm(out: ResultBuilder, $: cheerio.CheerioAPI, url: string, from: string, today: string) {
+function parseFilm(out: ResultBuilder, $: cheerio.CheerioAPI, url: string, today: string) {
   // The day shown is the date tab without a link.
   const day = dayFromLabel(clean($('nav.date-filter li > span').first().text()), today);
-  if (!day || day < from) return;
+  // Inside elCinema's week too: VOX's own times for this day win over
+  // elCinema's copy (sync drops it), which can lag a week's changeover.
+  if (!day || day < today) return;
 
   const { title, experience } = splitTitle(clean($('#showtimes h2').first().text()).replace(/\s*-\s*Showtimes$/i, ''));
   if (!title) return out.warn(`VOX ${url}: no title (layout changed?)`);
@@ -76,13 +78,12 @@ export const vox: Source = {
   async scrape() {
     const out = new ResultBuilder('vox');
     const today = cairoToday();
-    const from = presaleFrom();
     const pages = await filmPages();
     if (!pages.length) throw new Error('VOX sitemap lists no film pages (moved?)');
 
     for (const url of pages) {
       try {
-        parseFilm(out, cheerio.load(await fetchText(url)), url, from, today);
+        parseFilm(out, cheerio.load(await fetchText(url)), url, today);
       } catch (e) {
         out.warn(`VOX ${url}: ${errorMessage(e)}`);
       }

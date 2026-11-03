@@ -67,7 +67,10 @@ void main() {
   });
 
   test('VOX\'s Infinity Vision listing is the same film in another format', () {
-    final plain = VoxListing(slug: 'avengers-doomsday', title: 'Avengers: Doomsday');
+    final plain = VoxListing(
+      slug: 'avengers-doomsday',
+      title: 'Avengers: Doomsday',
+    );
     final iv = VoxListing(
       slug: 'avengers-doomsday-infinity-vision',
       title: 'Avengers: Doomsday (Infinity Vision)',
@@ -153,41 +156,67 @@ void main() {
     final saved = DateTime(2026, 11, 2, 20);
     await cache.write('premiere', 'tmdb:1', shows, now: saved);
 
-    final back = await cache.read('premiere', 'tmdb:1', now: saved.add(const Duration(hours: 1)));
+    final back = await cache.read(
+      'premiere',
+      'tmdb:1',
+      now: saved.add(const Duration(hours: 1)),
+    );
     expect(back!.showtimes.single.startsAt, shows.showtimes.single.startsAt);
     expect(back.showtimes.single.format, 'Luxe');
     expect(back.cinemas['premiere:nile-cinema']!.name, 'Nile Cinema');
     expect(
-      await cache.read('premiere', 'tmdb:1', now: saved.add(const Duration(hours: 13))),
+      await cache.read(
+        'premiere',
+        'tmdb:1',
+        now: saved.add(const Duration(hours: 13)),
+      ),
       isNull,
     );
   });
 
-  test('the background refresh reads followed films first, then recent ones', () {
-    final films = BackgroundRefresh.films(
-      following: ['tmdb:1', 'tmdb:gone'],
-      recent: ['tmdb:2', 'tmdb:1', 'tmdb:3'],
-      inCatalog: (id) => id != 'tmdb:gone',
-    );
-    expect(films, ['tmdb:1', 'tmdb:2', 'tmdb:3']);
-    expect(
-      BackgroundRefresh.films(
-        following: [for (var i = 0; i < 20; i++) 'tmdb:$i'],
-        recent: const [],
-        inCatalog: (_) => true,
-      ),
-      hasLength(BackgroundRefresh.maxFilms),
-    );
-  });
+  test(
+    'the background refresh reads followed films first, then recent ones',
+    () {
+      final films = BackgroundRefresh.films(
+        following: ['tmdb:1', 'tmdb:gone'],
+        recent: ['tmdb:2', 'tmdb:1', 'tmdb:3'],
+        inCatalog: (id) => id != 'tmdb:gone',
+      );
+      expect(films, ['tmdb:1', 'tmdb:2', 'tmdb:3']);
+      expect(
+        BackgroundRefresh.films(
+          following: [for (var i = 0; i < 20; i++) 'tmdb:$i'],
+          recent: const [],
+          inCatalog: (_) => true,
+        ),
+        hasLength(BackgroundRefresh.maxFilms),
+      );
+    },
+  );
 
   test('the phone cache knows which films were read lately', () async {
     final dir = await Directory.systemTemp.createTemp('live');
     addTearDown(() => dir.delete(recursive: true));
     final cache = LiveCache.at(dir);
     final now = DateTime(2026, 11, 2, 20);
-    await cache.write('vox', 'tmdb:old', LiveShows.none, now: now.subtract(const Duration(days: 9)));
-    await cache.write('vox', 'tmdb:a', LiveShows.none, now: now.subtract(const Duration(days: 2)));
-    await cache.write('premiere', 'tmdb:b', LiveShows.none, now: now.subtract(const Duration(hours: 1)));
+    await cache.write(
+      'vox',
+      'tmdb:old',
+      LiveShows.none,
+      now: now.subtract(const Duration(days: 9)),
+    );
+    await cache.write(
+      'vox',
+      'tmdb:a',
+      LiveShows.none,
+      now: now.subtract(const Duration(days: 2)),
+    );
+    await cache.write(
+      'premiere',
+      'tmdb:b',
+      LiveShows.none,
+      now: now.subtract(const Duration(hours: 1)),
+    );
     expect(await cache.recentMovies(now: now), ['tmdb:b', 'tmdb:a']);
   });
 

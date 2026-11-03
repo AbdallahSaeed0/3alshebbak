@@ -2,8 +2,15 @@
 import * as cheerio from 'cheerio';
 import { clean, USER_AGENT, sleep, errorMessage } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { presaleFrom, showStart } from '../time.js';
+import { cairoToday, showStart } from '../time.js';
 import { THEATERS, elcinemaCinemaId } from './elcinema.js';
+
+/** Hall plus the booking's category, as elCinema's theater pages name them: "2d" is the plain hall. */
+export function bookingFormat(hall: string | undefined, category: string | undefined): string {
+  const parts = [clean(hall), clean(category)].filter((p) => p && !/^2d$/i.test(p));
+  const distinct = parts.filter((p, i) => parts.findIndex((q) => q.toLowerCase() === p.toLowerCase()) === i);
+  return distinct.join(' · ') || 'Standard';
+}
 
 export function bookingPairs(html: string) {
   const $ = cheerio.load(html);
@@ -28,7 +35,7 @@ export async function scrapePresales(workIds?: string[]) {
   if (!csrf) throw new Error('Booking index has no CSRF token');
   const pairs = bookingPairs(html).filter(p => THEATERS.some(t => t.id === p.theater && t.chain === 'Premiere') && (!workIds || workIds.includes(p.work)));
   if (!pairs.length) throw new Error('No Premiere booking links found');
-  const dropdown = async (work: string, theater: string, type: string, date = '0') => {
+  const request = async (work: string, theater: string, type: string, date: string) => {
     await sleep(1500);
     const body = new URLSearchParams();
     for (const [key, value] of Object.entries({ work_id: work, theater_id: theater, type, date, time: '0', screen_id: '0', category: '2d', source: '2', ss_id: '' })) body.set(`data[${key}]`, value);
@@ -41,19 +48,32 @@ export async function scrapePresales(workIds?: string[]) {
     if (!Array.isArray(rows)) throw new Error('Invalid booking dropdown response');
     return rows;
   };
+  // A dropped connection now and then shouldn't sink the whole run.
+  const dropdown = async (work: string, theater: string, type: string, date = '0') => {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await request(work, theater, type, date);
+      } catch (e) {
+        if (attempt === 3) throw e;
+        await sleep(3000 * attempt);
+      }
+    }
+  };
   for (const pair of pairs) {
     const theater = THEATERS.find(t => t.id === pair.theater)!;
     try {
       const days = await dropdown(pair.work, pair.theater, 'dates');
+      // Every bookable day, this week's too: elCinema's theater pages can lag
+      // a week's changeover, and sync lets these days override them.
       for (const day of days) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(day.value) || day.value < presaleFrom()) continue;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(day.value) || day.value < cairoToday()) continue;
         const times = await dropdown(pair.work, pair.theater, 'times', day.value);
         const filmId = out.film({ slug: pair.work, title: pair.title, url: `https://elcinema.com/en/work/${pair.work}/` });
         for (const time of times) {
           const start = showStart(day.value, time.value);
           if (!start) continue;
           out.showtime({ cinemaId: elcinemaCinemaId(theater.chain, theater.venue)!, filmId,
-            businessDate: day.value, start, format: [theater.hall, time.category || 'Standard'].filter(Boolean).join(' · '),
+            businessDate: day.value, start, format: bookingFormat(theater.hall, time.category),
             bookingUrl: `https://elcinema.com/en/booking/${pair.work}/${pair.theater}/`,
           });
         }

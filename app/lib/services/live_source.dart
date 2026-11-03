@@ -20,7 +20,10 @@ abstract class LiveSource {
 
   /// `--dart-define=LIVE_CACHE=false` for a test build that always reads
   /// afresh, to see how long a first read takes.
-  static const _useCache = bool.fromEnvironment('LIVE_CACHE', defaultValue: true);
+  static const _useCache = bool.fromEnvironment(
+    'LIVE_CACHE',
+    defaultValue: true,
+  );
 
   /// Starts loading the site so a film page opened later doesn't wait for it.
   void warmUp();
@@ -62,22 +65,24 @@ abstract class LiveSource {
       final started = DateTime.now();
       void partial(LiveShows shows) {
         // Until a fresh read has more, the cached one is the better picture.
-        if (!out.isClosed && shows.showtimes.length >= (cached?.showtimes.length ?? 0)) {
+        if (!out.isClosed &&
+            shows.showtimes.length >= (cached?.showtimes.length ?? 0)) {
           out.add(shows);
         }
       }
 
-      final fresh = await (_fresh[movie.id] ??= read(movie, today, known, partial).then(
-        (shows) {
-          cache?.write(id, movie.id, shows);
-          return shows;
-        },
-        onError: (Object e) {
-          debugPrint('$id showtimes for ${movie.title}: $e');
-          _fresh.remove(movie.id);
-          return cached ?? LiveShows.none;
-        },
-      ));
+      final fresh = await (_fresh[movie.id] ??=
+          read(movie, today, known, partial).then(
+            (shows) {
+              cache?.write(id, movie.id, shows);
+              return shows;
+            },
+            onError: (Object e) {
+              debugPrint('$id showtimes for ${movie.title}: $e');
+              _fresh.remove(movie.id);
+              return cached ?? LiveShows.none;
+            },
+          ));
       debugPrint(
         '$id: ${fresh.showtimes.length} shows for ${movie.title} in '
         '${DateTime.now().difference(started).inMilliseconds} ms',

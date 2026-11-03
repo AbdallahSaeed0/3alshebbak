@@ -10,7 +10,11 @@ import type { Catalog } from './tmdb.js';
 import { presaleFrom } from './time.js';
 
 /** Sources that add only presale days to cinemas elCinema lists (vox.ts, premiere.ts). */
-const PRESALE_SOURCES = ['vox', 'premiere', 'elcinema-presales'];
+/**
+ * Sources that add only days past elCinema's week at elCinema's cinemas. VOX
+ * and the booking page also cover this week; reconcileSources settles those.
+ */
+const PRESALE_SOURCES = ['premiere'];
 
 const BATCH = 500;
 
@@ -162,7 +166,7 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
     .like('cinema_id', 'elcinema:%')
     .lt('business_date', presaleFrom());
   if (overlap) throw new Error(`presale cleanup: ${overlap.message}`);
-  await removeBookingDuplicates(db);
+  await reconcileSources(db);
 
   // Over shows are no use to the alerts.
   const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
@@ -170,33 +174,60 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
   if (error) throw new Error(`showtimes_seen cleanup: ${error.message}`);
 }
 
+type Row = { id: string; source: string; movie_id: string; cinema_id: string; business_date: string; starts_at: string };
+
 /**
- * elCinema's booking page and Premiere's own site list the same presale show
- * at a Premiere branch, one as "2D" and one as "Standard", so the app would
- * show it twice. Premiere's copy stays: it runs in the cloud, the booking
- * page only from a local machine.
+ * One copy of each show at elCinema's cinemas, from the source nearest the
+ * cinema. elCinema's theater pages can lag a week's changeover (last week's
+ * film still listed, the new one missing), so:
+ *   - for a film the booking page sells at a cinema, the booking page's days
+ *     are the film's days there: elCinema's rows for it on a day the booking
+ *     page covers for that cinema go. A film that isn't sold online at all
+ *     (Moscow Cairo, say) keeps elCinema's listing;
+ *   - a film's day on VOX's own page is VOX's: elCinema's rows for that film,
+ *     cinema and day go;
+ *   - a show both Premiere's site and the booking page list keeps Premiere's
+ *     copy (it runs in the cloud; the booking page only from a local machine).
  */
-export async function removeBookingDuplicates(db: SupabaseClient) {
-  const rows: { id: string; source: string; movie_id: string; cinema_id: string; starts_at: string }[] = [];
+export async function reconcileSources(db: SupabaseClient) {
+  const rows: Row[] = [];
+  // Two weeks back too: a film whose last booked day has passed (The Odyssey
+  // replaced at IMAX) must not get elCinema's stale later days back.
+  const since = new Date(Date.now() - 14 * 24 * 3600_000).toISOString();
   for (let from = 0; ; from += 1000) {
     const { data, error } = await db
       .from('showtimes')
-      .select('id,source,movie_id,cinema_id,starts_at')
-      .in('source', ['premiere', 'elcinema-presales'])
+      .select('id,source,movie_id,cinema_id,business_date,starts_at')
+      .in('source', ['elcinema', 'vox', 'premiere', 'elcinema-presales'])
       .like('cinema_id', 'elcinema:%')
+      .gt('starts_at', since)
       .order('id')
       .range(from, from + 999);
-    if (error) throw new Error(`booking duplicates: ${error.message}`);
-    rows.push(...data);
+    if (error) throw new Error(`reconcile sources: ${error.message}`);
+    rows.push(...(data as Row[]));
     if (data.length < 1000) break;
   }
-  const show = (r: (typeof rows)[number]) => `${r.movie_id}|${r.cinema_id}|${Date.parse(r.starts_at)}`;
-  const premiere = new Set(rows.filter((r) => r.source === 'premiere').map(show));
-  const dupes = rows.filter((r) => r.source === 'elcinema-presales' && premiere.has(show(r))).map((r) => r.id);
-  for (let i = 0; i < dupes.length; i += 200) {
-    const { error } = await db.from('showtimes').delete().in('id', dupes.slice(i, i + 200));
-    if (error) throw new Error(`booking duplicates: ${error.message}`);
+  const of = (source: string, upcoming = true) =>
+    rows.filter((r) => r.source === source && (!upcoming || Date.parse(r.starts_at) > Date.now()));
+  const show = (r: Row) => `${r.movie_id}|${r.cinema_id}|${Date.parse(r.starts_at)}`;
+  const bookingDays = new Set(of('elcinema-presales').map((r) => `${r.cinema_id}|${r.business_date}`));
+  const bookingFilms = new Set(of('elcinema-presales', false).map((r) => `${r.movie_id}|${r.cinema_id}`));
+  const voxDays = new Set(of('vox').map((r) => `${r.movie_id}|${r.cinema_id}|${r.business_date}`));
+  const premiere = new Set(of('premiere').map(show));
+
+  const drop = [
+    ...of('elcinema').filter(
+      (r) =>
+        (bookingFilms.has(`${r.movie_id}|${r.cinema_id}`) && bookingDays.has(`${r.cinema_id}|${r.business_date}`)) ||
+        voxDays.has(`${r.movie_id}|${r.cinema_id}|${r.business_date}`),
+    ),
+    ...of('elcinema-presales').filter((r) => premiere.has(show(r))),
+  ].map((r) => r.id);
+  for (let i = 0; i < drop.length; i += 200) {
+    const { error } = await db.from('showtimes').delete().in('id', drop.slice(i, i + 200));
+    if (error) throw new Error(`reconcile sources: ${error.message}`);
   }
+  return drop.length;
 }
 
 /**

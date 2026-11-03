@@ -45,10 +45,7 @@ class BackgroundRefresh {
     required Iterable<String> following,
     required List<String> recent,
     required bool Function(String) inCatalog,
-  }) => {
-    ...following,
-    ...recent,
-  }.where(inCatalog).take(maxFilms).toList();
+  }) => {...following, ...recent}.where(inCatalog).take(maxFilms).toList();
 
   static Future<void> run() async {
     final catalog = await SupabaseShowtimesRepository.cached();

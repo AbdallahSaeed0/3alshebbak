@@ -164,10 +164,19 @@ class AppData {
   }
 
   /// Movies with shows still to come today on Home, busiest first.
-  List<MovieDay> showingToday() {
+  List<MovieDay> showingToday() => showingOn(today);
+
+  /// The day Home's "at the cinema" section is about: today, or tomorrow
+  /// once tonight's last show has started (nobody wants "it's over" at 2am).
+  String get homeDay => showingToday().isNotEmpty
+      ? today
+      : isoDate(DateTime.parse(today).add(const Duration(days: 1)));
+
+  /// Movies with shows still to come on [date] on Home, busiest first.
+  List<MovieDay> showingOn(String date) {
     final byMovie = <String, List<Showtime>>{};
     for (final s in catalog.showtimes) {
-      if (s.businessDate == today && s.startsAt.isAfter(now) && _onHome(s)) {
+      if (s.businessDate == date && s.startsAt.isAfter(now) && _onHome(s)) {
         (byMovie[s.movieId] ??= []).add(s);
       }
     }

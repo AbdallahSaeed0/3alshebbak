@@ -83,7 +83,8 @@ class PremiereLive extends LiveSource {
     final dates = [for (var i = 0; i < _daysAhead; i++) addDays(today, i)];
     // Days the server already has at a branch it lists (elCinema's week).
     final skip = <String, List<String>>{
-      for (final MapEntry(key: branch, value: cinemaId) in _listedBranches.entries)
+      for (final MapEntry(key: branch, value: cinemaId)
+          in _listedBranches.entries)
         branch: [
           for (final d in dates)
             if (known.contains('$cinemaId|$d')) d,
@@ -97,7 +98,9 @@ class PremiereLive extends LiveSource {
       if (args.isEmpty || args.first is! Map) return;
       final day = Map<String, dynamic>.from(args.first as Map);
       (soFar[day['date'] as String] ??= []).add(day);
-      partial(premiereShows(movieId: movie.id, bookingUrl: match.url, days: soFar));
+      partial(
+        premiereShows(movieId: movie.id, bookingUrl: match.url, days: soFar),
+      );
     });
     try {
       final days = await page.call(
