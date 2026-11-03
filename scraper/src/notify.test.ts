@@ -56,7 +56,7 @@ test('the messages read naturally', () => {
   });
   assert.equal(
     message({ kind: 'days', cinemas: ['scene:cfc', 'vox:cfc'], lastDay: '2026-11-12' }, 'Clayface', label).body,
-    'الحجز بقى لحد الخميس 12 نوفمبر في سين · كايرو فستيفال سيتي و1 سينما كمان',
+    'الحجز بقى لحد الخميس 12 نوفمبر في سين · كايرو فستيفال سيتي وسينما كمان',
   );
   assert.equal(
     message({ kind: 'shows', cinemas: ['vox:cfc'], count: 3 }, 'Clayface', label).body,

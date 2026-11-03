@@ -65,7 +65,7 @@ export function alertFor(freshRows: Seen[], before: Seen[]): Alert | null {
 /** The notification for an alert, in Arabic like the rest of the app's pushes. */
 export function message(alert: Alert, film: string, cinemaLabel: (id: string) => string) {
   const first = cinemaLabel(alert.cinemas[0]);
-  const where = alert.cinemas.length > 1 ? `${first} و${alert.cinemas.length - 1} سينما كمان` : first;
+  const where = alert.cinemas.length > 1 ? `${first} و${cinemaCount(alert.cinemas.length - 1)} كمان` : first;
   switch (alert.kind) {
     case 'opened':
       return { title: `🎟 تذاكر «${film}» نزلت`, body: `الحجز فتح في ${where}` };
@@ -86,6 +86,13 @@ export function dayName(businessDate: string) {
   }).formatToParts(new Date(`${businessDate}T00:00:00Z`));
   const part = (type: string) => parts.find((p) => p.type === type)?.value;
   return `${part('weekday')} ${part('day')} ${part('month')}`;
+}
+
+export function cinemaCount(n: number) {
+  if (n === 1) return 'سينما';
+  if (n === 2) return 'سينمتين';
+  if (n <= 10) return `${n} سينمات`;
+  return `${n} سينما`;
 }
 
 export function showCount(n: number) {
