@@ -78,8 +78,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _next();
   }
 
+  /// Yes here means every film, as Settings' "Every film" switch: someone
+  /// new follows nothing yet, so followed-only alerts would stay silent.
   Future<void> _enablePush() async {
-    await Push.instance.enable();
+    final prefs = AppScope.of(context).prefs;
+    prefs.setEveryFilm(true);
+    if (!await Push.instance.enable()) prefs.setEveryFilm(false);
     if (mounted) _finish();
   }
 
@@ -411,13 +415,28 @@ class _PickCinemasState extends State<_PickCinemas> {
   /// Without a location: one city at a time, Cairo first.
   String _city = 'Cairo';
 
+  /// Searching looks across every city, nearest first when we know where.
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
     final spot = data.prefs.spot;
     final List<Cinema> list;
     List<String> cities = const [];
-    if (spot != null) {
+    final query = _search.text.trim();
+    if (query.isNotEmpty) {
+      final found = data.cinemas(query: query).map((c) => c.id).toSet();
+      list = spot != null
+          ? data.byDistance(spot).where((c) => found.contains(c.id)).toList()
+          : data.cinemas(query: query);
+    } else if (spot != null) {
       list = data.byDistance(spot);
     } else {
       final count = <String, int>{};
@@ -455,7 +474,39 @@ class _PickCinemasState extends State<_PickCinemas> {
             style: AppText.body(13, color: AppColors.muted),
           ),
         ),
-        if (cities.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+          child: TextField(
+            controller: _search,
+            onChanged: (_) => setState(() {}),
+            style: AppText.body(14),
+            decoration: InputDecoration(
+              hintText: tr(
+                'دوّر على سينما أو منطقة',
+                'Search a cinema or area',
+              ),
+              hintStyle: AppText.body(14, color: AppColors.muted),
+              prefixIcon: Icon(Icons.search, color: AppColors.muted),
+              suffixIcon: query.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: Icon(Icons.close, color: AppColors.muted),
+                      onPressed: () => setState(_search.clear),
+                    ),
+              filled: true,
+              fillColor: AppColors.surface,
+              isDense: true,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: AppColors.hairline),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        if (cities.isNotEmpty && query.isEmpty)
           SizedBox(
             height: 52,
             child: ListView(
@@ -485,7 +536,8 @@ class _PickCinemasState extends State<_PickCinemas> {
               final picked = widget.picked.contains(c.id);
               final place = joinPlace([
                 if (c.area != null) c.area!,
-                if (spot != null && c.city != null) cityName(c.city!),
+                if ((spot != null || query.isNotEmpty) && c.city != null)
+                  cityName(c.city!),
               ]);
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
@@ -619,14 +671,14 @@ class _Notifications extends StatelessWidget {
     return _Page(
       art: const _Badge(Icons.notifications_active_outlined),
       title: tr(
-        'نقولك أول ما التذاكر تنزل؟',
-        'Tell you when tickets go on sale?',
+        'نقولك أول ما المواعيد تنزل؟',
+        'Tell you when showtimes come out?',
       ),
       body: tr(
-        'تابع أي فيلم، وأول ما سينما من سينماتك تفتح الحجز ليه هيوصلك إشعار. '
-            'مرة واحدة في اليوم بالكتير لكل فيلم.',
-        'Follow any film, and when one of your cinemas opens booking for it '
-            'you get a notification. At most once a day per film.',
+        'أي فيلم يفتح حجزه أو تنزله مواعيد جديدة في سينماتك، هيوصلك إشعار بيه. '
+            'ولو أفلام كتير مرة واحدة، هيوصلك إشعار واحد يجمعهم.',
+        'Whenever booking opens or new showtimes come out for any film at '
+            'your cinemas, you get a notification. Many films at once come as one.',
       ),
       primary: _GoldButton(
         label: tr('أيوه، بلغني', 'Yes, notify me'),

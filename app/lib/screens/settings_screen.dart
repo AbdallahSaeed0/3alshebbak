@@ -148,16 +148,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Same as onboarding's yes: alerts for every film; the switch below can
+  /// narrow them to followed films.
   Future<void> _enablePush() async {
     setState(() => _enablingPush = true);
+    final prefs = AppScope.of(context).prefs;
+    prefs.setEveryFilm(true);
     final on = await Push.instance.enable();
+    if (!on) prefs.setEveryFilm(false);
     if (!mounted) return;
     setState(() => _enablingPush = false);
     _say(
       on
           ? tr(
-              'هنقولك أول ما تذاكر الأفلام اللي بتتابعها تنزل',
-              'We\'ll tell you when tickets for films you follow go on sale',
+              'هنقولك بأي حجز يفتح أو مواعيد تنزل في سينماتك',
+              "We'll tell you when booking opens or showtimes come out at your cinemas",
             )
           : tr(
               'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
@@ -359,13 +364,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (Push.available)
                 _Row(
                   icon: Icons.notifications_active_outlined,
-                  title: tr(
-                    'شغّل إشعارات "التذاكر نزلت"',
-                    'Turn on "tickets are out" alerts',
-                  ),
+                  title: tr('شغّل الإشعارات', 'Turn on notifications'),
                   detail: tr(
-                    'للأفلام اللي بتتابعها · ${prefs.following.length} فيلم دلوقتي',
-                    'For films you follow · ${prefs.following.length} now',
+                    'أي حجز يفتح أو مواعيد تنزل في سينماتك',
+                    'New booking or showtimes at your cinemas',
                   ),
                   trailing: _enablingPush
                       ? const SizedBox.square(
@@ -379,10 +381,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _Row(
                   icon: Icons.campaign_outlined,
                   title: tr('كل الأفلام', 'Every film'),
-                  detail: tr(
-                    'أي حجز يفتح أو مواعيد تنزل في سينماتك، حتى لو مش متابع الفيلم',
-                    'Any new booking or showtimes at your cinemas, followed or not',
-                  ),
+                  detail: prefs.everyFilm
+                      ? tr(
+                          'أي فيلم، حتى لو مش متابعه',
+                          'Any film, followed or not',
+                        )
+                      : tr(
+                          'مقفول: الأفلام اللي بتتابعها بس · ${prefs.following.length} فيلم',
+                          'Off: only films you follow · ${prefs.following.length}',
+                        ),
                   trailing: Switch(
                     value: prefs.everyFilm,
                     onChanged: _setEveryFilm,
