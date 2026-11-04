@@ -1,17 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
 import '../data/tickets.dart';
+import '../services/app_version.dart';
 import '../services/location.dart';
 import '../services/push.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../util/i18n.dart';
 import '../widgets/common.dart';
+import '../widgets/credit.dart';
 import 'following_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_screen.dart';
+import 'shell.dart' show showUpdateSnackBar;
 import 'tickets_screen.dart';
 
 /// Which cinemas Home shows: mine, or every cinema in one city.
@@ -372,9 +376,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
+              if (!kIsWeb)
+                _Row(
+                  icon: Icons.system_update_outlined,
+                  title: tr('دوّر على تحديث', 'Check for updates'),
+                  onTap: () => _checkUpdate(context),
+                ),
             ],
           ),
+          const SizedBox(height: 36),
+          const Credit(),
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+
+  Future<void> _checkUpdate(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final update = await checkForUpdate(ignoreShown: true);
+    if (!context.mounted) return;
+    if (update != null) return showUpdateSnackBar(context, update);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          tr('عندك آخر نسخة', 'You have the latest version'),
+          style: AppText.body(13),
+        ),
       ),
     );
   }

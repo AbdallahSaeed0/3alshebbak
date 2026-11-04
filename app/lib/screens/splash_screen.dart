@@ -7,6 +7,7 @@ import '../data/prefs.dart';
 import '../data/repository.dart';
 import '../data/supabase_repository.dart';
 import '../theme.dart';
+import '../widgets/credit.dart';
 import '../widgets/ticket_mark.dart';
 import '../util/i18n.dart';
 
@@ -180,7 +181,9 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Text(tr('جرّب تاني', 'Try again')),
                     ),
                   ],
-                  const SizedBox(height: 64),
+                  const SizedBox(height: 40),
+                  const Credit(),
+                  const SizedBox(height: 32),
                 ],
               );
             },
