@@ -166,6 +166,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Every film's new showtimes, not only followed ones: on asks for
+  /// notification permission like following a film does.
+  Future<void> _setEveryFilm(bool on) async {
+    final prefs = AppScope.of(context).prefs;
+    prefs.setEveryFilm(on);
+    if (!on) {
+      await Push.instance.syncPreferences();
+      return;
+    }
+    final allowed = await Push.instance.enable();
+    if (!mounted) return;
+    if (!allowed) prefs.setEveryFilm(false);
+    _say(
+      allowed
+          ? tr(
+              'هنقولك بأي مواعيد جديدة في سينماتك، لأي فيلم',
+              "We'll tell you about new showtimes at your cinemas, for any film",
+            )
+          : tr(
+              'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
+              "Notifications are off. You can turn them on in your phone's settings.",
+            ),
+    );
+  }
+
   void _openFollowing() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -349,6 +374,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         )
                       : null,
                   onTap: _enablingPush ? null : _enablePush,
+                ),
+              if (Push.available)
+                _Row(
+                  icon: Icons.campaign_outlined,
+                  title: tr('كل الأفلام', 'Every film'),
+                  detail: tr(
+                    'أي حجز يفتح أو مواعيد تنزل في سينماتك، حتى لو مش متابع الفيلم',
+                    'Any new booking or showtimes at your cinemas, followed or not',
+                  ),
+                  trailing: Switch(
+                    value: prefs.everyFilm,
+                    onChanged: _setEveryFilm,
+                  ),
+                  onTap: () => _setEveryFilm(!prefs.everyFilm),
                 )
               else
                 _Row(

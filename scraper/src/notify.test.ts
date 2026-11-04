@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { alertFor, dayName, message, showCount, type Seen } from './notify.js';
+import { alertFor, dayName, digest, message, showCount, type Seen } from './notify.js';
 
 const show = (business_date: string, cinema_id = 'scene:cfc', time = '19:00'): Seen => ({
   movie_id: 'tmdb:1',
@@ -70,4 +70,12 @@ test('days and counts in Egyptian Arabic', () => {
   assert.equal(showCount(2), 'حفلتين جداد');
   assert.equal(showCount(7), '7 حفلات جديدة');
   assert.equal(showCount(14), '14 حفلة جديدة');
+});
+
+test('a phone hearing about every film gets one digest for many', () => {
+  assert.deepEqual(digest(['Godzilla', 'Dune', 'Hope', 'Verity']), {
+    title: '🎬 مواعيد جديدة لـ4 أفلام',
+    body: '«Godzilla» و«Dune» وفيلمين كمان',
+  });
+  assert.equal(digest(['A', 'B', 'C', 'D', 'E']).body, '«A» و«B» و3 أفلام كمان');
 });

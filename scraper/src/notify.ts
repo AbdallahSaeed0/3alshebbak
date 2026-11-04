@@ -6,7 +6,9 @@
 // "New" is judged against showtimes_seen (004_showtimes_seen.sql), which
 // remembers every show until it's over, so a show that drops out of one
 // scrape and comes back isn't announced again.
-// At most one notification per film per phone per day.
+// At most one notification per film per phone per day. A phone can also ask
+// for every film (EVERY_FILM in its following list, the app's "all films"
+// setting); a run with more than a few of its alerts sends them as one digest.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Fcm, StaleToken } from './fcm.js';
@@ -22,6 +24,12 @@ export type Alert =
   | { kind: 'shows'; cinemas: string[]; count: number };
 
 const PAGE = 1000;
+
+/** In a device's following list: alerts for every film, followed or not. */
+export const EVERY_FILM = '*';
+
+/** More alerts than this in one run go out as one notification. */
+const DIGEST_AFTER = 3;
 
 async function all<T>(query: () => any): Promise<T[]> {
   const rows: T[] = [];
@@ -95,6 +103,23 @@ export function cinemaCount(n: number) {
   return `${n} سينما`;
 }
 
+/** Several films' alerts at once, for a phone that hears about every film. */
+export function digest(films: string[]) {
+  const named = films.slice(0, 2).map((f) => `«${f}»`).join(' و');
+  const rest = films.length - 2;
+  return {
+    title: `🎬 مواعيد جديدة لـ${filmCount(films.length)}`,
+    body: rest > 0 ? `${named} و${filmCount(rest)} كمان` : named,
+  };
+}
+
+export function filmCount(n: number) {
+  if (n === 1) return 'فيلم';
+  if (n === 2) return 'فيلمين';
+  if (n <= 10) return `${n} أفلام`;
+  return `${n} فيلم`;
+}
+
 export function showCount(n: number) {
   if (n === 1) return 'حفلة جديدة';
   if (n === 2) return 'حفلتين جداد';
@@ -149,7 +174,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
 
   const movieIds = unique(fresh.map((r) => r.movie_id));
   const devices = await all<Device>(() =>
-    db.from('devices').select('token,following,cinemas').overlaps('following', movieIds).order('token'),
+    db.from('devices').select('token,following,cinemas').overlaps('following', [...movieIds, EVERY_FILM]).order('token'),
   );
   if (!devices.length) return console.log(`  notifications: ${movieIds.length} films got showtimes, nobody follows them`);
 
@@ -167,7 +192,8 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     if (error) throw new Error(`save device notification progress: ${error.message}`);
   };
 
-  const followed = movieIds.filter((id) => devices.some((d) => d.following.includes(id)));
+  const filmsOf = (d: Device) => (d.following.includes(EVERY_FILM) ? movieIds : d.following);
+  const followed = movieIds.filter((id) => devices.some((d) => filmsOf(d).includes(id)));
   const before = await all<Seen>(() =>
     db
       .from('showtimes_seen')
@@ -200,7 +226,8 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     const mine = (rows: Seen[]) =>
       device.cinemas.length ? rows.filter((r) => device.cinemas.includes(r.cinema_id)) : rows;
 
-    for (const movieId of device.following) {
+    const due: { movieId: string; alert: Alert }[] = [];
+    for (const movieId of filmsOf(device)) {
       const through = checked.get(`${device.token}|${movieId}`);
       const rows = mine(freshBy.get(movieId) ?? []);
       const handled = (row: Seen) => !!through && !!row.first_seen_at && Date.parse(row.first_seen_at) < Date.parse(through);
@@ -222,30 +249,45 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
         }
         throw new Error(`reserve notification: ${seen.message}`);
       }
+      due.push({ movieId, alert });
+    }
+    if (!due.length) continue;
 
+    const name = (id: string) => title.get(id) ?? id;
+    const push = due.length > DIGEST_AFTER
+      ? { ...digest(due.map((d) => name(d.movieId))), data: {} as Record<string, string> }
+      : null;
+    const sends = push ? [push] : due.map((d) => ({
+      ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id),
+      data: { movieId: d.movieId },
+    }));
+    const done = new Set<string>();
+    let stale = false;
+    for (const [i, one] of sends.entries()) {
       try {
-        await fcm.send({
-          token: device.token,
-          ...message(alert, title.get(movieId) ?? movieId, (id) => label.get(id) ?? id),
-          data: { movieId },
-        });
+        await fcm.send({ token: device.token, ...one });
+        for (const d of push ? due : [due[i]]) done.add(d.movieId);
       } catch (e) {
-        // A failed send must not consume today's notification or advance the
-        // checkpoint: the next run needs to pick this alert up again.
-        const { error: release } = await db.from('notifications_sent').delete()
-          .eq('token', device.token).eq('movie_id', movieId).eq('sent_on', today);
-        if (release) throw new Error(`release failed notification: ${release.message}`);
-        if (e instanceof StaleToken) {
-          const { error } = await db.from('devices').delete().eq('token', device.token);
-          if (error) throw new Error(`remove stale device: ${error.message}`);
-          break;
-        }
+        if (e instanceof StaleToken) { stale = true; break; }
         failed = true;
         console.log(`  ! notification to …${device.token.slice(-6)}: ${errorMessage(e)}`);
+      }
+    }
+    // A failed send must not consume today's notification or advance the
+    // checkpoint: the next run needs to pick this alert up again.
+    for (const d of due) {
+      if (done.has(d.movieId)) {
+        await advance(device.token, d.movieId);
+        counts[d.alert.kind]++;
         continue;
       }
-      await advance(device.token, movieId);
-      counts[alert.kind]++;
+      const { error: release } = await db.from('notifications_sent').delete()
+        .eq('token', device.token).eq('movie_id', d.movieId).eq('sent_on', today);
+      if (release) throw new Error(`release failed notification: ${release.message}`);
+    }
+    if (stale) {
+      const { error } = await db.from('devices').delete().eq('token', device.token);
+      if (error) throw new Error(`remove stale device: ${error.message}`);
     }
   }
   console.log(

@@ -21,6 +21,7 @@ class Prefs extends ChangeNotifier {
     this._homeCity,
     this._appearance,
     this._english,
+    this._everyFilm,
   );
 
   /// In-memory only, for tests.
@@ -32,6 +33,7 @@ class Prefs extends ChangeNotifier {
     String? homeCity,
     Appearance appearance = Appearance.system,
     bool english = false,
+    bool everyFilm = false,
   }) : _store = null,
        _cinemas = cinemas ?? {...defaultCinemas},
        _following = following ?? {},
@@ -39,7 +41,8 @@ class Prefs extends ChangeNotifier {
        _onboarded = onboarded,
        _homeCity = homeCity,
        _appearance = appearance,
-       _english = english;
+       _english = english,
+       _everyFilm = everyFilm;
 
   static const _cinemasKey = 'my_cinemas';
   static const _followingKey = 'following';
@@ -48,6 +51,7 @@ class Prefs extends ChangeNotifier {
   static const _homeCityKey = 'home_city';
   static const _appearanceKey = 'appearance';
   static const _englishKey = 'english';
+  static const _everyFilmKey = 'alerts_every_film';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -81,6 +85,7 @@ class Prefs extends ChangeNotifier {
       Appearance.values.asNameMap()[store.getString(_appearanceKey)] ??
           Appearance.system,
       store.getBool(_englishKey) ?? false,
+      store.getBool(_everyFilmKey) ?? false,
     );
   }
 
@@ -92,11 +97,21 @@ class Prefs extends ChangeNotifier {
   String? _homeCity;
   Appearance _appearance;
   bool _english;
+  bool _everyFilm;
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
   Spot? get spot => _spot;
   bool get onboarded => _onboarded;
+
+  /// Alerts for every film's new showtimes at my cinemas, followed or not.
+  bool get everyFilm => _everyFilm;
+
+  void setEveryFilm(bool on) {
+    _everyFilm = on;
+    _store?.setBool(_everyFilmKey, on);
+    notifyListeners();
+  }
 
   /// Home shows every cinema in this city; null shows my cinemas.
   String? get homeCity => _homeCity;
