@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
@@ -7,6 +6,7 @@ import '../data/models.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import '../widgets/share_card.dart';
 import '../util/i18n.dart';
 
 Future<void> showShowtimeSheet(BuildContext context, Showtime showtime) {
@@ -225,13 +225,15 @@ class _ShowtimeSheet extends StatelessWidget {
                           ),
                         const SizedBox(height: 10),
                         OutlinedButton.icon(
-                          onPressed: () => SharePlus.instance.share(
-                            ShareParams(
-                              text:
-                                  '${movie.displayTitle} — ${clock(wall)} ${period(wall)}${tr('،', ',')} '
-                                  '${dayLabel(showtime.businessDate)}\n${cinema.label} · ${showtime.format}'
-                                  '${booking != null ? '\n$booking' : ''}',
-                            ),
+                          onPressed: () => shareShowtimes(
+                            context,
+                            movie: movie,
+                            shows: [showtime],
+                            heading: tr('تيجي معايا؟ 🍿', 'Coming along? 🍿'),
+                            text:
+                                '${movie.displayTitle} — ${clock(wall)} ${period(wall)}${tr('،', ',')} '
+                                '${dayLabel(showtime.businessDate)}\n${cinema.label} · ${showtime.format}'
+                                '${booking != null ? '\n$booking' : ''}',
                           ),
                           icon: const Icon(Icons.ios_share, size: 18),
                           label: Text(tr('ابعتها لصحابك', 'Send to friends')),

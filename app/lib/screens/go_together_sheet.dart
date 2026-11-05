@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../util/i18n.dart';
+import '../widgets/share_card.dart';
 
 /// "Shall we go?": tick a few showtimes of a film and send them to friends in
 /// one message, so they pick one.
@@ -65,17 +65,19 @@ class _GoTogetherState extends State<_GoTogether> {
       for (final (i, s) in picked.indexed)
         '${i + 1}) ${dayLabel(s.businessDate)} · ${clock(s.wallClock)} ${period(s.wallClock)} · ${data.cinema(s.cinemaId).label}',
     ];
-    SharePlus.instance.share(
-      ShareParams(
-        text: [
-          tr(
-            'نروح «${widget.movie.displayTitle}» سوا؟ 🎬 اختاروا ميعاد:',
-            'Shall we see "${widget.movie.displayTitle}"? 🎬 Pick a time:',
-          ),
-          ...lines,
-          tr('— من عالشباك', '— from 3al Shebbak'),
-        ].join('\n'),
-      ),
+    shareShowtimes(
+      context,
+      movie: widget.movie,
+      shows: picked,
+      heading: tr('نروح سوا؟ 🎬 اختاروا ميعاد', 'Shall we go? 🎬 Pick a time'),
+      text: [
+        tr(
+          'نروح «${widget.movie.displayTitle}» سوا؟ 🎬 اختاروا ميعاد:',
+          'Shall we see "${widget.movie.displayTitle}"? 🎬 Pick a time:',
+        ),
+        ...lines,
+        tr('— من عالشباك', '— from 3al Shebbak'),
+      ].join('\n'),
     );
   }
 

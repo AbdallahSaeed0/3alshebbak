@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
@@ -12,6 +13,7 @@ import '../util/format.dart';
 import '../util/i18n.dart';
 import '../widgets/common.dart';
 import '../widgets/credit.dart';
+import '../widgets/tour.dart';
 import 'following_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_screen.dart';
@@ -395,6 +397,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: _setEveryFilm,
                   ),
                   onTap: () => _setEveryFilm(!prefs.everyFilm),
+                ),
+              if (Push.available)
+                _Row(
+                  icon: Icons.battery_alert_outlined,
+                  title: tr(
+                    'الإشعارات مش بتوصل؟',
+                    'Notifications not arriving?',
+                  ),
+                  detail: tr(
+                    'شاومي وأوبو وغيرهم بيقفلوا التطبيق في الخلفية. '
+                        'فعّل "التشغيل التلقائي" وخلّي البطارية "بدون قيود".',
+                    'Xiaomi, Oppo and others close apps in the background. '
+                        'Turn on "Autostart" and set battery to "No restrictions".',
+                  ),
+                  onTap: Geolocator.openAppSettings,
                 )
               else
                 _Row(
@@ -413,6 +430,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           _Group(
             children: [
+              _Row(
+                icon: Icons.school_outlined,
+                title: tr('جولة سريعة في التطبيق', 'Quick tour of the app'),
+                onTap: () => showTour(context),
+              ),
               _Row(
                 icon: Icons.privacy_tip_outlined,
                 title: tr('سياسة الخصوصية', 'Privacy policy'),

@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
+import 'assistant_screen.dart';
 import 'film_screen.dart';
 import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
@@ -279,27 +280,63 @@ class _Header extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            TapCard(
-              radius: 14,
-
-              child: InkWell(
-                onTap: onSearch,
-                borderRadius: BorderRadius.circular(14),
-                child: SizedBox(
-                  height: 48,
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      Icon(Icons.search, size: 18, color: AppColors.muted),
-                      const SizedBox(width: 10),
-                      Text(
-                        tr('دوّر على فيلم أو سينما', 'Search a film or cinema'),
-                        style: AppText.body(14, color: AppColors.muted),
+            Row(
+              children: [
+                Expanded(
+                  child: TapCard(
+                    radius: 14,
+                    child: InkWell(
+                      onTap: onSearch,
+                      borderRadius: BorderRadius.circular(14),
+                      child: SizedBox(
+                        height: 48,
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Icon(
+                              Icons.search,
+                              size: 18,
+                              color: AppColors.muted,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              tr(
+                                'دوّر على فيلم أو سينما',
+                                'Search a film or cinema',
+                              ),
+                              style: AppText.body(14, color: AppColors.muted),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                // The tap-only assistant (assistant_screen.dart).
+                Tooltip(
+                  message: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
+                  child: Material(
+                    color: AppColors.gold,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AssistantScreen(),
+                        ),
+                      ),
+                      child: SizedBox.square(
+                        dimension: 48,
+                        child: Icon(
+                          Icons.forum_outlined,
+                          color: AppColors.onGold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

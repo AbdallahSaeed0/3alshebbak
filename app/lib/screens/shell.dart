@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/app_version.dart';
+import '../widgets/tour.dart';
 
 import '../theme.dart';
 import '../util/i18n.dart';
@@ -30,7 +31,10 @@ class _ShellState extends State<Shell> {
   @override
   void initState() {
     super.initState();
-    _offerUpdate();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) await showTourOnce(context);
+      _offerUpdate();
+    });
   }
 
   /// A newer APK on GitHub: say so once, with a download button.
