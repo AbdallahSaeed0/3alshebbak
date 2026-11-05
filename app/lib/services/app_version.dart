@@ -8,6 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// "0.2.0": the installed app's version.
 Future<String> appVersion() async => (await PackageInfo.fromPlatform()).version;
 
+/// Built for Google Play (`--dart-define=STORE=play`). Play updates the app
+/// itself and forbids apps updating outside it, so the GitHub check is off.
+const fromPlayStore = String.fromEnvironment('STORE') == 'play';
+
 /// A newer APK on the GitHub releases page.
 typedef AppUpdate = ({String version, Uri download});
 
@@ -21,7 +25,11 @@ const _shownKey = 'update_shown';
 /// Testers install from GitHub releases, which can't update the app by
 /// itself, so the app has to say so. Android only: web is always current.
 Future<AppUpdate?> checkForUpdate({bool ignoreShown = false}) async {
-  if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
+  if (kIsWeb ||
+      fromPlayStore ||
+      defaultTargetPlatform != TargetPlatform.android) {
+    return null;
+  }
   try {
     final res = await http
         .get(

@@ -442,7 +442,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-              if (!kIsWeb)
+              if (!kIsWeb && !fromPlayStore)
                 _Row(
                   icon: Icons.system_update_outlined,
                   title: tr('دوّر على تحديث', 'Check for updates'),
@@ -452,6 +452,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 36),
           const Credit(),
+          const SizedBox(height: 14),
+          // TMDB's terms ask apps using its API to say so.
+          Text(
+            tr(
+              'بيانات وصور الأفلام من TMDB. التطبيق بيستخدم TMDB API ومش معتمد منهم.',
+              'Film data and images from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
+            ),
+            textAlign: TextAlign.center,
+            style: AppText.body(11, color: AppColors.muted),
+          ),
           const SizedBox(height: 24),
         ],
       ),

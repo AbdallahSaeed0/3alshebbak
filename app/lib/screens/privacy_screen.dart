@@ -25,7 +25,7 @@ class PrivacyScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
         children: [
           Text(
-            tr('آخر تحديث: 2 نوفمبر 2026', 'Last updated 2 November 2026'),
+            tr('آخر تحديث: 5 نوفمبر 2026', 'Last updated 5 November 2026'),
             style: AppText.body(13, color: AppColors.muted),
           ),
           const SizedBox(height: 12),
@@ -63,8 +63,8 @@ class PrivacyScreen extends StatelessWidget {
           _Title(tr('الإشعارات', 'Notifications')),
           _Para(
             tr(
-              'لو شغّلت إشعارات «التذاكر نزلت»، بنحفظ على السيرفر بتاعنا (Supabase): رقم تعريف الإشعارات بتاع الجهاز، والأفلام اللي بتتابعها، والسينمات اللي اخترتها، عشان نعرف نبعتلك لما الحجز يفتح. مفيش اسم ولا رقم تليفون ولا مكان. الإشعارات بتتبعت عن طريق Firebase Cloud Messaging من Google. لو قفلت الإشعارات أو مسحت التطبيق، الرقم ده بيتمسح من عندنا أول ما يبطّل يشتغل.',
-              'If you turn on "tickets are out" alerts, our server (Supabase) stores your device\'s notification token, the films you follow and the cinemas you picked, so we can tell you when booking opens. No name, phone number or location. Notifications are delivered through Google\'s Firebase Cloud Messaging. If you turn notifications off or uninstall the app, the token is deleted from our side as soon as it stops working.',
+              'لو شغّلت إشعارات «التذاكر نزلت»، بنحفظ على السيرفر بتاعنا (Supabase): رقم تعريف الإشعارات بتاع الجهاز، والأفلام اللي بتتابعها، والسينمات اللي اخترتها، عشان نعرف نبعتلك لما الحجز يفتح. مفيش اسم ولا رقم تليفون ولا مكان. الإشعارات بتتبعت عن طريق Firebase Cloud Messaging من Google. لو مسحت التطبيق، الرقم ده بيبطّل يشتغل وبيتمسح من عندنا لوحده. ولو عايز تمسحه فورًا كلّمنا.',
+              'If you turn on "tickets are out" alerts, our server (Supabase) stores your device\'s notification token, the films you follow and the cinemas you picked, so we can tell you when booking opens. No name, phone number or location. Notifications are delivered through Google\'s Firebase Cloud Messaging. If you uninstall the app, the token stops working and is deleted from our side automatically. To have it deleted right away, contact us.',
             ),
           ),
           _Title(tr('اللي مش بنعمله', 'What we don\'t do')),
