@@ -8,7 +8,8 @@
 // scrape and comes back isn't announced again.
 // At most one notification per film per phone per day. A phone can also ask
 // for every film (EVERY_FILM in its following list, the app's "all films"
-// setting); a run with more than a few of its alerts sends them as one digest.
+// setting); past a few such alerts in one run, the films it doesn't follow
+// go out as one digest. Followed films are always announced on their own.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Fcm, StaleToken } from './fcm.js';
@@ -254,19 +255,24 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     if (!due.length) continue;
 
     const name = (id: string) => title.get(id) ?? id;
-    const push = due.length > DIGEST_AFTER
-      ? { ...digest(due.map((d) => name(d.movieId))), data: {} as Record<string, string> }
-      : null;
-    const sends = push ? [push] : due.map((d) => ({
-      ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id),
-      data: { movieId: d.movieId },
-    }));
+    // Films the phone follows always get their own notification; only the
+    // rest (every-film mode) are bundled, and only past DIGEST_AFTER of them.
+    const own = due.filter((d) => device.following.includes(d.movieId));
+    const others = due.filter((d) => !device.following.includes(d.movieId));
+    const bundle = others.length > DIGEST_AFTER;
+    const sends: { push: { title: string; body: string; data: Record<string, string> }; films: typeof due }[] = [
+      ...[...own, ...(bundle ? [] : others)].map((d) => ({
+        push: { ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id), data: { movieId: d.movieId } },
+        films: [d],
+      })),
+      ...(bundle ? [{ push: { ...digest(others.map((d) => name(d.movieId))), data: {} }, films: others }] : []),
+    ];
     const done = new Set<string>();
     let stale = false;
-    for (const [i, one] of sends.entries()) {
+    for (const one of sends) {
       try {
-        await fcm.send({ token: device.token, ...one });
-        for (const d of push ? due : [due[i]]) done.add(d.movieId);
+        await fcm.send({ token: device.token, ...one.push });
+        for (const d of one.films) done.add(d.movieId);
       } catch (e) {
         if (e instanceof StaleToken) { stale = true; break; }
         failed = true;
