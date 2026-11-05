@@ -225,7 +225,7 @@ class ShowtimesCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -244,6 +244,19 @@ class ShowtimesCard extends StatelessWidget {
                   ).copyWith(letterSpacing: 3),
                 ),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: Text(
+              'by Abdallah Saeed 🍿',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+              style: AppText.body(
+                10,
+                weight: FontWeight.w600,
+                color: AppColors.muted,
+              ).copyWith(letterSpacing: 0.5),
             ),
           ),
         ],

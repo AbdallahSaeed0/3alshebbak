@@ -89,6 +89,7 @@ void main() {
       final image = await boundary.toImage(pixelRatio: 2);
       return image.toByteData(format: ui.ImageByteFormat.png);
     });
+    expect(find.text('by Abdallah Saeed 🍿'), findsOneWidget);
     expect(png!.lengthInBytes, greaterThan(1000));
   });
 }

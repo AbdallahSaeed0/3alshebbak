@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../data/app_data.dart';
 import '../data/prefs.dart';
@@ -12,6 +11,7 @@ import '../theme.dart';
 import '../util/format.dart';
 import '../util/i18n.dart';
 import '../widgets/common.dart';
+import '../widgets/background_help.dart';
 import '../widgets/credit.dart';
 import '../widgets/tour.dart';
 import 'following_screen.dart';
@@ -406,12 +406,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'Notifications not arriving?',
                   ),
                   detail: tr(
-                    'شاومي وأوبو وغيرهم بيقفلوا التطبيق في الخلفية. '
-                        'فعّل "التشغيل التلقائي" وخلّي البطارية "بدون قيود".',
-                    'Xiaomi, Oppo and others close apps in the background. '
-                        'Turn on "Autostart" and set battery to "No restrictions".',
+                    'دوس هنا وهنقولك تعمل إيه خطوة بخطوة',
+                    'Tap for step-by-step help',
                   ),
-                  onTap: Geolocator.openAppSettings,
+                  onTap: () => showBackgroundHelp(context),
                 )
               else
                 _Row(
