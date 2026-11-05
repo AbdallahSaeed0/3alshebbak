@@ -6,6 +6,7 @@ import '../widgets/tour.dart';
 
 import '../theme.dart';
 import '../util/i18n.dart';
+import 'assistant_screen.dart';
 import 'cinemas_screen.dart';
 import 'explore_screen.dart';
 import 'home_screen.dart';
@@ -13,7 +14,7 @@ import 'settings_screen.dart';
 
 typedef _Tab = ({String label, IconData icon, IconData activeIcon});
 
-/// The four tabs under a floating glass bar that pages scroll behind. Tabs
+/// The four tabs, with the assistant's button in the middle, under a floating glass bar that pages scroll behind. Tabs
 /// keep their state (scroll position…) when you switch away.
 class Shell extends StatefulWidget {
   const Shell({super.key});
@@ -98,6 +99,9 @@ class _ShellState extends State<Shell> {
         tabs: _tabs,
         current: _tab,
         onSelect: (i) => setState(() => _tab = i),
+        onAssistant: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const AssistantScreen()),
+        ),
       ),
     );
   }
@@ -108,11 +112,21 @@ class _GlassTabBar extends StatelessWidget {
     required this.tabs,
     required this.current,
     required this.onSelect,
+    required this.onAssistant,
   });
 
   final List<_Tab> tabs;
   final int current;
   final ValueChanged<int> onSelect;
+  final VoidCallback onAssistant;
+
+  Widget _item(int i) => Expanded(
+    child: _TabItem(
+      tab: tabs[i],
+      active: i == current,
+      onTap: () => onSelect(i),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -128,15 +142,11 @@ class _GlassTabBar extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(6),
               child: Row(
+                // Two tabs each side of the assistant's gold button.
                 children: [
-                  for (var i = 0; i < tabs.length; i++)
-                    Expanded(
-                      child: _TabItem(
-                        tab: tabs[i],
-                        active: i == current,
-                        onTap: () => onSelect(i),
-                      ),
-                    ),
+                  for (var i = 0; i < 2; i++) _item(i),
+                  _AssistantButton(onTap: onAssistant),
+                  for (var i = 2; i < tabs.length; i++) _item(i),
                 ],
               ),
             ),
@@ -145,6 +155,42 @@ class _GlassTabBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The tap-only assistant (assistant_screen.dart), in the middle of the bar.
+class _AssistantButton extends StatelessWidget {
+  const _AssistantButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    child: Semantics(
+      button: true,
+      label: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
+      child: Tooltip(
+        message: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
+        child: Material(
+          color: AppColors.gold,
+          shape: const CircleBorder(),
+          elevation: 4,
+          shadowColor: AppColors.gold.withValues(alpha: 0.5),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox.square(
+              dimension: 52,
+              child: Icon(
+                Icons.forum_outlined,
+                size: 24,
+                color: AppColors.onGold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _TabItem extends StatelessWidget {

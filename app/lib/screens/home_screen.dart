@@ -7,7 +7,6 @@ import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
-import 'assistant_screen.dart';
 import 'film_screen.dart';
 import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
@@ -307,30 +306,6 @@ class _Header extends StatelessWidget {
                               style: AppText.body(14, color: AppColors.muted),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // The tap-only assistant (assistant_screen.dart).
-                Tooltip(
-                  message: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
-                  child: Material(
-                    color: AppColors.gold,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const AssistantScreen(),
-                        ),
-                      ),
-                      child: SizedBox.square(
-                        dimension: 48,
-                        child: Icon(
-                          Icons.forum_outlined,
-                          color: AppColors.onGold,
                         ),
                       ),
                     ),

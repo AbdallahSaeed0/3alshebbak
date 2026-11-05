@@ -60,8 +60,8 @@ List<_Slide> get _slides => [
     icon: Icons.forum_outlined,
     title: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
     body: tr(
-      'الزرار اللي جنب السيرش: اختار المدينة والفيلم وهيقولك المواعيد، أو أقرب سينما ليك.',
-      'The button next to search: pick a city and a film for its times, or '
+      'الزرار الدهبي اللي في نص الشريط اللي تحت: اختار المدينة والفيلم وهيقولك المواعيد، أو أقرب سينما ليك.',
+      'The gold button in the middle of the bottom bar: pick a city and a film for its times, or '
           'find your nearest cinema.',
     ),
   ),
