@@ -278,6 +278,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.card(
           Column(
             children: [
+              _FilmHeader(
+                movie: movie,
+                day: day,
+                cinemas: schedule.length,
+                shows: schedule.fold(0, (n, e) => n + e.$2.length),
+              ),
               for (final (cinema, shows) in schedule.take(8))
                 _CinemaTimes(cinema: cinema, shows: shows),
             ],
@@ -566,27 +572,173 @@ class _Times extends StatelessWidget {
   final List<Showtime> shows;
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: 6,
-    runSpacing: 6,
-    children: [
-      for (final s in shows)
-        InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () => showShowtimeSheet(context, s),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.perforation),
-            ),
-            child: Text(
-              '${clock(s.wallClock)} ${period(s.wallClock)}',
-              style: AppText.body(13, weight: FontWeight.w700),
+  Widget build(BuildContext context) {
+    final now = AppScope.of(context).now;
+    final sorted = [...shows]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+    final next = sorted.where((s) => s.startsAt.isAfter(now)).firstOrNull;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final s in sorted)
+          _TimeTile(
+            show: s,
+            past: !s.startsAt.isAfter(now),
+            next: identical(s, next),
+          ),
+      ],
+    );
+  }
+}
+
+/// One showtime in the chat: the time big, AM/PM and the screen type under
+/// it. The next one to start is gold; ones already started are faded.
+class _TimeTile extends StatelessWidget {
+  const _TimeTile({required this.show, this.past = false, this.next = false});
+  final Showtime show;
+  final bool past;
+  final bool next;
+
+  @override
+  Widget build(BuildContext context) {
+    final format = shortFormat(show.format);
+    return Opacity(
+      opacity: past ? 0.4 : 1,
+      child: Material(
+        color: next ? AppColors.gold : AppColors.raised,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: next ? AppColors.gold : AppColors.perforation,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => showShowtimeSheet(context, show),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 72, minHeight: 56),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        clock(show.wallClock),
+                        textDirection: TextDirection.ltr,
+                        style: AppText.numerals(
+                          22,
+                          color: next ? AppColors.onGold : AppColors.text,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        period(show.wallClock),
+                        style: AppText.body(
+                          11,
+                          weight: FontWeight.w700,
+                          color: next ? AppColors.onGold : AppColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (format.isNotEmpty)
+                    Text(
+                      format,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.body(
+                        10,
+                        weight: FontWeight.w700,
+                        color: next
+                            ? AppColors.onGold
+                            : formatTint(show.format),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
-    ],
+      ),
+    );
+  }
+}
+
+/// The top of a film's answer: poster, title, the day, and how much is on.
+class _FilmHeader extends StatelessWidget {
+  const _FilmHeader({
+    required this.movie,
+    required this.day,
+    required this.cinemas,
+    required this.shows,
+  });
+  final Movie movie;
+  final String day;
+  final int cinemas;
+  final int shows;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    margin: const EdgeInsets.symmetric(vertical: 3),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: AppColors.raised,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppColors.goldEdge),
+    ),
+    child: Row(
+      children: [
+        Poster(movie: movie, width: 48, height: 72, radius: 6),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                movie.displayTitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.body(16, weight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: AppColors.gold,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    dayLabel(day),
+                    style: AppText.body(
+                      13,
+                      weight: FontWeight.w700,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                tr(
+                  '$shows ${shows == 1 ? 'حفلة' : 'حفلات'} في $cinemas ${cinemas == 1 ? 'سينما' : 'سينمات'}',
+                  '$shows ${shows == 1 ? 'show' : 'shows'} at $cinemas ${cinemas == 1 ? 'cinema' : 'cinemas'}',
+                ),
+                style: AppText.body(12, color: AppColors.muted),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -598,27 +750,79 @@ class _CinemaTimes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final km = AppScope.of(context).distanceKm(cinema);
+    final where = [cinema.area, cinema.city].whereType<String>().join('، ');
     return _Panel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.raised,
+                  border: Border.all(color: AppColors.goldEdge),
+                ),
+                child: Icon(
+                  Icons.theaters_outlined,
+                  size: 18,
+                  color: AppColors.gold,
+                ),
+              ),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  cinema.label,
-                  style: AppText.body(14, weight: FontWeight.w700),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cinema.label,
+                      style: AppText.body(15, weight: FontWeight.w800),
+                    ),
+                    if (where.isNotEmpty)
+                      Text(
+                        where,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.body(12, color: AppColors.muted),
+                      ),
+                  ],
                 ),
               ),
               if (km != null)
-                Text(
-                  distance(km),
-                  style: AppText.body(12, color: AppColors.gold),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.goldEdge),
+                  ),
+                  child: Text(
+                    distance(km),
+                    style: AppText.body(
+                      11,
+                      weight: FontWeight.w700,
+                      color: AppColors.gold,
+                    ),
+                  ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+          const Perforation(vertical: false),
+          const SizedBox(height: 10),
           _Times(shows: shows),
+          const SizedBox(height: 6),
+          Text(
+            tr(
+              '${shows.length} ${shows.length == 1 ? 'حفلة' : 'حفلات'} · دوس على الميعاد عشان تحجز',
+              '${shows.length} ${shows.length == 1 ? 'show' : 'shows'} · tap a time to book',
+            ),
+            style: AppText.body(11, color: AppColors.muted),
+          ),
         ],
       ),
     );

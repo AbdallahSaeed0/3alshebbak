@@ -59,8 +59,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('نوفمبر').last);
     await tester.pumpAndSettle();
-    expect(find.text('7:30 م'), findsOneWidget);
-    expect(find.text('10:00 م'), findsOneWidget);
+    expect(find.text('7:30'), findsOneWidget);
+    expect(find.text('10:00'), findsOneWidget);
+    expect(find.text('2 حفلات في 1 سينما'), findsOneWidget);
     expect(find.text('من الأول'), findsOneWidget);
   });
 

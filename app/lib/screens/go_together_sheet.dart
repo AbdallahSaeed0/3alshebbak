@@ -78,6 +78,7 @@ class _GoTogetherState extends State<_GoTogether> {
         ...lines,
         tr('— من عالشباك', '— from 3al Shebbak'),
       ].join('\n'),
+      imageOnly: true,
     );
   }
 

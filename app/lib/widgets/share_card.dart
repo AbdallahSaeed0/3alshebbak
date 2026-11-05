@@ -13,14 +13,16 @@ import 'common.dart';
 import 'ticket_mark.dart';
 
 /// Sends a film's showtimes to friends as a picture: a ticket-like card with
-/// the poster and the times, previewed first. The text goes along too, for
-/// apps that drop images and for the booking link.
+/// the poster and the times, previewed first. With [imageOnly] the picture
+/// goes alone; otherwise the text (with the booking link) goes along too.
+/// The text is also the fallback if the picture can't be made.
 Future<void> shareShowtimes(
   BuildContext context, {
   required Movie movie,
   required List<Showtime> shows,
   required String heading,
   required String text,
+  bool imageOnly = false,
 }) {
   return showDialog<void>(
     context: context,
@@ -29,6 +31,7 @@ Future<void> shareShowtimes(
       shows: [...shows]..sort((a, b) => a.startsAt.compareTo(b.startsAt)),
       heading: heading,
       text: text,
+      imageOnly: imageOnly,
     ),
   );
 }
@@ -39,12 +42,14 @@ class _SharePreview extends StatefulWidget {
     required this.shows,
     required this.heading,
     required this.text,
+    this.imageOnly = false,
   });
 
   final Movie movie;
   final List<Showtime> shows;
   final String heading;
   final String text;
+  final bool imageOnly;
 
   @override
   State<_SharePreview> createState() => _SharePreviewState();
@@ -71,7 +76,7 @@ class _SharePreviewState extends State<_SharePreview> {
             ),
           ],
           fileNameOverrides: ['3alshebbak.png'],
-          text: widget.text,
+          text: widget.imageOnly ? null : widget.text,
         ),
       );
     } catch (e) {
