@@ -128,6 +128,55 @@ export function showCount(n: number) {
   return `${n} حفلة جديدة`;
 }
 
+/** One line of notification_log (20261106120000_notification_log.sql). */
+export type LogRow = {
+  movie_id?: string | null;
+  film?: string | null;
+  device?: string | null;
+  outcome: 'sent' | 'failed' | 'stale_device' | 'daily_limit' | 'not_new' | 'other_cinemas' | 'nobody_follows' | 'no_firebase';
+  kind?: Alert['kind'] | 'digest' | null;
+  cinemas?: string[] | null;
+  new_shows?: number | null;
+  title?: string | null;
+  body?: string | null;
+  error?: string | null;
+};
+
+const LOG_DAYS = 14;
+
+/**
+ * Collects what happened to every film this run and writes it at the end.
+ * Best effort: a missing table or a failed write is reported and ignored, so
+ * the log can never stop a notification.
+ */
+export class NotificationLog {
+  readonly rows: (LogRow & { run_at: string })[] = [];
+  constructor(private db: SupabaseClient | null, private runAt: string) {}
+
+  add(row: LogRow) {
+    this.rows.push({ ...row, run_at: this.runAt });
+  }
+
+  async flush() {
+    const rows = this.rows.splice(0);
+    if (!this.db) return;
+    try {
+      for (let i = 0; i < rows.length; i += 500) {
+        const { error } = await this.db.from('notification_log').insert(rows.slice(i, i + 500));
+        if (error) throw new Error(error.message);
+      }
+      const cutoff = new Date(Date.parse(this.runAt) - LOG_DAYS * 86_400_000).toISOString();
+      const { error } = await this.db.from('notification_log').delete().lt('run_at', cutoff);
+      if (error) throw new Error(error.message);
+    } catch (e) {
+      console.log(`  ! notification log not saved (${rows.length} rows): ${errorMessage(e)}`);
+    }
+  }
+}
+
+/** The tail of a token: enough to tell phones apart in the log, no more. */
+const deviceTag = (token: string) => token.slice(-8);
+
 /** scrape_runs rows with this source mark how far alerts have been checked. */
 const ALERTS = 'alerts';
 
@@ -153,15 +202,24 @@ async function lastCheck(db: SupabaseClient, runStartedAt: string): Promise<stri
 
 export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   const fcm = Fcm.fromEnv();
-  if (!fcm) return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped (the next run that can send picks these up)');
-
   const now = new Date().toISOString();
-  await announce(db, fcm, await lastCheck(db, runStartedAt), now);
+  const log = new NotificationLog(db, now);
+  if (!fcm) {
+    log.add({ outcome: 'no_firebase' });
+    await log.flush();
+    return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped (the next run that can send picks these up)');
+  }
+
+  try {
+    await announce(db, fcm, await lastCheck(db, runStartedAt), now, log);
+  } finally {
+    await log.flush();
+  }
   const { error } = await db.from('scrape_runs').insert({ source: ALERTS, started_at: now, ok: true });
   if (error) throw new Error(`save alerts checkpoint: ${error.message}`);
 }
 
-async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string) {
+async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string, log: NotificationLog) {
   const fresh = await all<Seen>(() =>
     db
       .from('showtimes_seen')
@@ -177,6 +235,23 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const devices = await all<Device>(() =>
     db.from('devices').select('token,following,cinemas').overlaps('following', [...movieIds, EVERY_FILM]).order('token'),
   );
+  const [{ data: movies }, { data: cinemas }] = await Promise.all([
+    db.from('movies').select('id,tmdb_id,title,title_ar,original_title').in('id', movieIds),
+    db.from('cinemas').select('id,chain,name,name_ar').in('id', unique(fresh.map((r) => r.cinema_id))),
+  ]);
+  const title = new Map((movies ?? []).map((m) => [m.id, displayTitle(m)]));
+  const label = new Map((cinemas ?? []).map((c) => [c.id, cinemaLabel(c)]));
+  const name = (id: string) => title.get(id) ?? id;
+
+  const filmsOf = (d: Device) => (d.following.includes(EVERY_FILM) ? movieIds : d.following);
+  const followed = movieIds.filter((id) => devices.some((d) => filmsOf(d).includes(id)));
+  for (const id of movieIds.filter((m) => !followed.includes(m))) {
+    const rows = fresh.filter((r) => r.movie_id === id);
+    log.add({
+      movie_id: id, film: name(id), outcome: 'nobody_follows',
+      new_shows: rows.length, cinemas: unique(rows.map((r) => r.cinema_id)),
+    });
+  }
   if (!devices.length) return console.log(`  notifications: ${movieIds.length} films got showtimes, nobody follows them`);
 
   // Successful devices advance independently of failed devices. This survives
@@ -193,8 +268,6 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     if (error) throw new Error(`save device notification progress: ${error.message}`);
   };
 
-  const filmsOf = (d: Device) => (d.following.includes(EVERY_FILM) ? movieIds : d.following);
-  const followed = movieIds.filter((id) => devices.some((d) => filmsOf(d).includes(id)));
   const before = await all<Seen>(() =>
     db
       .from('showtimes_seen')
@@ -212,13 +285,6 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const freshBy = byMovie(fresh);
   const beforeBy = byMovie(before);
 
-  const [{ data: movies }, { data: cinemas }] = await Promise.all([
-    db.from('movies').select('id,tmdb_id,title,title_ar,original_title').in('id', followed),
-    db.from('cinemas').select('id,chain,name,name_ar').in('id', unique(fresh.map((r) => r.cinema_id))),
-  ]);
-  const title = new Map((movies ?? []).map((m) => [m.id, displayTitle(m)]));
-  const label = new Map((cinemas ?? []).map((c) => [c.id, cinemaLabel(c)]));
-
   const today = cairoToday();
   const counts = { opened: 0, days: 0, shows: 0 };
   let failed = false;
@@ -227,15 +293,28 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     const mine = (rows: Seen[]) =>
       device.cinemas.length ? rows.filter((r) => device.cinemas.includes(r.cinema_id)) : rows;
 
+    const tag = deviceTag(device.token);
     const due: { movieId: string; alert: Alert }[] = [];
     for (const movieId of filmsOf(device)) {
+      const anywhere = freshBy.get(movieId) ?? [];
       const through = checked.get(`${device.token}|${movieId}`);
-      const rows = mine(freshBy.get(movieId) ?? []);
+      const rows = mine(anywhere);
       const handled = (row: Seen) => !!through && !!row.first_seen_at && Date.parse(row.first_seen_at) < Date.parse(through);
       const alert = alertFor(rows.filter((r) => !handled(r)), [
         ...mine(beforeBy.get(movieId) ?? []), ...rows.filter(handled),
       ]);
-      if (!alert) continue;
+      if (!alert) {
+        // Only films the phone follows by name: logging every film for every
+        // "all films" phone would bury the answers in noise.
+        if (anywhere.length && device.following.includes(movieId)) {
+          log.add({
+            movie_id: movieId, film: name(movieId), device: tag,
+            outcome: rows.length ? 'not_new' : 'other_cinemas',
+            new_shows: anywhere.length, cinemas: unique(anywhere.map((r) => r.cinema_id)),
+          });
+        }
+        continue;
+      }
 
       // The primary key makes this the once-a-day check: a second insert fails.
       const { error: seen } = await db
@@ -246,6 +325,10 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
           // Consume updates intentionally suppressed by today's rate limit,
           // so another phone's retry cannot resurrect them tomorrow.
           await advance(device.token, movieId);
+          log.add({
+            movie_id: movieId, film: name(movieId), device: tag, outcome: 'daily_limit',
+            kind: alert.kind, cinemas: alert.cinemas, new_shows: rows.length,
+          });
           continue;
         }
         throw new Error(`reserve notification: ${seen.message}`);
@@ -254,28 +337,44 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     }
     if (!due.length) continue;
 
-    const name = (id: string) => title.get(id) ?? id;
     // Films the phone follows always get their own notification; only the
     // rest (every-film mode) are bundled, and only past DIGEST_AFTER of them.
     const own = due.filter((d) => device.following.includes(d.movieId));
     const others = due.filter((d) => !device.following.includes(d.movieId));
     const bundle = others.length > DIGEST_AFTER;
-    const sends: { push: { title: string; body: string; data: Record<string, string> }; films: typeof due }[] = [
+    const sends: { push: { title: string; body: string; data: Record<string, string> }; films: typeof due; digest: boolean }[] = [
       ...[...own, ...(bundle ? [] : others)].map((d) => ({
         push: { ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id), data: { movieId: d.movieId } },
         films: [d],
+        digest: false,
       })),
-      ...(bundle ? [{ push: { ...digest(others.map((d) => name(d.movieId))), data: {} }, films: others }] : []),
+      ...(bundle ? [{ push: { ...digest(others.map((d) => name(d.movieId))), data: {} }, films: others, digest: true }] : []),
     ];
+    const logSend = (one: (typeof sends)[number], outcome: LogRow['outcome'], error?: string) => {
+      for (const d of one.films) {
+        log.add({
+          movie_id: d.movieId, film: name(d.movieId), device: tag, outcome,
+          kind: one.digest ? 'digest' : d.alert.kind, cinemas: d.alert.cinemas,
+          new_shows: d.alert.kind === 'shows' ? d.alert.count : null,
+          title: one.push.title, body: one.push.body, error: error ?? null,
+        });
+      }
+    };
     const done = new Set<string>();
     let stale = false;
     for (const one of sends) {
       try {
         await fcm.send({ token: device.token, ...one.push });
         for (const d of one.films) done.add(d.movieId);
+        logSend(one, 'sent');
       } catch (e) {
-        if (e instanceof StaleToken) { stale = true; break; }
+        if (e instanceof StaleToken) {
+          stale = true;
+          for (const rest of sends.filter((x) => !x.films.some((d) => done.has(d.movieId)))) logSend(rest, 'stale_device');
+          break;
+        }
         failed = true;
+        logSend(one, 'failed', errorMessage(e));
         console.log(`  ! notification to …${device.token.slice(-6)}: ${errorMessage(e)}`);
       }
     }

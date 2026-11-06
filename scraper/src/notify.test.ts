@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { alertFor, dayName, digest, message, showCount, type Seen } from './notify.js';
+import { alertFor, dayName, digest, message, NotificationLog, showCount, type Seen } from './notify.js';
 
 const show = (business_date: string, cinema_id = 'scene:cfc', time = '19:00'): Seen => ({
   movie_id: 'tmdb:1',
@@ -78,4 +78,12 @@ test('a phone hearing about every film gets one digest for many', () => {
     body: '«Godzilla» و«Dune» وفيلمين كمان',
   });
   assert.equal(digest(['A', 'B', 'C', 'D', 'E']).body, '«A» و«B» و3 أفلام كمان');
+});
+
+test('a log that cannot be written never stops the run', async () => {
+  const broken = { from: () => ({ insert: async () => ({ error: { message: 'relation does not exist' } }) }) };
+  const log = new NotificationLog(broken as never, '2026-11-06T12:00:00Z');
+  log.add({ movie_id: 'tmdb:1', film: 'Clayface', device: 'abcd1234', outcome: 'sent', kind: 'opened' });
+  await log.flush();
+  assert.equal(log.rows.length, 0);
 });
