@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>عالشباك - مواعيد سينمات مصر</title>
+<meta name="description" content="مواعيد حفلات كل سينمات مصر في مكان واحد، وإشعار أول ما حجز فيلمك يفتح. تطبيق أندرويد مجاني ومن غير إعلانات.">
+<meta property="og:title" content="عالشباك - مواعيد سينمات مصر">
+<meta property="og:description" content="مواعيد حفلات كل سينمات مصر في مكان واحد، وإشعار أول ما حجز فيلمك يفتح.">
+<meta property="og:image" content="https://abdallahsaeed0.github.io/3alshebbak/img/og.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0906">
+<link rel="icon" href="img/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Bebas+Neue&display=swap">
+<style>
+  :root {
+    --bg: #0b0906; --surface: #17130d; --raised: #211b12; --line: #3a3022;
+    --gold: #f2b84b; --on-gold: #1b1408; --text: #f5ecdc; --muted: #b3a48a;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(900px 600px at 50% -10%, rgba(242,184,75,.18), transparent 70%), var(--bg);
+    color: var(--text); font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  header { text-align: center; padding: 56px 0 28px; }
+  .logo { width: 104px; height: 104px; border-radius: 26px; box-shadow: 0 16px 50px rgba(242,184,75,.25); }
+  h1 { font-family: Lalezar, serif; font-weight: 400; color: var(--gold); font-size: clamp(56px, 13vw, 88px); line-height: 1.1; margin-top: 18px; }
+  .en { font-family: 'Bebas Neue', sans-serif; letter-spacing: 7px; color: var(--muted); font-size: 20px; }
+  .tag { font-size: clamp(19px, 4.6vw, 24px); font-weight: 600; margin-top: 14px; }
+  .cta { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 28px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; background: var(--gold); color: var(--on-gold);
+    font-weight: 700; font-size: 20px; padding: 16px 34px; border-radius: 16px; text-decoration: none;
+    box-shadow: 0 12px 34px rgba(242,184,75,.3); transition: transform .15s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn svg { width: 24px; height: 24px; }
+  .meta { color: var(--muted); font-size: 14px; }
+  .shots { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 26px 16px 18px; margin: 0 -16px; }
+  .shots img {
+    flex: 0 0 auto; width: 230px; aspect-ratio: 9 / 16; border-radius: 22px; border: 2px solid var(--line);
+    scroll-snap-align: center; background: var(--surface);
+  }
+  h2 { font-family: Lalezar, serif; font-weight: 400; font-size: 34px; color: var(--gold); margin: 36px 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+  .card b { display: block; font-size: 18px; margin-bottom: 4px; }
+  .card p { color: var(--muted); font-size: 15px; }
+  ol.steps { list-style: none; counter-reset: s; display: grid; gap: 10px; padding: 0; }
+  ol.steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+  ol.steps li::before {
+    content: counter(s); flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--gold); color: var(--on-gold);
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; display: grid; place-items: center;
+  }
+  .note { background: var(--raised); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 12px; color: var(--muted); font-size: 15px; }
+  footer { text-align: center; padding: 44px 0 36px; color: var(--muted); font-size: 14px; }
+  footer .by { color: var(--text); font-weight: 700; font-size: 17px; margin: 4px 0 10px; }
+  footer a { color: var(--gold); }
+  .small { font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="logo" src="img/icon.png" alt="أيقونة عالشباك" width="104" height="104">
+    <h1>عالشباك</h1>
+    <div class="en">3AL SHEBBAK</div>
+    <p class="tag">مواعيد كل سينمات مصر في مكان واحد</p>
+    <div class="cta">
+      <a class="btn" id="download" href="https://github.com/AbdallahSaeed0/3alshebbak/releases/download/v0.2.2/3alShebbak-0.2.2.apk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+        نزّل التطبيق
+      </a>
+      <span class="meta" id="meta">أندرويد · نسخة 0.2.2 · حوالي 58 ميجا · مجاني ومن غير إعلانات</span>
+    </div>
+  </header>
+
+  <div class="shots" aria-label="صور من التطبيق">
+    <img src="img/home.jpg" alt="الرئيسية: الجاي في سينماتك والتذاكر اللي نزلت" loading="lazy">
+    <img src="img/assistant.jpg" alt="اسأل عالشباك: مواعيد الفيلم في كل سينما" loading="lazy">
+    <img src="img/ticket.jpg" alt="تذكرة الميعاد وزرار الحجز" loading="lazy">
+    <img src="img/film-times.jpg" alt="كل حفلات الفيلم يوم بيوم" loading="lazy">
+    <img src="img/share-card.jpg" alt="نروح سوا؟ المواعيد في صورة لصحابك" loading="lazy">
+    <img src="img/map.jpg" alt="السينمات على الخريطة" loading="lazy">
+  </div>
+
+  <h2>فيه إيه؟</h2>
+  <div class="grid">
+    <div class="card"><b>🎬 كل المواعيد</b><p>فوكس وسين ورينيسانس وبريميير وزاوية وسينمات تانية كتير، في القاهرة وإسكندرية والمحافظات.</p></div>
+    <div class="card"><b>🔔 إشعار أول ما الحجز يفتح</b><p>تابع الفيلم اللي مستنيه، وأول ما التذاكر تنزل يوصلك إشعار.</p></div>
+    <div class="card"><b>💬 اسأل عالشباك</b><p>اختار المدينة والفيلم واليوم من غير كتابة، وهو يقولك المواعيد في كل سينما.</p></div>
+    <div class="card"><b>🎟️ احجز على طول</b><p>دوس على الميعاد ويوديك لموقع السينما نفسها تحجز وتدفع.</p></div>
+    <div class="card"><b>📍 أقرب سينما ليك</b><p>كل السينمات على الخريطة ومترتبة من الأقرب لمكانك.</p></div>
+    <div class="card"><b>👫 نروح سوا؟</b><p>ابعت كام ميعاد لصحابك في صورة شكلها حلو يختاروا منها.</p></div>
+  </div>
+
+  <h2>إزاي تثبّته؟</h2>
+  <ol class="steps">
+    <li><span>دوس "نزّل التطبيق" فوق، والملف هينزل على الموبايل.</span></li>
+    <li><span>افتح الملف من الإشعارات أو من فولدر التنزيلات.</span></li>
+    <li><span>لو الموبايل قالك "غير مسموح"، دوس "الإعدادات" وفعّل "السماح من المصدر ده"، وارجع دوس "تثبيت".</span></li>
+    <li><span>افتح عالشباك واختار سينماتك، وخلاص.</span></li>
+  </ol>
+  <p class="note">لو عندك نسخة 0.1.1 القديمة: امسحها الأول وبعدين ثبّت الجديدة. أي نسخة بعد كده التطبيق هيقولك عليها لوحده.</p>
+  <p class="note">التطبيق مش على Google Play لسه، فالموبايل ممكن يحذّرك إنه من مصدر غير معروف. ده طبيعي لأي تطبيق بيتنزّل من بره المتجر.</p>
+
+  <footer>
+    <div>CRAFTED WITH CARE</div>
+    <div class="by">Abdallah Saeed 🍿</div>
+    <a href="https://github.com/AbdallahSaeed0/3alshebbak/blob/main/PRIVACY.md">سياسة الخصوصية</a>
+    · <a href="https://github.com/AbdallahSaeed0/3alshebbak/releases">كل النسخ</a>
+    <p class="small">بيانات وصور الأفلام من TMDB. عالشباك مش تابع لأي سينما من السينمات المذكورة.</p>
+  </footer>
+</div>
+<script>
+  // Point the button at the newest release, so the page never needs editing.
+  fetch('https://api.github.com/repos/AbdallahSaeed0/3alshebbak/releases?per_page=5')
+    .then(r => r.ok ? r.json() : [])
+    .then(list => {
+      const rel = list.find(r => !r.draft);
+      const apk = rel && rel.assets.find(a => a.name.endsWith('.apk'));
+      if (!apk) return;
+      document.getElementById('download').href = apk.browser_download_url;
+      const mb = Math.round(apk.size / 1048576);
+      document.getElementById('meta').textContent =
+        'أندرويد · نسخة ' + rel.tag_name.replace('v', '') + ' · حوالي ' + mb + ' ميجا · مجاني ومن غير إعلانات';
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
