@@ -6,7 +6,7 @@
 
 | الحاجة | المكان |
 |---|---|
-| ملف الرفع (AAB) | `D:\3alShebbak-play\3alShebbak-0.2.2-play.aab` |
+| ملف الرفع (AAB) | `D:\3alShebbak-play\3alShebbak-0.2.4-play.aab` |
 | أيقونة 512×512 | `play/store/icon-512.png` |
 | صورة العرض 1024×500 | `play/store/feature-graphic.png` |
 | 8 اسكرينات للموبايل 1080×1920 | `play/store/screenshot-1.png` … `screenshot-8.png` |

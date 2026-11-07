@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../services/app_version.dart';
 import '../widgets/tour.dart';
+import '../widgets/update_sheet.dart';
 
 import '../theme.dart';
 import '../util/i18n.dart';
@@ -42,7 +42,7 @@ class _ShellState extends State<Shell> {
   Future<void> _offerUpdate() async {
     final update = await checkForUpdate();
     if (update == null || !mounted) return;
-    showUpdateSnackBar(context, update);
+    showUpdatePrompt(context, update);
   }
 
   @override
@@ -262,25 +262,4 @@ class _TabItem extends StatelessWidget {
       ),
     );
   }
-}
-
-/// "There's a new version" with a button that downloads its APK.
-void showUpdateSnackBar(BuildContext context, AppUpdate update) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      duration: const Duration(seconds: 12),
-      content: Text(
-        tr(
-          'فيه نسخة جديدة من عالشباك (${update.version})',
-          'A new version of 3al Shebbak is out (${update.version})',
-        ),
-        style: AppText.body(13),
-      ),
-      action: SnackBarAction(
-        label: tr('نزّلها', 'Download'),
-        onPressed: () =>
-            launchUrl(update.download, mode: LaunchMode.externalApplication),
-      ),
-    ),
-  );
 }

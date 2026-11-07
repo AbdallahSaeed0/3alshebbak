@@ -13,7 +13,19 @@ Future<String> appVersion() async => (await PackageInfo.fromPlatform()).version;
 const fromPlayStore = String.fromEnvironment('STORE') == 'play';
 
 /// A newer APK on the GitHub releases page.
-typedef AppUpdate = ({String version, Uri download});
+typedef AppUpdate = ({String version, Uri download, List<String> notes});
+
+/// The release's "what's new" bullets ("- …" lines), without markdown.
+List<String> releaseNotes(String? body) => [
+  for (final line in (body ?? '').split('\n'))
+    if (line.trimLeft().startsWith('- '))
+      line
+          .trimLeft()
+          .substring(2)
+          .replaceAll('**', '')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim(),
+];
 
 const _releases =
     'https://api.github.com/repos/AbdallahSaeed0/3alshebbak/releases?per_page=5';
@@ -59,6 +71,7 @@ Future<AppUpdate?> checkForUpdate({bool ignoreShown = false}) async {
     return (
       version: latest,
       download: Uri.parse(apk['browser_download_url'] as String),
+      notes: releaseNotes(release['body'] as String?),
     );
   } catch (e) {
     debugPrint('Update check failed: $e');

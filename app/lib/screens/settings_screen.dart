@@ -12,12 +12,12 @@ import '../util/format.dart';
 import '../util/i18n.dart';
 import '../widgets/common.dart';
 import '../widgets/background_help.dart';
+import '../widgets/update_sheet.dart';
 import '../widgets/credit.dart';
 import '../widgets/tour.dart';
 import 'following_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_screen.dart';
-import 'shell.dart' show showUpdateSnackBar;
 import 'tickets_screen.dart';
 
 /// Which cinemas Home shows: mine, or every cinema in one city.
@@ -486,7 +486,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final update = await checkForUpdate(ignoreShown: true);
     if (!context.mounted) return;
-    if (update != null) return showUpdateSnackBar(context, update);
+    if (update != null) return showUpdatePrompt(context, update);
     messenger.showSnackBar(
       SnackBar(
         content: Text(

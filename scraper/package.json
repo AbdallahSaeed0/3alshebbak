@@ -10,6 +10,7 @@
     "pipeline": "tsx src/pipeline.ts",
     "export-app": "node -e \"for (const f of ['renaissance','scene','premiere','elcinema','catalog']) require('fs').copyFileSync('out/'+f+'.json', '../app/assets/data/'+f+'.json')\"",
     "notify-log": "tsx scripts/notify-log.ts",
+    "announce-release": "tsx scripts/announce-release.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test src/**/*.test.ts"
   },

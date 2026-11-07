@@ -10,7 +10,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../data/prefs.dart';
+import 'app_version.dart';
 import '../data/supabase_repository.dart';
 import '../firebase_options.dart';
 
@@ -115,6 +118,12 @@ class Push implements FilmAlerts {
   void _opened(RemoteMessage message) {
     final movieId = message.data['movieId'];
     if (movieId is String) onOpenFilm?.call(movieId);
+    // "A new version is out" (scraper/scripts/announce-release.ts): the
+    // download page, which always points at the newest APK.
+    final url = message.data['url'];
+    if (message.data['type'] == 'update' && url is String && !fromPlayStore) {
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
   }
 
   /// Picks change in bursts (starring a few cinemas): register once after.
@@ -176,6 +185,8 @@ class Push implements FilmAlerts {
                 ...prefs.following,
                 if (prefs.everyFilm) '*',
                 if (prefs.allCinemaAlerts) '@all-cinemas',
+                // Play installs update through Play, not GitHub's APK.
+                if (fromPlayStore) '@play',
               ],
               'p_cinemas': prefs.myCinemas.toList(),
             }),
