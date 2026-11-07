@@ -399,6 +399,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => _setEveryFilm(!prefs.everyFilm),
                 ),
               if (Push.available)
+                _Choices<bool>(
+                  icon: Icons.location_city_outlined,
+                  title: tr('من', 'From'),
+                  value: prefs.allCinemaAlerts,
+                  options: {
+                    false: tr(
+                      'سينماتي (${prefs.myCinemas.length})',
+                      'My cinemas (${prefs.myCinemas.length})',
+                    ),
+                    true: tr('كل السينمات', 'All cinemas'),
+                  },
+                  onChanged: prefs.setAllCinemaAlerts,
+                ),
+              if (Push.available)
                 _Row(
                   icon: Icons.battery_alert_outlined,
                   title: tr(

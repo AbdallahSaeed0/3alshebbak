@@ -22,6 +22,7 @@ class Prefs extends ChangeNotifier {
     this._appearance,
     this._english,
     this._everyFilm,
+    this._allCinemaAlerts,
   );
 
   /// In-memory only, for tests.
@@ -34,6 +35,7 @@ class Prefs extends ChangeNotifier {
     Appearance appearance = Appearance.system,
     bool english = false,
     bool everyFilm = false,
+    bool allCinemaAlerts = false,
   }) : _store = null,
        _cinemas = cinemas ?? {...defaultCinemas},
        _following = following ?? {},
@@ -42,7 +44,8 @@ class Prefs extends ChangeNotifier {
        _homeCity = homeCity,
        _appearance = appearance,
        _english = english,
-       _everyFilm = everyFilm;
+       _everyFilm = everyFilm,
+       _allCinemaAlerts = allCinemaAlerts;
 
   static const _cinemasKey = 'my_cinemas';
   static const _followingKey = 'following';
@@ -52,6 +55,7 @@ class Prefs extends ChangeNotifier {
   static const _appearanceKey = 'appearance';
   static const _englishKey = 'english';
   static const _everyFilmKey = 'alerts_every_film';
+  static const _allCinemaAlertsKey = 'alerts_all_cinemas';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -86,6 +90,7 @@ class Prefs extends ChangeNotifier {
           Appearance.system,
       store.getBool(_englishKey) ?? false,
       store.getBool(_everyFilmKey) ?? false,
+      store.getBool(_allCinemaAlertsKey) ?? false,
     );
   }
 
@@ -98,6 +103,7 @@ class Prefs extends ChangeNotifier {
   Appearance _appearance;
   bool _english;
   bool _everyFilm;
+  bool _allCinemaAlerts;
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
@@ -110,6 +116,15 @@ class Prefs extends ChangeNotifier {
   void setEveryFilm(bool on) {
     _everyFilm = on;
     _store?.setBool(_everyFilmKey, on);
+    notifyListeners();
+  }
+
+  /// Alerts from every cinema in Egypt, not only my starred ones.
+  bool get allCinemaAlerts => _allCinemaAlerts;
+
+  void setAllCinemaAlerts(bool on) {
+    _allCinemaAlerts = on;
+    _store?.setBool(_allCinemaAlertsKey, on);
     notifyListeners();
   }
 

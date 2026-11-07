@@ -170,8 +170,13 @@ class Push implements FilmAlerts {
               'p_platform': defaultTargetPlatform == TargetPlatform.iOS
                   ? 'ios'
                   : 'android',
-              // "*" asks the server for every film (scraper/src/notify.ts).
-              'p_following': [...prefs.following, if (prefs.everyFilm) '*'],
+              // "*" asks the server for every film, "@all-cinemas" for every
+              // cinema, not only starred ones (scraper/src/notify.ts).
+              'p_following': [
+                ...prefs.following,
+                if (prefs.everyFilm) '*',
+                if (prefs.allCinemaAlerts) '@all-cinemas',
+              ],
               'p_cinemas': prefs.myCinemas.toList(),
             }),
           )
