@@ -56,6 +56,9 @@ class Poster extends StatelessWidget {
               Image.network(
                 url,
                 fit: BoxFit.cover,
+                // On web, chains' own posters (elCinema) come without CORS
+                // headers; draw those with a plain <img> instead of failing.
+                webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                 cacheWidth: (width * MediaQuery.devicePixelRatioOf(context))
                     .round(),
                 errorBuilder: (_, _, _) => placeholder,
