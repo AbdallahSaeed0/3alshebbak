@@ -23,8 +23,7 @@ workflows:
         BUNDLE_ID: "com.shebbak.shebbak"
         # Numeric "Apple ID" of the app: App Store Connect > your app >
         # App Information > General Information > Apple ID (about 10 digits).
-        # Replace the placeholder, or set APP_STORE_APPLE_ID in the Codemagic UI.
-        APP_STORE_APPLE_ID: "0000000000"
+        APP_STORE_APPLE_ID: "6831874335"
 
     # Manual only: no "events", so pushes never start a build.
     # To build on every push to main, uncomment:
