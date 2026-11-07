@@ -1,0 +1,88 @@
+# Codemagic CI: build the Flutter iOS app (app/) and upload it to TestFlight.
+# Manual start only. Start it from the Codemagic UI: Start new build > ios-testflight.
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    # IMPORTANT: "codemagic" must EXACTLY match the name you give the App Store
+    # Connect API key in Codemagic: Teams > Integrations > Developer Portal.
+    # If you name it differently there, change it here too.
+    integrations:
+      app_store_connect: codemagic
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.shebbak.shebbak
+      vars:
+        BUNDLE_ID: "com.shebbak.shebbak"
+        # Numeric "Apple ID" of the app: App Store Connect > your app >
+        # App Information > General Information > Apple ID (about 10 digits).
+        # Replace the placeholder, or set APP_STORE_APPLE_ID in the Codemagic UI.
+        APP_STORE_APPLE_ID: "0000000000"
+
+    # Manual only: no "events", so pushes never start a build.
+    # To build on every push to main, uncomment:
+    # triggering:
+    #   events:
+    #     - push
+    #   branch_patterns:
+    #     - pattern: main
+    #       include: true
+    #       source: true
+    #   cancel_previous_builds: true
+
+    scripts:
+      - name: Get Flutter packages
+        working_directory: app
+        script: flutter pub get
+
+      - name: Generate iOS config and Podfile, set iOS 15 platform
+        # No Podfile is committed. Flutter creates one; Firebase 12 needs iOS 15+.
+        working_directory: app
+        script: |
+          flutter build ios --config-only --no-codesign
+          sed -i '' "s/^# platform :ios, .*/platform :ios, '15.0'/" ios/Podfile
+          grep -n "platform :ios" ios/Podfile
+
+      - name: Install CocoaPods
+        working_directory: app/ios
+        script: pod install
+
+      - name: Set up code signing settings on Xcode project
+        # Internal TestFlight testers only: no Apple beta review needed.
+        working_directory: app
+        script: |
+          xcode-project use-profiles \
+            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+
+      - name: Build IPA
+        working_directory: app
+        script: |
+          BUILD_NAME=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//' | tr -d '[:space:]')
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" --all-versions 2>/dev/null | tail -n 1 | tr -dc '0-9')
+          BUILD_NUMBER=$(( ${LATEST:-0} + 1 ))
+          echo "Building $BUILD_NAME ($BUILD_NUMBER)"
+          # No STORE=play define here (iOS). dart_defines.json is gitignored, so the
+          # map API key is absent on CI and the map uses its fallback tiles.
+          flutter build ipa --release \
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUMBER" \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - app/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - app/flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Default: upload to TestFlight (internal testers). Deliberately NOT set:
+        #   submit_to_testflight (beta review), submit_to_app_store.
+        submit_to_app_store: false

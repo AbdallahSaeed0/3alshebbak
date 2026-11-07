@@ -456,7 +456,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-              if (!kIsWeb && !fromPlayStore)
+              // GitHub APK updates: Android sideloads only, not web, Play or iOS.
+              if (!kIsWeb &&
+                  !fromPlayStore &&
+                  defaultTargetPlatform == TargetPlatform.android)
                 _Row(
                   icon: Icons.system_update_outlined,
                   title: tr('دوّر على تحديث', 'Check for updates'),
