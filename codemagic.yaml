@@ -16,9 +16,13 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      # Reference names from Codemagic > Code signing identities. The profile
+      # includes Push Notifications (aps-environment in Runner.entitlements).
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.shebbak.shebbak
+        provisioning_profiles:
+          - shebbak_appstore_push
+        certificates:
+          - shebbak-distribution
       vars:
         BUNDLE_ID: "com.shebbak.shebbak"
         # Numeric "Apple ID" of the app: App Store Connect > your app >

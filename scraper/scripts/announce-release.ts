@@ -5,6 +5,7 @@
 //   npm run announce-release -- --dry-run who would get it, nothing sent
 //   npm run announce-release -- --force   again, even if already announced
 //
+// iPhones are skipped (they update from the App Store / TestFlight).
 // Phones from Google Play ("@play" in their following list) are skipped:
 // Play updates them, and its policy forbids pointing them at an APK.
 // Tapping the notification opens the download page, which always offers the
@@ -51,14 +52,14 @@ const title = `📲 نسخة جديدة من عالشباك (${version})`;
 const headline = firstNote?.split(':')[0].trim();
 const body = headline && headline.length <= 60 ? `${headline} · دوس عشان تنزّلها` : 'دوس عشان تنزّلها';
 
-const devices: { token: string; following: string[] }[] = [];
+const devices: { token: string; platform: string; following: string[] }[] = [];
 for (let from = 0; ; from += 1000) {
-  const { data, error } = await db.from('devices').select('token,following').order('token').range(from, from + 999);
+  const { data, error } = await db.from('devices').select('token,platform,following').order('token').range(from, from + 999);
   if (error) throw new Error(error.message);
   devices.push(...data);
   if (data.length < 1000) break;
 }
-const targets = devices.filter((d) => !d.following.includes('@play'));
+const targets = devices.filter((d) => d.platform !== 'ios' && !d.following.includes('@play'));
 console.log(`${title}\n${body}\n→ ${targets.length} phones (${devices.length - targets.length} from Play skipped)`);
 if (dryRun) process.exit(0);
 

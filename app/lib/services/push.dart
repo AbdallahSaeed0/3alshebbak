@@ -76,7 +76,7 @@ class Push implements FilmAlerts {
       _initialized = true;
       final settings = await messaging.getNotificationSettings();
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        _token = await messaging.getToken();
+        _token = await _fetchToken();
         await syncPreferences();
       }
     } catch (e) {
@@ -105,7 +105,7 @@ class Push implements FilmAlerts {
       if (settings.authorizationStatus != AuthorizationStatus.authorized) {
         return FollowAlertResult.denied;
       }
-      _token = await FirebaseMessaging.instance.getToken();
+      _token = await _fetchToken();
       return await syncPreferences()
           ? FollowAlertResult.enabled
           : FollowAlertResult.failed;
@@ -113,6 +113,19 @@ class Push implements FilmAlerts {
       debugPrint('Turning on notifications failed: $e');
       return FollowAlertResult.failed;
     }
+  }
+
+  /// FCM's token. On iOS it only exists once APNs has given the device its
+  /// own token, which can take a moment after permission is granted.
+  Future<String?> _fetchToken() async {
+    final messaging = FirebaseMessaging.instance;
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      for (var i = 0; i < 20 && await messaging.getAPNSToken() == null; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+      if (await messaging.getAPNSToken() == null) return null;
+    }
+    return messaging.getToken();
   }
 
   void _opened(RemoteMessage message) {
@@ -150,7 +163,7 @@ class Push implements FilmAlerts {
       final settings = await FirebaseMessaging.instance
           .getNotificationSettings();
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        _token = await FirebaseMessaging.instance.getToken();
+        _token = await _fetchToken();
         await syncPreferences();
       }
     } catch (e) {

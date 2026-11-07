@@ -59,6 +59,8 @@ export class Fcm {
           // Kept by FCM for a phone that's offline (4 weeks, the most it
           // allows), and delivered when it's back, even with the app closed.
           android: { priority: 'high', ttl: '2419200s', notification: { notification_priority: 'PRIORITY_HIGH' } },
+          // iPhones: deliver now (10), keep for 4 weeks, play the default sound.
+          apns: { headers: { 'apns-priority': '10', 'apns-expiration': String(Math.floor(Date.now() / 1000) + 2419200) }, payload: { aps: { sound: 'default' } } },
         },
       }),
     });

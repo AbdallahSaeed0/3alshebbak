@@ -412,7 +412,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                   onChanged: prefs.setAllCinemaAlerts,
                 ),
-              if (Push.available)
+              if (Push.available &&
+                  defaultTargetPlatform == TargetPlatform.android)
                 _Row(
                   icon: Icons.battery_alert_outlined,
                   title: tr(
