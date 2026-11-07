@@ -54,11 +54,10 @@ workflows:
         script: pod install
 
       - name: Set up code signing settings on Xcode project
-        # Internal TestFlight testers only: no Apple beta review needed.
+        # No testFlightInternalTestingOnly: internal-only builds can't be
+        # submitted to the App Store. Builds still reach internal testers.
         working_directory: app
-        script: |
-          xcode-project use-profiles \
-            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+        script: xcode-project use-profiles
 
       - name: Build IPA
         working_directory: app
