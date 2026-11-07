@@ -29,6 +29,12 @@ const PAGE = 1000;
 /** In a device's following list: alerts for every film, followed or not. */
 export const EVERY_FILM = '*';
 
+/**
+ * In a device's following list: alerts from every cinema, not only the ones
+ * the phone starred (the app's "all cinemas" choice under notifications).
+ */
+export const ALL_CINEMAS = '@all-cinemas';
+
 /** More alerts than this in one run go out as one notification. */
 const DIGEST_AFTER = 3;
 
@@ -289,9 +295,11 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const counts = { opened: 0, days: 0, shows: 0 };
   let failed = false;
   for (const device of devices) {
-    // A phone that picked its cinemas hears only about those.
+    // A phone that picked its cinemas hears only about those, unless it
+    // asked for every cinema.
+    const everywhere = !device.cinemas.length || device.following.includes(ALL_CINEMAS);
     const mine = (rows: Seen[]) =>
-      device.cinemas.length ? rows.filter((r) => device.cinemas.includes(r.cinema_id)) : rows;
+      everywhere ? rows : rows.filter((r) => device.cinemas.includes(r.cinema_id));
 
     const tag = deviceTag(device.token);
     const due: { movieId: string; alert: Alert }[] = [];
