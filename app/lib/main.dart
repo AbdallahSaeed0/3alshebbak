@@ -17,6 +17,7 @@ import 'services/background_refresh.dart';
 import 'services/home_widget_sync.dart';
 import 'services/premiere_live.dart';
 import 'services/push.dart';
+import 'services/usage.dart';
 import 'services/vox_live.dart';
 import 'theme.dart';
 import 'util/i18n.dart';
@@ -73,7 +74,10 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) Push.instance.refresh();
+    if (state == AppLifecycleState.resumed) {
+      Push.instance.refresh();
+      Usage.recordOpen();
+    }
   }
 
   /// Light or dark and Arabic or English, from Settings (or the phone).
@@ -140,6 +144,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       if (context != null) openNews(context, news);
     };
     Push.instance.start(data.prefs);
+    Usage.recordOpen();
   }
 
   void _syncWidget() {

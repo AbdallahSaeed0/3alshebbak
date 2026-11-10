@@ -170,18 +170,25 @@ class _ShowtimeSheet extends StatelessWidget {
                               ),
                             ),
                             Expanded(
-                              child: showtime.priceEgp != null
-                                  ? field(
-                                      tr('السعر', 'Price'),
-                                      tr(
-                                        '${showtime.priceEgp} جنيه',
-                                        'EGP ${showtime.priceEgp}',
-                                      ),
-                                    )
-                                  : field(
-                                      tr('المنطقة', 'Area'),
-                                      cinema.area ?? cinema.city ?? '—',
-                                    ),
+                              child: switch ((
+                                showtime.priceEgp,
+                                data.usualPrice(showtime),
+                              )) {
+                                (final price?, _) => field(
+                                  tr('السعر', 'Price'),
+                                  tr('$price جنيه', 'EGP $price'),
+                                ),
+                                // Not listed for this show: what it usually
+                                // costs there, marked as such.
+                                (null, final usual?) => field(
+                                  tr('السعر المعتاد', 'Usual price'),
+                                  tr('≈ $usual جنيه', '≈ EGP $usual'),
+                                ),
+                                _ => field(
+                                  tr('السعر', 'Price'),
+                                  tr('على موقع الحجز', 'On the booking site'),
+                                ),
+                              },
                             ),
                           ],
                         ),

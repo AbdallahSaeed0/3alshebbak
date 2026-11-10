@@ -8,6 +8,8 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
+import '../services/push.dart';
+import 'notifications_screen.dart';
 import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
 import '../util/i18n.dart';
@@ -263,6 +265,19 @@ class _Header extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+                // Every notification this phone got, again.
+                if (Push.available) ...[
+                  _PillButton(
+                    onPressed: () => openNotifications(context),
+                    tooltip: tr('الإشعارات', 'Notifications'),
+                    child: Icon(
+                      Icons.notifications_none,
+                      size: 18,
+                      color: AppColors.text,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 _PillButton(
                   onPressed: () => showCityPicker(context),
                   tooltip: tr('السينمات اللي تظهر هنا', 'Cinemas shown here'),

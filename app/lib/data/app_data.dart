@@ -118,6 +118,31 @@ class AppData {
       );
   Movie movie(String id) => catalog.movies[id]!;
 
+  /// What a ticket usually costs at [s]'s cinema in its format, from the shows
+  /// there that do list a price (elCinema's): for a show whose own listing has
+  /// none. Most chains only reveal the price once booking starts. Null when
+  /// that cinema and format have no priced shows to go by.
+  int? usualPrice(Showtime s) => (_usualPrices ??= _priceTable(
+    catalog.showtimes,
+  ))['${s.cinemaId}|${s.format}'];
+
+  Map<String, int>? _usualPrices;
+
+  /// Cinema|format → the price most of its priced shows have.
+  static Map<String, int> _priceTable(List<Showtime> shows) {
+    final counts = <String, Map<int, int>>{};
+    for (final s in shows) {
+      final p = s.priceEgp;
+      if (p == null || p <= 0) continue;
+      final seen = counts['${s.cinemaId}|${s.format}'] ??= {};
+      seen[p] = (seen[p] ?? 0) + 1;
+    }
+    return {
+      for (final e in counts.entries)
+        e.key: e.value.entries.reduce((a, b) => b.value > a.value ? b : a).key,
+    };
+  }
+
   /// What Home shows: my cinemas, or every cinema in the city picked there.
   bool _onHome(Showtime s) {
     final city = prefs.homeCity;

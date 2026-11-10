@@ -25,7 +25,7 @@ class PrivacyScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
         children: [
           Text(
-            tr('آخر تحديث: 5 نوفمبر 2026', 'Last updated 5 November 2026'),
+            tr('آخر تحديث: 10 نوفمبر 2026', 'Last updated 10 November 2026'),
             style: AppText.body(13, color: AppColors.muted),
           ),
           const SizedBox(height: 12),
@@ -65,6 +65,12 @@ class PrivacyScreen extends StatelessWidget {
             tr(
               'لو شغّلت إشعارات «التذاكر نزلت»، بنحفظ على السيرفر بتاعنا (Supabase): رقم تعريف الإشعارات بتاع الجهاز، والأفلام اللي بتتابعها، والسينمات اللي اخترتها، عشان نعرف نبعتلك لما الحجز يفتح. مفيش اسم ولا رقم تليفون ولا مكان. الإشعارات بتتبعت عن طريق Firebase Cloud Messaging من Google. لو مسحت التطبيق، الرقم ده بيبطّل يشتغل وبيتمسح من عندنا لوحده. ولو عايز تمسحه فورًا كلّمنا.',
               'If you turn on "tickets are out" alerts, our server (Supabase) stores your device\'s notification token, the films you follow and the cinemas you picked, so we can tell you when booking opens. No name, phone number or location. Notifications are delivered through Google\'s Firebase Cloud Messaging. If you uninstall the app, the token stops working and is deleted from our side automatically. To have it deleted right away, contact us.',
+            ),
+          ),
+          _Para(
+            tr(
+              'عشان نعرف كام واحد بيستخدم التطبيق: أول مرة تفتحه كل يوم، بيبعت للسيرفر رقم عشوائي اتعمل على موبايلك (مش مربوط بيك ولا بأي حساب)، ونوع الموبايل (أندرويد أو آيفون)، ونسخة التطبيق. بس كده.',
+              'To count how many people use the app: the first time you open it each day, it sends our server a random number made up on your phone (not tied to you or any account), the kind of phone (Android or iPhone) and the app version. Nothing else.',
             ),
           ),
           _Title(tr('اللي مش بنعمله', 'What we don\'t do')),

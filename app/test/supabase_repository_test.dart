@@ -24,6 +24,7 @@ void main() {
     final pagesAsked = <String>[];
     final client = MockClient((req) async {
       final path = req.url.path.split('/').last;
+      if (path == 'catalog.json') return http.Response('not found', 404);
       if (path == 'cinemas') {
         return http.Response(
           jsonEncode([
@@ -76,6 +77,86 @@ void main() {
       expect(identical(await repo.load(), snapshot), isTrue);
     },
   );
+
+  test('opens from the one-file snapshot when it is fresh', () async {
+    final asked = <String>[];
+    final client = MockClient((req) async {
+      asked.add(req.url.path.split('/').last);
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'v': 1,
+            'generatedAt': DateTime.now().toUtc().toIso8601String(),
+            'cinemas': [
+              {
+                'id': 'scene:cfc',
+                'chain': 'Scene',
+                'name': 'Cairo Festival City',
+              },
+            ],
+            'movies': [
+              {'id': 'tmdb:1', 'title': 'Clayface', 'title_ar': 'كلايفيس'},
+            ],
+            'showtimes': [_show(0), _show(1)],
+          }),
+        ),
+        200,
+      );
+    });
+    final data = await SupabaseShowtimesRepository(client: client).load();
+    expect(asked, ['catalog.json']); // one request, no database pages
+    expect(data.showtimes.length, 2);
+    expect(data.movies['tmdb:1']!.titleAr, 'كلايفيس');
+  });
+
+  test('a stale snapshot falls back to the database', () async {
+    final asked = <String>[];
+    final client = MockClient((req) async {
+      final path = req.url.path.split('/').last;
+      asked.add(path);
+      if (path == 'catalog.json') {
+        return http.Response(
+          jsonEncode({
+            'v': 1,
+            'generatedAt': '2026-01-01T00:00:00Z',
+            'cinemas': [],
+            'movies': [],
+            'showtimes': [],
+          }),
+          200,
+        );
+      }
+      if (path == 'cinemas') {
+        return http.Response(
+          jsonEncode([
+            {
+              'id': 'scene:cfc',
+              'chain': 'Scene',
+              'name': 'Cairo Festival City',
+            },
+          ]),
+          200,
+        );
+      }
+      if (path == 'movies') {
+        return http.Response(
+          jsonEncode([
+            {'id': 'tmdb:1', 'title': 'Clayface'},
+          ]),
+          200,
+        );
+      }
+      return http.Response(
+        jsonEncode([_show(0)]),
+        200,
+        headers: {'content-range': '0-0/1'},
+      );
+    });
+    final data = await SupabaseShowtimesRepository(client: client).load();
+    expect(asked.first, 'catalog.json');
+    expect(asked, containsAll(['cinemas', 'movies', 'showtimes']));
+    expect(data.showtimes.length, 1);
+  });
 }
 
 class _Fixed implements ShowtimesRepository {

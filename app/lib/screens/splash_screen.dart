@@ -31,10 +31,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  static const _minimum = Duration(milliseconds: 1600);
+  static const _minimum = Duration(milliseconds: 900);
 
   /// Just long enough to see the mark, when the catalog is already here.
-  static const _minimumCached = Duration(milliseconds: 500);
+  static const _minimumCached = Duration(milliseconds: 200);
 
   late final AnimationController _lights = AnimationController(
     vsync: this,
@@ -50,10 +50,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _load() async {
     setState(() => _error = null);
+    // Settings load while the cached catalog is read, not after it.
+    final prefs = Prefs.load();
     final cached = await SupabaseShowtimesRepository.cached();
     if (cached != null) {
       final results = await Future.wait([
-        Prefs.load(),
+        prefs,
         Future<void>.delayed(_minimumCached),
       ]);
       if (mounted) {
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       final results = await Future.wait([
         widget.repository.load(),
-        Prefs.load(),
+        prefs,
         Future<void>.delayed(_minimum),
       ]);
       if (mounted) {

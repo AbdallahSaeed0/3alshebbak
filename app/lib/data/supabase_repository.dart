@@ -43,8 +43,45 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
     return res;
   }
 
+  /// The whole catalog as one file on Supabase Storage's CDN, rewritten after
+  /// every pipeline run (scraper/src/snapshot.ts): one download, about a
+  /// quarter of a megabyte compressed, instead of a dozen database pages.
+  static const snapshotUrl =
+      '$url/storage/v1/object/public/shebbak-public/catalog.json';
+
+  /// Older than this and the snapshot isn't being updated: ask the database.
+  static const _snapshotMaxAge = Duration(minutes: 90);
+
   @override
   Future<CatalogData> load() async {
+    try {
+      final snapshot = await _loadSnapshot();
+      if (snapshot != null) return snapshot;
+    } catch (e) {
+      debugPrint('Catalog snapshot unavailable, reading the database: $e');
+    }
+    return _loadFromDatabase();
+  }
+
+  Future<CatalogData?> _loadSnapshot() async {
+    final res = await _client.get(Uri.parse(snapshotUrl)).timeout(_timeout);
+    if (res.statusCode != 200) return null;
+    final body = utf8.decode(res.bodyBytes);
+    // {"v":1,"generatedAt":"…", …}: read the time without decoding it all.
+    final at = RegExp(
+      r'"generatedAt":"([^"]+)"',
+    ).firstMatch(body.substring(0, body.length.clamp(0, 200)))?.group(1);
+    final made = at == null ? null : DateTime.tryParse(at);
+    if (made == null || DateTime.now().difference(made) > _snapshotMaxAge) {
+      return null;
+    }
+    final data = await parse([body]);
+    if (data.showtimes.isEmpty) return null;
+    unawaited((await CatalogCache.open())?.write([body]));
+    return data;
+  }
+
+  Future<CatalogData> _loadFromDatabase() async {
     // Shows that ended an hour ago are of no use; the rest of the schedule is.
     final since = DateTime.now()
         .toUtc()
@@ -114,12 +151,25 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
   }
 }
 
+/// [bodies] is either the database's answers (cinemas, movies, then pages of
+/// showtimes) or one snapshot file holding all three.
 CatalogData _parse(List<String> bodies) {
-  List<Map<String, dynamic>> rows(String body) =>
-      (jsonDecode(body) as List).cast<Map<String, dynamic>>();
+  List<Map<String, dynamic>> list(Object? rows) =>
+      (rows as List).cast<Map<String, dynamic>>();
+  final List<List<Map<String, dynamic>>> parts;
+  if (bodies.length == 1) {
+    final snapshot = jsonDecode(bodies.single) as Map<String, dynamic>;
+    parts = [
+      list(snapshot['cinemas']),
+      list(snapshot['movies']),
+      list(snapshot['showtimes']),
+    ];
+  } else {
+    parts = [for (final b in bodies) list(jsonDecode(b))];
+  }
 
   final cinemas = {
-    for (final c in rows(bodies[0]))
+    for (final c in parts[0])
       c['id'] as String: Cinema(
         id: c['id'] as String,
         chain: c['chain'] as String,
@@ -135,7 +185,7 @@ CatalogData _parse(List<String> bodies) {
       ),
   };
   final movies = {
-    for (final m in rows(bodies[1]))
+    for (final m in parts[1])
       m['id'] as String: Movie(
         id: m['id'] as String,
         tmdbId: m['tmdb_id'] as int?,
@@ -155,8 +205,8 @@ CatalogData _parse(List<String> bodies) {
   };
 
   final showtimes = <Showtime>[];
-  for (final body in bodies.skip(2)) {
-    for (final s in rows(body)) {
+  for (final page in parts.skip(2)) {
+    for (final s in page) {
       final cinemaId = s['cinema_id'] as String;
       final movieId = s['movie_id'] as String;
       if (!cinemas.containsKey(cinemaId) || !movies.containsKey(movieId))
