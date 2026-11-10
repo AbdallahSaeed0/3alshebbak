@@ -9,6 +9,7 @@ import 'data/prefs.dart';
 import 'data/repository.dart';
 import 'data/supabase_repository.dart';
 import 'screens/film_screen.dart';
+import 'screens/news_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'screens/splash_screen.dart';
@@ -131,6 +132,12 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       final movie = _data?.catalog.movies[movieId];
       final context = _navigator.currentContext;
       if (movie != null && context != null) openFilm(context, movie);
+    };
+    // A showtimes notification opens what it was about: which films, where
+    // and when.
+    Push.instance.onOpenAlert = (news) {
+      final context = _navigator.currentContext;
+      if (context != null) openNews(context, news);
     };
     Push.instance.start(data.prefs);
   }

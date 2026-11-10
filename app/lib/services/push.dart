@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/alert_news.dart';
 import '../data/prefs.dart';
 import 'app_version.dart';
 import '../data/supabase_repository.dart';
@@ -48,8 +49,12 @@ class Push implements FilmAlerts {
   @override
   bool get supported => available;
 
-  /// Called with a film id when the user taps a notification.
+  /// Called with a film id when the user taps a notification that names only
+  /// a film (sent before notifications carried their details).
   void Function(String movieId)? onOpenFilm;
+
+  /// Called when the user taps a showtimes notification: what it was about.
+  void Function(AlertNews news)? onOpenAlert;
 
   /// Starts listening if the user already allowed notifications; never asks.
   Future<void> start(Prefs prefs) {
@@ -129,8 +134,17 @@ class Push implements FilmAlerts {
   }
 
   void _opened(RemoteMessage message) {
+    final news = AlertNews.fromData(
+      message.data,
+      title: message.notification?.title,
+      body: message.notification?.body,
+    );
     final movieId = message.data['movieId'];
-    if (movieId is String) onOpenFilm?.call(movieId);
+    if (news != null && onOpenAlert != null) {
+      onOpenAlert!(news);
+    } else if (movieId is String) {
+      onOpenFilm?.call(movieId);
+    }
     // "A new version is out" (scraper/scripts/announce-release.ts): the
     // download page, which always points at the newest APK.
     final url = message.data['url'];

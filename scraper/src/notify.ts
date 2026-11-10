@@ -151,7 +151,9 @@ export type LogRow = {
 const LOG_DAYS = 14;
 
 /**
- * Collects what happened to every film this run and writes it at the end.
+ * Collects what happened to every film this run. Rows are written as each
+ * phone is done (flush), not only at the end, so a run that is cancelled or
+ * killed partway still leaves a record of the notifications it already sent.
  * Best effort: a missing table or a failed write is reported and ignored, so
  * the log can never stop a notification.
  */
@@ -163,21 +165,63 @@ export class NotificationLog {
     this.rows.push({ ...row, run_at: this.runAt });
   }
 
+  /** Writes the rows collected so far. */
   async flush() {
     const rows = this.rows.splice(0);
-    if (!this.db) return;
+    if (!this.db || !rows.length) return;
     try {
       for (let i = 0; i < rows.length; i += 500) {
         const { error } = await this.db.from('notification_log').insert(rows.slice(i, i + 500));
         if (error) throw new Error(error.message);
       }
-      const cutoff = new Date(Date.parse(this.runAt) - LOG_DAYS * 86_400_000).toISOString();
-      const { error } = await this.db.from('notification_log').delete().lt('run_at', cutoff);
-      if (error) throw new Error(error.message);
     } catch (e) {
       console.log(`  ! notification log not saved (${rows.length} rows): ${errorMessage(e)}`);
     }
   }
+
+  /** The last flush, then drops rows older than LOG_DAYS. */
+  async close() {
+    await this.flush();
+    if (!this.db) return;
+    try {
+      const cutoff = new Date(Date.parse(this.runAt) - LOG_DAYS * 86_400_000).toISOString();
+      const { error } = await this.db.from('notification_log').delete().lt('run_at', cutoff);
+      if (error) throw new Error(error.message);
+    } catch (e) {
+      console.log(`  ! old notification log rows not pruned: ${errorMessage(e)}`);
+    }
+  }
+}
+
+/** FCM refuses a message over 4 KB; the title, body and keys need some of it. */
+const DATA_BUDGET = 3000;
+
+/**
+ * What a notification is about, for the app's "what's new" screen: each film,
+ * what kind of news it is and the cinemas it happened at, plus the window the
+ * new showtimes were first seen in (`first_seen_at`, since ≤ t < until). The
+ * app fetches those showtimes itself, so the message stays small. When the
+ * cinema lists would make it too big they're left out and the app falls back
+ * to the phone's own cinemas.
+ */
+export function alertData(
+  films: { movieId: string; alert: Alert }[],
+  since: string,
+  until: string,
+): Record<string, string> {
+  const withCinemas = films.map((f) => ({ m: f.movieId, k: f.alert.kind, c: f.alert.cinemas }));
+  let list = JSON.stringify(withCinemas);
+  if (list.length > DATA_BUDGET) list = JSON.stringify(withCinemas.map(({ m, k }) => ({ m, k })));
+  if (list.length > DATA_BUDGET) {
+    // A digest of very many films: the first ones, as many as fit.
+    const kept: { m: string; k: string }[] = [];
+    for (const { m, k } of withCinemas) {
+      if (JSON.stringify([...kept, { m, k }]).length > DATA_BUDGET) break;
+      kept.push({ m, k });
+    }
+    list = JSON.stringify(kept);
+  }
+  return { type: 'alert', films: list, since, until };
 }
 
 /** The tail of a token: enough to tell phones apart in the log, no more. */
@@ -212,14 +256,14 @@ export async function notifyDrops(db: SupabaseClient, runStartedAt: string) {
   const log = new NotificationLog(db, now);
   if (!fcm) {
     log.add({ outcome: 'no_firebase' });
-    await log.flush();
+    await log.close();
     return console.log('  notifications: FIREBASE_SERVICE_ACCOUNT not set, skipped (the next run that can send picks these up)');
   }
 
   try {
     await announce(db, fcm, await lastCheck(db, runStartedAt), now, log);
   } finally {
-    await log.flush();
+    await log.close();
   }
   const { error } = await db.from('scrape_runs').insert({ source: ALERTS, started_at: now, ok: true });
   if (error) throw new Error(`save alerts checkpoint: ${error.message}`);
@@ -295,6 +339,9 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const counts = { opened: 0, days: 0, shows: 0 };
   let failed = false;
   for (const device of devices) {
+    // The previous phone's rows (sends, daily limits…) go out before this
+    // one's notifications do.
+    await log.flush();
     // A phone that picked its cinemas hears only about those, unless it
     // asked for every cinema.
     const everywhere = !device.cinemas.length || device.following.includes(ALL_CINEMAS);
@@ -352,11 +399,17 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
     const bundle = others.length > DIGEST_AFTER;
     const sends: { push: { title: string; body: string; data: Record<string, string> }; films: typeof due; digest: boolean }[] = [
       ...[...own, ...(bundle ? [] : others)].map((d) => ({
-        push: { ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id), data: { movieId: d.movieId } },
+        push: {
+          ...message(d.alert, name(d.movieId), (id) => label.get(id) ?? id),
+          // movieId: what app versions before the "what's new" screen open.
+          data: { movieId: d.movieId, ...alertData([d], since, now) },
+        },
         films: [d],
         digest: false,
       })),
-      ...(bundle ? [{ push: { ...digest(others.map((d) => name(d.movieId))), data: {} }, films: others, digest: true }] : []),
+      ...(bundle
+        ? [{ push: { ...digest(others.map((d) => name(d.movieId))), data: alertData(others, since, now) }, films: others, digest: true }]
+        : []),
     ];
     const logSend = (one: (typeof sends)[number], outcome: LogRow['outcome'], error?: string) => {
       for (const d of one.films) {
@@ -386,6 +439,9 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
         console.log(`  ! notification to …${device.token.slice(-6)}: ${errorMessage(e)}`);
       }
     }
+    // Recorded as soon as they're out: a run cancelled from here on still
+    // leaves these rows behind.
+    await log.flush();
     // A failed send must not consume today's notification or advance the
     // checkpoint: the next run needs to pick this alert up again.
     for (const d of due) {
