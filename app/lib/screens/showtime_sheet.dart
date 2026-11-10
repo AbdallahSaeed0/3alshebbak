@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
 import '../theme.dart';
+import '../util/links.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/share_card.dart';
@@ -199,10 +199,7 @@ class _ShowtimeSheet extends StatelessWidget {
                       children: [
                         if (booking != null)
                           FilledButton.icon(
-                            onPressed: () => launchUrl(
-                              Uri.parse(booking),
-                              mode: LaunchMode.externalApplication,
-                            ),
+                            onPressed: () => openSite(booking),
                             icon: const Icon(Icons.open_in_new, size: 18),
                             label: Text(
                               tr(

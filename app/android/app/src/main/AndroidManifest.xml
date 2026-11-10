@@ -71,5 +71,10 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
+        <!-- Booking opens over the app in Chrome Custom Tabs (util/links.dart);
+             without this, Android 11+ can't see a browser offers them. -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService"/>
+        </intent>
     </queries>
 </manifest>

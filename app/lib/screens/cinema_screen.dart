@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
 import '../theme.dart';
+import '../util/links.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import '../widgets/schedule.dart';
@@ -105,10 +105,7 @@ class _CinemaScreenState extends State<CinemaScreen> {
                   if (cinema.url != null) ...[
                     const SizedBox(height: 14),
                     OutlinedButton.icon(
-                      onPressed: () => launchUrl(
-                        Uri.parse(cinema.url!),
-                        mode: LaunchMode.externalApplication,
-                      ),
+                      onPressed: () => openSite(cinema.url!),
                       icon: const Icon(Icons.open_in_new, size: 16),
                       label: Text(
                         cinema.attribution != null
