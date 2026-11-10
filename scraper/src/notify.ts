@@ -146,6 +146,8 @@ export type LogRow = {
   title?: string | null;
   body?: string | null;
   error?: string | null;
+  /** For a sent notification: start of the window its new shows were first seen in (the app's inbox). */
+  since?: string | null;
 };
 
 const LOG_DAYS = 14;
@@ -165,13 +167,23 @@ export class NotificationLog {
     this.rows.push({ ...row, run_at: this.runAt });
   }
 
+  /** False once the database turns out not to have the `since` column yet. */
+  private withSince = true;
+
   /** Writes the rows collected so far. */
   async flush() {
-    const rows = this.rows.splice(0);
+    let rows = this.rows.splice(0);
     if (!this.db || !rows.length) return;
     try {
+      if (!this.withSince) rows = rows.map(({ since: _, ...r }) => r);
       for (let i = 0; i < rows.length; i += 500) {
-        const { error } = await this.db.from('notification_log').insert(rows.slice(i, i + 500));
+        let { error } = await this.db.from('notification_log').insert(rows.slice(i, i + 500));
+        // Before 20261110090000_users_and_inbox.sql is run: log without it.
+        if (error && this.withSince && /since/.test(error.message)) {
+          this.withSince = false;
+          rows = rows.map(({ since: _, ...r }) => r);
+          ({ error } = await this.db.from('notification_log').insert(rows.slice(i, i + 500)));
+        }
         if (error) throw new Error(error.message);
       }
     } catch (e) {
@@ -418,6 +430,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
           kind: one.digest ? 'digest' : d.alert.kind, cinemas: d.alert.cinemas,
           new_shows: d.alert.kind === 'shows' ? d.alert.count : null,
           title: one.push.title, body: one.push.body, error: error ?? null,
+          since: outcome === 'sent' ? since : null,
         });
       }
     };

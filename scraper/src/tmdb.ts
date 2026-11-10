@@ -10,7 +10,7 @@
 
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { errorMessage, pool } from './http.js';
+import { errorMessage, fetchText, pool, sleep } from './http.js';
 import type { Film } from './model.js';
 
 const API = 'https://api.themoviedb.org/3';
@@ -120,7 +120,7 @@ function searchQuery(title: string): string {
   return title.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(NOISE, ' ').replace(/\s+/g, ' ').replace(/[\s:,-]+$/, '').trim();
 }
 
-function similarity(a: string, b: string): number {
+export function similarity(a: string, b: string): number {
   if (a === b) return 1;
   if (a && b && (a.startsWith(b) || b.startsWith(a))) return 0.8;
   const ta = new Set(a.split(' '));
@@ -207,6 +207,24 @@ class Tmdb {
           if (sim >= 0.6 && (!best || score > best.score)) best = { id: hit.id, score };
         }
         return best && best.score >= MIN_SCORE ? best.id : null;
+      },
+      (v) => v != null,
+    );
+  }
+
+  /**
+   * A film's running time from its elCinema page ("90 minutes"), for films
+   * TMDB has no runtime for yet — new Egyptian releases, mostly. Cached like
+   * TMDB lookups, so each page is read about once a week.
+   */
+  async elcinemaRuntime(url: string): Promise<number | null> {
+    return this.cached(
+      `elcinema-runtime:${url}`,
+      async () => {
+        await sleep(1500); // elCinema's pages are its product: one at a time, slowly.
+        const page = await fetchText(url, 1);
+        const mins = Number(/(\d{2,3})\s*minutes/i.exec(page.replace(/<[^>]*>/g, ' '))?.[1]);
+        return mins >= 30 && mins <= 300 ? mins : null;
       },
       (v) => v != null,
     );
@@ -324,6 +342,20 @@ export async function buildCatalog(films: Film[], log: (m: string) => void = () 
     }
     for (const f of group) filmToMovie[f.id] = movieId;
   });
+
+  // TMDB often has no runtime for a new local release; elCinema's page does.
+  if (tmdb) {
+    for (const movie of movies.values()) {
+      if (movie.runtime) continue;
+      const page = films.find((f) => filmToMovie[f.id] === movie.id && /elcinema\.com\/(en\/)?work\/\d+/.test(f.url ?? ''))?.url;
+      if (!page) continue;
+      try {
+        movie.runtime = await tmdb.elcinemaRuntime(page);
+      } catch (e) {
+        log(`elCinema runtime "${movie.title}": ${errorMessage(e)}`);
+      }
+    }
+  }
 
   await tmdb?.save();
   return { movies: [...movies.values()], filmToMovie, unmatched: unmatched.sort() };

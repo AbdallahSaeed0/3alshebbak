@@ -136,3 +136,23 @@ test('a huge digest stays under the FCM size limit', () => {
   assert.ok(data.films.length <= 3000);
   assert.ok(JSON.parse(data.films).length > 50);
 });
+
+test('before the inbox migration, the log is still written without its window', async () => {
+  const written: Record<string, unknown>[][] = [];
+  const db = {
+    from: () => ({
+      insert: async (rows: Record<string, unknown>[]) => {
+        if (rows.some((r) => 'since' in r)) return { error: { message: "Could not find the 'since' column of 'notification_log'" } };
+        written.push(rows);
+        return { error: null };
+      },
+    }),
+  };
+  const log = new NotificationLog(db as never, '2026-11-10T09:00:00Z');
+  log.add({ movie_id: 'tmdb:1', device: 'abcd1234', outcome: 'sent', since: '2026-11-10T08:00:00Z' });
+  await log.flush();
+  log.add({ movie_id: 'tmdb:2', device: 'abcd1234', outcome: 'sent', since: '2026-11-10T08:00:00Z' });
+  await log.flush();
+  assert.equal(written.length, 2);
+  assert.ok(written.every((rows) => rows.every((r) => !('since' in r))));
+});

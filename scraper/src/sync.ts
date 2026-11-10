@@ -9,6 +9,7 @@ import { placeCinemas } from './locations.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
+import { publishSnapshot } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
 
 /** Older scrape output is skipped: re-uploading it would mark stale shows as seen now. */
@@ -57,6 +58,13 @@ async function main() {
   await upload(db, results, catalog, runStartedAt);
   const showtimes = results.reduce((n, r) => n + r.showtimes.length, 0);
   console.log(`✓ supabase: ${results.map((r) => r.source).join(', ')} — ${showtimes} showtimes`);
+  // Best effort: without it the app reads the database directly, as before.
+  try {
+    const bytes = await publishSnapshot(db);
+    console.log(`✓ snapshot: ${(bytes / 1e6).toFixed(1)} MB`);
+  } catch (e) {
+    console.log(`  ! snapshot not published: ${errorMessage(e)}`);
+  }
   await notifyDrops(db, runStartedAt);
 }
 
