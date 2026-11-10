@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/app_data.dart';
 import '../data/models.dart';
@@ -14,6 +13,7 @@ import '../services/vox_live.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import '../widgets/trailer_popup.dart';
 import '../widgets/schedule.dart';
 import 'cinema_screen.dart';
 import '../util/i18n.dart';
@@ -226,15 +226,12 @@ class _FilmScreenState extends State<FilmScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      if (movie.trailerUrl case final trailer?) ...[
+                      if (movie.trailerKey != null) ...[
                         Expanded(
                           child: _SideButton(
                             icon: Icons.play_circle_outline,
                             label: tr('شوف الإعلان', 'Watch trailer'),
-                            onPressed: () => launchUrl(
-                              Uri.parse(trailer),
-                              mode: LaunchMode.externalApplication,
-                            ),
+                            onPressed: () => showTrailer(context, movie),
                           ),
                         ),
                         const SizedBox(width: 10),
