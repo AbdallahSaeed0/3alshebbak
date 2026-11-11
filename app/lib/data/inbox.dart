@@ -1,11 +1,8 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
 import 'alert_news.dart';
-import 'supabase_repository.dart';
+import 'models.dart';
+import 'repository.dart';
 
-/// One notification this phone was sent, as the inbox lists it.
+/// One notification in the inbox.
 class InboxEntry {
   const InboxEntry({required this.sentAt, required this.news});
 
@@ -15,75 +12,96 @@ class InboxEntry {
   final AlertNews news;
 }
 
-/// The notifications this phone was sent in the last two weeks, newest first
-/// (Supabase `my_notifications`, from the pipeline's notification log). A
-/// digest is one notification about several films.
-Future<List<InboxEntry>> fetchInbox(String token, {http.Client? client}) async {
-  final c = client ?? http.Client();
-  try {
-    final res = await c
-        .post(
-          Uri.parse(
-            '${SupabaseShowtimesRepository.url}/rest/v1/rpc/my_notifications',
-          ),
-          headers: {
-            ...SupabaseShowtimesRepository.headers,
-            'Content-Profile': 'shebbak',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({'p_token': token}),
-        )
-        .timeout(const Duration(seconds: 20));
-    if (res.statusCode >= 300) {
-      throw Exception('HTTP ${res.statusCode} ${res.body}');
-    }
-    final rows = (jsonDecode(utf8.decode(res.bodyBytes)) as List)
-        .cast<Map<String, dynamic>>();
-    return inboxFromRows(rows);
-  } finally {
-    if (client == null) c.close();
-  }
-}
-
-/// Log rows (one per film) grouped back into the notifications they made.
-List<InboxEntry> inboxFromRows(List<Map<String, dynamic>> rows) {
-  final groups = <String, List<Map<String, dynamic>>>{};
-  for (final r in rows) {
-    (groups['${r['run_at']}|${r['title']}'] ??= []).add(r);
+/// What this phone's settings would have been told in the last two weeks,
+/// newest first: the pipeline's announcements (the snapshot's `news`) for the
+/// films it follows — or every film — at its cinemas — or every cinema. It
+/// doesn't depend on this install's notification token, so the page isn't
+/// empty after a reinstall or with notifications off. One alerts run makes
+/// one entry, as it made one notification (or a digest) per phone.
+List<InboxEntry> inboxFromNews(
+  CatalogData catalog, {
+  required bool everyFilm,
+  required Set<String> following,
+  required bool allCinemas,
+  required Set<String> myCinemas,
+}) {
+  final everywhere = allCinemas || myCinemas.isEmpty;
+  final runs = <DateTime, List<(RecentNews, List<String>)>>{};
+  for (final n in catalog.news) {
+    if (!catalog.movies.containsKey(n.movieId)) continue;
+    if (!everyFilm && !following.contains(n.movieId)) continue;
+    final at = everywhere
+        ? n.cinemas
+        : n.cinemas.where(myCinemas.contains).toList();
+    if (at.isEmpty) continue;
+    (runs[n.at] ??= []).add((n, at));
   }
   final entries = [
-    for (final g in groups.values)
-      if (g.first['movie_id'] != null)
-        () {
-          final sentAt = DateTime.parse(g.first['run_at'] as String);
-          final since = g.first['since'] as String?;
-          return InboxEntry(
-            sentAt: sentAt,
-            news: AlertNews(
-              films: [
-                for (final r in g)
-                  NewsFilm(
-                    movieId: r['movie_id'] as String,
-                    kind: NewsKind.values.firstWhere(
-                      (k) => k.name == r['kind'],
-                      // A digest's rows say "digest": new shows, then.
-                      orElse: () => NewsKind.shows,
-                    ),
-                    cinemas: (r['cinemas'] as List?)?.cast<String>(),
-                  ),
-              ],
-              // Notifications sent before the log kept the window: the
-              // hour before, which is how often the pipeline checks.
-              since: since != null
-                  ? DateTime.parse(since)
-                  : sentAt.subtract(const Duration(hours: 1)),
-              until: sentAt,
-              title: g.first['title'] as String?,
-              body: g.first['body'] as String?,
-            ),
-          );
-        }(),
+    for (final MapEntry(key: sentAt, value: items) in runs.entries)
+      InboxEntry(
+        sentAt: sentAt,
+        news: AlertNews(
+          films: [
+            for (final (n, at) in items)
+              NewsFilm(
+                movieId: n.movieId,
+                kind: NewsKind.values.firstWhere(
+                  (k) => k.name == n.kind,
+                  orElse: () => NewsKind.shows,
+                ),
+                cinemas: at,
+              ),
+          ],
+          since:
+              items.first.$1.since ?? sentAt.subtract(const Duration(hours: 1)),
+          until: sentAt,
+          title: _title(catalog, items),
+          body: _body(catalog, items),
+        ),
+      ),
   ];
   entries.sort((a, b) => b.sentAt.compareTo(a.sentAt));
   return entries;
 }
+
+String _name(CatalogData c, String movieId) =>
+    c.movies[movieId]?.displayTitle ?? movieId;
+
+String _cinema(CatalogData c, String id) => c.cinemas[id]?.label ?? id;
+
+/// As the notification put it (scraper/src/notify.ts: message, digest).
+String _title(CatalogData c, List<(RecentNews, List<String>)> items) {
+  if (items.length > 1) return '🎬 مواعيد جديدة لـ${_films(items.length)}';
+  final (n, _) = items.single;
+  final film = _name(c, n.movieId);
+  return switch (n.kind) {
+    'opened' => '🎟 تذاكر «$film» نزلت',
+    'days' => '📅 «$film»: أيام حجز جديدة',
+    _ => '🕐 «$film»: حفلات جديدة',
+  };
+}
+
+String _body(CatalogData c, List<(RecentNews, List<String>)> items) {
+  if (items.length > 1) {
+    final names = items.take(2).map((i) => '«${_name(c, i.$1.movieId)}»');
+    final rest = items.length - 2;
+    return rest > 0
+        ? '${names.join(' و')} و${_films(rest)} كمان'
+        : names.join(' و');
+  }
+  final at = items.single.$2;
+  final first = _cinema(c, at.first);
+  final where = first.startsWith('سينما') ? first : 'سينما $first';
+  return switch (at.length) {
+    1 => 'في $where',
+    2 => 'في $where وسينما كمان',
+    _ => 'في $where و${at.length - 1} سينمات كمان',
+  };
+}
+
+String _films(int n) => switch (n) {
+  1 => 'فيلم',
+  2 => 'فيلمين',
+  <= 10 => '$n أفلام',
+  _ => '$n فيلم',
+};

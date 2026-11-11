@@ -17,6 +17,8 @@ class CatalogData {
     required this.cinemas,
     required this.movies,
     required this.showtimes,
+    this.news = const [],
+    this.started = const {},
   });
 
   final Map<String, Cinema> cinemas;
@@ -24,6 +26,14 @@ class CatalogData {
 
   /// Sorted by start time.
   final List<Showtime> showtimes;
+
+  /// What the pipeline announced in the last two weeks, newest first (only
+  /// in the snapshot file; empty when the app read the database directly).
+  final List<RecentNews> news;
+
+  /// Films already showing: one of their shows started in the last day
+  /// (snapshot only). "Coming soon" leaves them out.
+  final Set<String> started;
 }
 
 class AssetShowtimesRepository implements ShowtimesRepository {

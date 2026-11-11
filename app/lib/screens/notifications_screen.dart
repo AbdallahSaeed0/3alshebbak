@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
 import '../data/inbox.dart';
-import '../services/push.dart';
 import '../theme.dart';
 import '../util/format.dart';
 import '../util/i18n.dart';
@@ -13,28 +12,24 @@ void openNotifications(BuildContext context) => Navigator.of(
   context,
 ).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()));
 
-/// Every notification this phone got in the last two weeks; tapping one shows
-/// what it was about, like tapping it when it arrived.
-class NotificationsScreen extends StatefulWidget {
+/// What this phone's films and cinemas were told in the last two weeks;
+/// tapping one shows what it was about, like tapping the notification. Built
+/// from the catalog's news, so it works after a reinstall too.
+class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
-}
-
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  late Future<List<InboxEntry>?> _entries = _load();
-
-  /// Null when this phone has no notifications turned on.
-  Future<List<InboxEntry>?> _load() async {
-    final token = await Push.instance.currentToken();
-    if (token == null) return null;
-    return fetchInbox(token);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cairoNow = AppScope.of(context).cairoNow;
+    final data = AppScope.of(context);
+    final prefs = data.prefs;
+    final entries = inboxFromNews(
+      data.catalog,
+      everyFilm: prefs.everyFilm,
+      following: prefs.following,
+      allCinemas: prefs.allCinemaAlerts,
+      myCinemas: prefs.myCinemas,
+    );
+    final cairoNow = data.cairoNow;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -44,57 +39,36 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         backgroundColor: AppColors.background,
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          setState(() => _entries = _load());
-          await _entries;
-        },
-        child: FutureBuilder<List<InboxEntry>?>(
-          future: _entries,
-          builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final entries = snap.data;
-            final String? message = snap.hasError
-                ? tr(
-                    'ما قدرناش نجيب الإشعارات دلوقتي. اسحب لتحت وجرّب تاني.',
-                    'Couldn\'t load notifications. Pull down to try again.',
-                  )
-                : entries == null
-                ? tr(
-                    'الإشعارات مقفولة على الموبايل ده. شغّلها من الإعدادات وهتلاقي هنا كل جديد.',
-                    'Notifications are off on this phone. Turn them on in Settings and they\'ll collect here.',
-                  )
-                : entries.isEmpty
-                ? tr(
-                    'مفيش إشعارات في آخر أسبوعين.',
-                    'No notifications in the last two weeks.',
-                  )
-                : null;
-            if (message != null) {
-              return ListView(
+        onRefresh: () async => await data.refresh?.call(),
+        child: entries.isEmpty
+            ? ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
                   const SizedBox(height: 80),
                   Text(
-                    message,
+                    data.catalog.news.isEmpty
+                        ? tr(
+                            'لسه مفيش أخبار. اسحب لتحت عشان نحدّث.',
+                            'No news yet. Pull down to refresh.',
+                          )
+                        : tr(
+                            'مفيش جديد في آخر أسبوعين للأفلام والسينمات اللي اخترتها. تقدر تتابع أفلام أكتر، أو تشغّل «كل الأفلام» من الإعدادات.',
+                            'Nothing new in the last two weeks for your films and cinemas. Follow more films, or turn on "every film" in Settings.',
+                          ),
                     textAlign: TextAlign.center,
                     style: AppText.body(15, color: AppColors.muted),
                   ),
                 ],
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
-              itemCount: entries!.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, i) => _EntryCard(
-                entry: entries[i],
-                when: _when(entries[i].sentAt, cairoNow),
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+                itemCount: entries.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, i) => _EntryCard(
+                  entry: entries[i],
+                  when: _when(entries[i].sentAt, cairoNow),
+                ),
               ),
-            );
-          },
-        ),
       ),
     );
   }

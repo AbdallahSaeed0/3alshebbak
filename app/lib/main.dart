@@ -18,6 +18,8 @@ import 'services/home_widget_sync.dart';
 import 'services/premiere_live.dart';
 import 'services/push.dart';
 import 'services/usage.dart';
+import 'services/settings_backup.dart';
+import 'data/halls.dart';
 import 'services/vox_live.dart';
 import 'theme.dart';
 import 'util/i18n.dart';
@@ -145,6 +147,11 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     };
     Push.instance.start(data.prefs);
     Usage.recordOpen();
+    Halls.load();
+    // After a reinstall: this phone's settings come back, past onboarding.
+    SettingsBackup.start(data.prefs).then((restored) {
+      if (restored && mounted) setState(() {});
+    });
   }
 
   void _syncWidget() {

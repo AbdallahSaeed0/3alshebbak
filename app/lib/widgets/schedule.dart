@@ -172,10 +172,22 @@ class FormatRows extends StatelessWidget {
     for (final s in showtimes) {
       (byFormat[s.format] ??= []).add(s);
     }
+    final groups = byFormat.entries.toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final e in byFormat.entries)
+        for (final (i, e) in groups.indexed) ...[
+          // A cinema showing the film in more than one format (IMAX and
+          // Standard, say): a line between them.
+          if (i > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 2),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: AppColors.hairline,
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Row(
@@ -211,6 +223,7 @@ class FormatRows extends StatelessWidget {
               ],
             ),
           ),
+        ],
       ],
     );
   }

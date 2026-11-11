@@ -96,4 +96,27 @@ void main() {
       expect(asked!.queryParameters['movie_id'], 'in.(tmdb:1,tmdb:2)');
     },
   );
+
+  test(
+    'a film with no shows at the named cinemas still shows its new ones',
+    () async {
+      final client = MockClient(
+        (_) async => http.Response(jsonEncode([_row('tmdb:1', 'c')]), 200),
+      );
+      final news = AlertNews(
+        films: const [
+          NewsFilm(movieId: 'tmdb:1', kind: NewsKind.opened, cinemas: ['a']),
+        ],
+        since: DateTime.utc(2026, 11, 9),
+        until: DateTime.utc(2026, 11, 10),
+      );
+      final shows = await fetchNews(
+        news,
+        _catalog,
+        myCinemas: {'a'},
+        client: client,
+      );
+      expect(shows.map((s) => '${s.movieId}@${s.cinemaId}'), ['tmdb:1@c']);
+    },
+  );
 }

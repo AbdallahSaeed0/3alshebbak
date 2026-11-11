@@ -6,6 +6,22 @@ import '../util/i18n.dart';
 
 const _seenKey = 'tour_seen';
 
+/// The things the tour points at, tagged where they're built (Home's header,
+/// the tab bar). A step whose target isn't on screen shows in the middle.
+abstract final class TourTargets {
+  static final city = GlobalKey(debugLabel: 'tour city');
+  static final search = GlobalKey(debugLabel: 'tour search');
+  static final bell = GlobalKey(debugLabel: 'tour bell');
+  static final assistant = GlobalKey(debugLabel: 'tour assistant');
+  static final _tabs = [
+    for (var i = 0; i < 4; i++) GlobalKey(debugLabel: 'tour tab $i'),
+  ];
+  static GlobalKey tab(int i) => _tabs[i];
+
+  /// Set by the shell: switches to Home, where the tour's targets are.
+  static VoidCallback? showHome;
+}
+
 /// The quick tour, once: after onboarding, or after updating to the version
 /// that has it. Settings can replay it with [showTour].
 Future<void> showTourOnce(BuildContext context) async {
@@ -19,58 +35,80 @@ Future<void> showTourOnce(BuildContext context) async {
   if (context.mounted) await showTour(context);
 }
 
-Future<void> showTour(BuildContext context) => showDialog<void>(
-  context: context,
-  barrierDismissible: false,
-  builder: (_) => const _Tour(),
-);
+Future<void> showTour(BuildContext context) async {
+  TourTargets.showHome?.call();
+  // Let Home and the bar settle before measuring where things are.
+  await Future<void>.delayed(const Duration(milliseconds: 350));
+  if (!context.mounted) return;
+  await Navigator.of(context, rootNavigator: true).push(
+    PageRouteBuilder<void>(
+      opaque: false,
+      barrierDismissible: false,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (_, _, _) => const _Tour(),
+      transitionsBuilder: (_, a, _, child) =>
+          FadeTransition(opacity: a, child: child),
+    ),
+  );
+}
 
-typedef _Slide = ({IconData icon, String title, String body});
+typedef _Step = ({GlobalKey? target, String title, String body});
 
-List<_Slide> get _slides => [
+List<_Step> get _steps => [
   (
-    icon: Icons.home_rounded,
-    title: tr('الرئيسية', 'Home'),
+    target: TourTargets.city,
+    title: tr('سينماتك', 'Your cinemas'),
     body: tr(
-      'الجاي في سينماتك، والأفلام اللي حجزها لسه نازل، وكل حفلات النهارده. '
-          'غيّر المدينة من الزرار اللي فوق.',
-      'What\'s next at your cinemas, films just on sale, and all of today\'s '
-          'shows. Switch city from the button at the top.',
+      'الرئيسية بتعرض اللي جاي في سينماتك. من هنا تختار سينماتك أو مدينة كاملة.',
+      'Home shows what\'s next at your cinemas. Pick your cinemas or a whole city here.',
     ),
   ),
   (
-    icon: Icons.confirmation_number_outlined,
-    title: tr('دوس على أي ميعاد', 'Tap any time'),
+    target: TourTargets.search,
+    title: tr('دوّر واحجز', 'Search and book'),
     body: tr(
-      'هتطلعلك تذكرة فيها السينما والقاعة، وزرار يوديك تحجز على موقع السينما على طول.',
-      'You get a ticket with the cinema and hall, and a button straight to '
-          'the cinema\'s booking page.',
+      'دوّر على أي فيلم أو سينما. ودوس على أي ميعاد: هتطلعلك تذكرة فيها زرار الحجز، وتقدر تبعتها لصحابك.',
+      'Find any film or cinema. Tap any time for a ticket with the booking button, and send it to friends.',
     ),
   ),
   (
-    icon: Icons.notifications_active_outlined,
-    title: tr('تابع الفيلم', 'Follow a film'),
+    target: TourTargets.bell,
+    title: tr('الإشعارات', 'Notifications'),
     body: tr(
-      'من صفحة الفيلم دوس "تابع الفيلم"، وأول ما الحجز يفتح أو تنزل مواعيد جديدة هيوصلك إشعار.',
-      'Tap "Follow" on a film\'s page, and you\'ll be notified when booking '
-          'opens or new showtimes come out.',
+      'كل الجديد للأفلام اللي بتتابعها: الحجز اللي فتح والمواعيد الجديدة، وتفاصيل كل واحد.',
+      'Everything new for films you follow: booking opening and new showtimes, with the details.',
     ),
   ),
   (
-    icon: Icons.forum_outlined,
+    target: TourTargets.tab(1),
+    title: tr('استكشف وتابع', 'Explore and follow'),
+    body: tr(
+      'كل الأفلام المعروضة واللي جاية قريب. من صفحة أي فيلم دوس «تابع الفيلم» ويوصلك إشعار أول ما الحجز يفتح.',
+      'Every film showing and coming soon. On a film\'s page tap "Follow" to hear when booking opens.',
+    ),
+  ),
+  (
+    target: TourTargets.assistant,
     title: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
     body: tr(
-      'الزرار الدهبي اللي في نص الشريط اللي تحت: اختار المدينة والفيلم وهيقولك المواعيد، أو أقرب سينما ليك.',
-      'The gold button in the middle of the bottom bar: pick a city and a film for its times, or '
-          'find your nearest cinema.',
+      'اختار مدينة وفيلم ويقولك مواعيده، أو يدلّك على أقرب سينما ليك.',
+      'Pick a city and a film for its times, or find your nearest cinema.',
     ),
   ),
   (
-    icon: Icons.groups_outlined,
-    title: tr('نروح سوا؟', 'Shall we go?'),
+    target: TourTargets.tab(2),
+    title: tr('السينمات', 'Cinemas'),
     body: tr(
-      'علّم على كام ميعاد وابعتهم لصحابك صورة شكلها حلو، يختاروا منها.',
-      'Tick a few times and send them to friends as a nice picture to pick from.',
+      'كل سينمات مصر على الخريطة. علّم على سينماتك بالنجمة.',
+      'Every cinema in Egypt on a map. Star the ones you go to.',
+    ),
+  ),
+  (
+    target: TourTargets.tab(3),
+    title: tr('الإعدادات', 'Settings'),
+    body: tr(
+      'الإشعارات واللغة والشكل، وتبعتلنا رأيك أو شكوى، وتعيد الجولة دي.',
+      'Notifications, language and look, send us feedback, and replay this tour.',
     ),
   ),
 ];
@@ -83,38 +121,63 @@ class _Tour extends StatefulWidget {
 }
 
 class _TourState extends State<_Tour> {
-  final _pages = PageController();
-  int _page = 0;
+  int _step = 0;
 
-  @override
-  void dispose() {
-    _pages.dispose();
-    super.dispose();
+  /// Where [key]'s widget is on screen, if it's showing.
+  Rect? _rectOf(GlobalKey? key) {
+    final box = key?.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return null;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    final screen = Offset.zero & MediaQuery.sizeOf(context);
+    return screen.overlaps(rect) ? rect : null;
+  }
+
+  void _next() {
+    if (_step == _steps.length - 1) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _step++);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final slides = _slides;
-    final last = _page == slides.length - 1;
-    return Dialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    final steps = _steps;
+    final step = steps[_step];
+    final last = _step == steps.length - 1;
+    final size = MediaQuery.sizeOf(context);
+    final hole = _rectOf(step.target)?.inflate(6);
+    // The note goes below a target in the top half, above one lower down.
+    final below = hole == null || hole.center.dy < size.height / 2;
+
+    final card = Material(
+      color: AppColors.surface,
+      elevation: 8,
+      borderRadius: BorderRadius.circular(18),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 10, 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
+                Expanded(child: Text(step.title, style: AppText.display(20))),
                 Text(
-                  tr('جولة سريعة', 'Quick tour'),
-                  style: AppText.body(
-                    13,
-                    weight: FontWeight.w700,
-                    color: AppColors.gold,
-                  ),
+                  '${_step + 1}/${steps.length}',
+                  style: AppText.body(12, color: AppColors.muted),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: Text(step.body, style: AppText.body(14)),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 if (!last)
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -123,86 +186,85 @@ class _TourState extends State<_Tour> {
                       style: AppText.body(13, color: AppColors.muted),
                     ),
                   ),
-              ],
-            ),
-            SizedBox(
-              height: 250,
-              child: PageView(
-                controller: _pages,
-                onPageChanged: (i) => setState(() => _page = i),
-                children: [
-                  for (final s in slides)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 84,
-                          height: 84,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.raised,
-                            border: Border.all(color: AppColors.goldEdge),
-                          ),
-                          child: Icon(s.icon, size: 38, color: AppColors.gold),
-                        ),
-                        const SizedBox(height: 18),
-                        Text(
-                          s.title,
-                          textAlign: TextAlign.center,
-                          style: AppText.display(26),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          s.body,
-                          textAlign: TextAlign.center,
-                          style: AppText.body(14, color: AppColors.muted),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var i = 0; i < slides.length; i++)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: i == _page ? 18 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: i == _page ? AppColors.gold : AppColors.hairline,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
+                FilledButton(
+                  onPressed: _next,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.onGold,
+                    textStyle: AppText.body(14, weight: FontWeight.w700),
                   ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => last
-                  ? Navigator.of(context).pop()
-                  : _pages.nextPage(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOut,
-                    ),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.onGold,
-                minimumSize: const Size.fromHeight(50),
-                textStyle: AppText.body(15, weight: FontWeight.w700),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  child: Text(
+                    last ? tr('يلا بينا', 'Let\'s go') : tr('التالي', 'Next'),
+                  ),
                 ),
-              ),
-              child: Text(
-                last ? tr('يلا بينا', 'Let\'s go') : tr('التالي', 'Next'),
-              ),
+              ],
             ),
           ],
         ),
       ),
     );
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _next,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: TweenAnimationBuilder<Rect?>(
+              tween: RectTween(end: hole),
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              builder: (_, r, _) =>
+                  CustomPaint(painter: _Spotlight(r, AppColors.gold)),
+            ),
+          ),
+          if (hole == null)
+            Center(
+              child: Padding(padding: const EdgeInsets.all(16), child: card),
+            )
+          else
+            Positioned(
+              left: 16,
+              right: 16,
+              top: below ? hole.bottom + 14 : null,
+              bottom: below ? null : size.height - hole.top + 14,
+              child: card,
+            ),
+        ],
+      ),
+    );
   }
+}
+
+/// The screen dimmed, with a lit, outlined hole around what's being shown.
+class _Spotlight extends CustomPainter {
+  _Spotlight(this.hole, this.edge);
+
+  final Rect? hole;
+  final Color edge;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dim = Path()..addRect(Offset.zero & size);
+    final h = hole;
+    if (h == null) {
+      canvas.drawPath(dim, Paint()..color = const Color(0xB3000000));
+      return;
+    }
+    final lit = RRect.fromRectAndRadius(h, const Radius.circular(18));
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, dim, Path()..addRRect(lit)),
+      Paint()..color = const Color(0xB3000000),
+    );
+    canvas.drawRRect(
+      lit,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = edge,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_Spotlight old) => old.hole != hole;
 }

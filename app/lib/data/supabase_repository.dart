@@ -157,8 +157,15 @@ CatalogData _parse(List<String> bodies) {
   List<Map<String, dynamic>> list(Object? rows) =>
       (rows as List).cast<Map<String, dynamic>>();
   final List<List<Map<String, dynamic>>> parts;
+  var news = const <RecentNews>[];
+  var started = const <String>{};
   if (bodies.length == 1) {
     final snapshot = jsonDecode(bodies.single) as Map<String, dynamic>;
+    news = [
+      for (final n in list(snapshot['news'] ?? const []))
+        RecentNews.fromJson(n),
+    ];
+    started = {...(snapshot['started'] as List? ?? const []).cast<String>()};
     parts = [
       list(snapshot['cinemas']),
       list(snapshot['movies']),
@@ -228,7 +235,13 @@ CatalogData _parse(List<String> bodies) {
     }
   }
   showtimes.sort((a, b) => a.startsAt.compareTo(b.startsAt));
-  return CatalogData(cinemas: cinemas, movies: movies, showtimes: showtimes);
+  return CatalogData(
+    cinemas: cinemas,
+    movies: movies,
+    showtimes: showtimes,
+    news: news,
+    started: started,
+  );
 }
 
 /// Live data when there's a connection; the bundled snapshot when there isn't,

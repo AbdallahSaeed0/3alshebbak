@@ -25,7 +25,7 @@ class PrivacyScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
         children: [
           Text(
-            tr('آخر تحديث: 10 نوفمبر 2026', 'Last updated 10 November 2026'),
+            tr('آخر تحديث: 11 نوفمبر 2026', 'Last updated 11 November 2026'),
             style: AppText.body(13, color: AppColors.muted),
           ),
           const SizedBox(height: 12),
@@ -71,6 +71,32 @@ class PrivacyScreen extends StatelessWidget {
             tr(
               'عشان نعرف كام واحد بيستخدم التطبيق: أول مرة تفتحه كل يوم، بيبعت للسيرفر رقم عشوائي اتعمل على موبايلك (مش مربوط بيك ولا بأي حساب)، ونوع الموبايل (أندرويد أو آيفون)، ونسخة التطبيق. بس كده.',
               'To count how many people use the app: the first time you open it each day, it sends our server a random number made up on your phone (not tied to you or any account), the kind of phone (Android or iPhone) and the app version. Nothing else.',
+            ),
+          ),
+          _Para(
+            tr(
+              'عشان إعداداتك ترجع لو مسحت التطبيق ونزّلته تاني على نفس الموبايل: بنحفظ على السيرفر السينمات اللي اخترتها، والأفلام اللي بتتابعها، واختيارات الإشعارات، واللغة والشكل، مربوطين برقم متشفّر بيتعمل على موبايلك ومالوش علاقة بيك ولا برقم تليفونك. مكانك عمره ما بيتحفظ.',
+              'So your settings come back if you delete the app and install it again on the same phone: our server keeps the cinemas you picked, the films you follow, your alert choices, language and look, under a scrambled code made on your phone that isn\'t tied to you or your phone number. Your location is never kept.',
+            ),
+          ),
+          _Para(
+            tr(
+              'لو بعتلنا رأيك أو شكوى من التطبيق: بنحفظ رسالتك، ونوعها، ونوع الموبايل ونسخة التطبيق، وطريقة التواصل لو كتبتها، عشان نقراها ونرد عليك.',
+              'If you send us feedback from the app: we keep your message, its kind, the kind of phone and app version, and contact details if you give them, so we can read it and reply.',
+            ),
+          ),
+          _Title(tr('المصادر', 'Sources')),
+          _Para(
+            tr(
+              'المواعيد من مواقع السينمات نفسها ومن elCinema.com، والسينمات اللي جاية من elCinema مكتوب جنبها كده.',
+              'Showtimes come from the cinemas\' own websites and from elCinema.com; cinemas listed via elCinema say so.',
+            ),
+          ),
+          // TMDB's terms ask apps using its API to say so.
+          _Para(
+            tr(
+              'بيانات وصور الأفلام من TMDB. التطبيق بيستخدم TMDB API ومش معتمد منهم.',
+              'Film data and images from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
             ),
           ),
           _Title(tr('اللي مش بنعمله', 'What we don\'t do')),

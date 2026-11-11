@@ -157,6 +157,34 @@ class Movie {
   );
 }
 
+/// One film's news in one alerts run: what notifications said, for anyone
+/// whose films and cinemas match (scraper/src/snapshot.ts, collectNews).
+class RecentNews {
+  const RecentNews({
+    required this.at,
+    required this.movieId,
+    required this.kind,
+    required this.cinemas,
+    this.since,
+  });
+
+  final DateTime at;
+  final DateTime? since;
+  final String movieId;
+
+  /// 'opened', 'days' or 'shows'.
+  final String kind;
+  final List<String> cinemas;
+
+  static RecentNews fromJson(Map<String, dynamic> j) => RecentNews(
+    at: DateTime.parse(j['at'] as String),
+    since: j['since'] == null ? null : DateTime.parse(j['since'] as String),
+    movieId: j['m'] as String,
+    kind: j['k'] as String,
+    cinemas: (j['c'] as List).cast<String>(),
+  );
+}
+
 class Showtime {
   const Showtime({
     required this.cinemaId,

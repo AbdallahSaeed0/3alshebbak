@@ -193,6 +193,52 @@ class Prefs extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// What the settings backup keeps (services/settings_backup.dart). Never
+  /// the phone's location.
+  Map<String, Object?> toBackup() => {
+    'v': 1,
+    'cinemas': _cinemas.toList()..sort(),
+    'following': _following.toList()..sort(),
+    'everyFilm': _everyFilm,
+    'allCinemaAlerts': _allCinemaAlerts,
+    'homeCity': _homeCity,
+    'appearance': _appearance.name,
+    'english': _english,
+  };
+
+  /// Puts a backup's settings back after a reinstall, as if never gone:
+  /// onboarding counts as done.
+  void restore(Map<String, dynamic> b) {
+    List<String> list(Object? v) => v is List ? v.cast<String>() : const [];
+    _cinemas
+      ..clear()
+      ..addAll(list(b['cinemas']));
+    _following
+      ..clear()
+      ..addAll(list(b['following']));
+    _everyFilm = b['everyFilm'] == true;
+    _allCinemaAlerts = b['allCinemaAlerts'] == true;
+    _homeCity = b['homeCity'] as String?;
+    _appearance =
+        Appearance.values.asNameMap()[b['appearance']] ?? Appearance.system;
+    _english = b['english'] == true;
+    _onboarded = true;
+    final s = _store;
+    if (s != null) {
+      s.setStringList(_cinemasKey, _cinemas.toList());
+      s.setStringList(_followingKey, _following.toList());
+      s.setBool(_everyFilmKey, _everyFilm);
+      s.setBool(_allCinemaAlertsKey, _allCinemaAlerts);
+      _homeCity == null
+          ? s.remove(_homeCityKey)
+          : s.setString(_homeCityKey, _homeCity!);
+      s.setString(_appearanceKey, _appearance.name);
+      s.setBool(_englishKey, _english);
+      s.setBool(_onboardedKey, true);
+    }
+    notifyListeners();
+  }
+
   void finishOnboarding() {
     _onboarded = true;
     _store?.setBool(_onboardedKey, true);

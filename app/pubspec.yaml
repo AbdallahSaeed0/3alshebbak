@@ -26,6 +26,8 @@ dependencies:
   path_provider: ^2.1.6
   share_plus: ^13.3.1
   shared_preferences: ^2.5.6
+  # SHA-256 of the install key (settings backup).
+  crypto: ^3.0.6
   url_launcher: ^6.3.3
   workmanager: ^0.10.10
   package_info_plus: ^10.2.2
@@ -40,6 +42,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/data/
+    # Hall layouts (seat maps), copied from scraper/data/halls.json.
+    - assets/halls/
+    # The 3D seat view (three.js, MIT), shown in a web view.
+    - assets/seatview/
     # Copied from scraper/src/sources/premiere.page.js; keep the two the same.
     - assets/premiere/
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
+import '../data/halls.dart';
 import '../data/models.dart';
 import '../theme.dart';
+import 'seat_view_screen.dart';
 import '../util/links.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -204,6 +206,23 @@ class _ShowtimeSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // The hall's seat map and the view from each seat,
+                        // when we know which hall the show is in.
+                        if (Halls.instance?.forShowtime(showtime)
+                            case final hall?) ...[
+                          OutlinedButton.icon(
+                            onPressed: () =>
+                                openSeatView(context, hall, movie: movie),
+                            icon: const Icon(
+                              Icons.event_seat_outlined,
+                              size: 18,
+                            ),
+                            label: Text(
+                              tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
                         if (booking != null)
                           FilledButton.icon(
                             onPressed: () => openSite(booking),

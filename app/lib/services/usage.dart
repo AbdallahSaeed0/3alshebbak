@@ -64,6 +64,19 @@ class Usage {
     }
   }
 
+  /// This install's random id (made on first use); the feedback form sends
+  /// it so the server can limit how many messages one phone sends.
+  static Future<String?> installId() async {
+    try {
+      final store = await SharedPreferences.getInstance();
+      final id = store.getString(_idKey) ?? _newId();
+      await store.setString(_idKey, id);
+      return id;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static String _newId() {
     final r = Random.secure();
     return List.generate(32, (_) => r.nextInt(16).toRadixString(16)).join();

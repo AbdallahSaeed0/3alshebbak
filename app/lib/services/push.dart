@@ -90,27 +90,6 @@ class Push implements FilmAlerts {
     }
   }
 
-  /// This phone's push token when notifications are on; null when they're
-  /// off or unavailable. Never asks for permission.
-  Future<String?> currentToken() async {
-    if (!available) return null;
-    if (_token != null) return _token;
-    try {
-      final prefs = _prefs;
-      if (prefs != null) await start(prefs);
-      if (!_initialized) return null;
-      final settings = await FirebaseMessaging.instance
-          .getNotificationSettings();
-      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        return null;
-      }
-      return _token = await _fetchToken();
-    } catch (e) {
-      debugPrint('No push token: $e');
-      return null;
-    }
-  }
-
   /// Asks for permission (Android 13+ / iOS show a dialog) and registers.
   /// Returns whether notifications are on.
   Future<bool> enable() async =>

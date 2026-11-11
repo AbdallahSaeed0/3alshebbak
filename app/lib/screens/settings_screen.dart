@@ -17,6 +17,7 @@ import '../widgets/credit.dart';
 import '../widgets/tour.dart';
 import 'following_screen.dart';
 import 'onboarding_screen.dart';
+import 'feedback_screen.dart';
 import 'privacy_screen.dart';
 import 'tickets_screen.dart';
 
@@ -444,6 +445,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _Group(
             children: [
               _Row(
+                icon: Icons.rate_review_outlined,
+                title: tr(
+                  'ابعتلنا رأيك أو شكوى',
+                  'Send feedback or a complaint',
+                ),
+                onTap: () => openFeedback(context),
+              ),
+              _Row(
                 icon: Icons.school_outlined,
                 title: tr('جولة سريعة في التطبيق', 'Quick tour of the app'),
                 onTap: () => showTour(context),
@@ -470,16 +479,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 36),
           const Credit(),
-          const SizedBox(height: 14),
-          // TMDB's terms ask apps using its API to say so.
-          Text(
-            tr(
-              'بيانات وصور الأفلام من TMDB. التطبيق بيستخدم TMDB API ومش معتمد منهم.',
-              'Film data and images from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
-            ),
-            textAlign: TextAlign.center,
-            style: AppText.body(11, color: AppColors.muted),
-          ),
+          // Where the data comes from (TMDB's required notice included) is
+          // on the privacy page, under "Sources".
           const SizedBox(height: 24),
         ],
       ),

@@ -16,6 +16,11 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "brand" -> result.success(Build.MANUFACTURER.lowercase())
+                    // Unique to this app on this phone, and the same after the
+                    // app is deleted and installed again (settings backup).
+                    "installKey" -> result.success(
+                        Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                    )
                     "openAutostart" -> result.success(openAutostart())
                     "openBattery" -> result.success(openBattery())
                     "openAppDetails" -> result.success(openAppDetails())

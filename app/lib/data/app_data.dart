@@ -217,7 +217,9 @@ class AppData {
     return days;
   }
 
-  /// Movies whose first show anywhere is after today, by first date.
+  /// Movies whose first show anywhere is after today, by first date. A film
+  /// already showing isn't coming soon just because tonight's shows are over
+  /// or its next ones are days away ([CatalogData.started]).
   /// [maxDaysAhead] splits "tickets just opened" (this week) from "coming soon".
   List<Upcoming> upcoming({
     required int minDaysAhead,
@@ -237,9 +239,14 @@ class AppData {
     final todayDate = DateTime.parse(today);
     final list = [
       for (final e in first.entries)
-        if (_daysBetween(todayDate, DateTime.parse(e.value)) case final days
-            when days >= minDaysAhead && days <= maxDaysAhead)
-          Upcoming(movie(e.key), e.value, cinemas[e.key]!.map(cinema).toList()),
+        if (!catalog.started.contains(e.key))
+          if (_daysBetween(todayDate, DateTime.parse(e.value)) case final days
+              when days >= minDaysAhead && days <= maxDaysAhead)
+            Upcoming(
+              movie(e.key),
+              e.value,
+              cinemas[e.key]!.map(cinema).toList(),
+            ),
     ];
     list.sort((a, b) => a.firstDate.compareTo(b.firstDate));
     return list;

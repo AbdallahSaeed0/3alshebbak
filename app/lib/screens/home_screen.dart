@@ -9,6 +9,7 @@ import '../widgets/common.dart';
 import '../widgets/ticket_mark.dart';
 import 'film_screen.dart';
 import '../services/push.dart';
+import '../widgets/tour.dart';
 import 'notifications_screen.dart';
 import 'settings_screen.dart' show showCityPicker;
 import 'showtime_sheet.dart';
@@ -268,6 +269,7 @@ class _Header extends StatelessWidget {
                 // Every notification this phone got, again.
                 if (Push.available) ...[
                   _PillButton(
+                    key: TourTargets.bell,
                     onPressed: () => openNotifications(context),
                     tooltip: tr('الإشعارات', 'Notifications'),
                     child: Icon(
@@ -279,6 +281,7 @@ class _Header extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 _PillButton(
+                  key: TourTargets.city,
                   onPressed: () => showCityPicker(context),
                   tooltip: tr('السينمات اللي تظهر هنا', 'Cinemas shown here'),
                   child: Row(
@@ -298,6 +301,7 @@ class _Header extends StatelessWidget {
               children: [
                 Expanded(
                   child: TapCard(
+                    key: TourTargets.search,
                     radius: 14,
                     child: InkWell(
                       onTap: onSearch,
@@ -337,6 +341,7 @@ class _Header extends StatelessWidget {
 
 class _PillButton extends StatelessWidget {
   const _PillButton({
+    super.key,
     required this.onPressed,
     required this.child,
     this.tooltip,

@@ -118,12 +118,23 @@ Future<List<Showtime>> fetchNews(
     final rows = (jsonDecode(utf8.decode(res.bodyBytes)) as List)
         .cast<Map<String, dynamic>>();
     final where = {for (final f in news.films) f.movieId: f.cinemas};
-    return [
+    final known = [
       for (final s in rows)
         if (catalog.cinemas.containsKey(s['cinema_id']) &&
-            catalog.movies.containsKey(s['movie_id']) &&
-            _at(where[s['movie_id']], myCinemas, s['cinema_id'] as String))
-          _showtime(s),
+            catalog.movies.containsKey(s['movie_id']))
+          s,
+    ];
+    final kept = [
+      for (final s in known)
+        if (_at(where[s['movie_id']], myCinemas, s['cinema_id'] as String)) s,
+    ];
+    // A film whose new shows all fall outside the cinemas the notification
+    // (or this phone) names still shows them, rather than none: the cinema
+    // list can be missing or out of date, the shows are what was announced.
+    final covered = {for (final s in kept) s['movie_id']};
+    return [
+      for (final s in known)
+        if (kept.contains(s) || !covered.contains(s['movie_id'])) _showtime(s),
     ];
   } finally {
     if (client == null) c.close();

@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  html, body { margin: 0; height: 100%; background: #050405; overflow: hidden; touch-action: none; }
+  canvas { display: block; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<script src="three.min.js"></script>
+<script>
+// عالشباك — the hall in 3D, seen from a seat (lib/screens/seat_view_screen.dart).
+// Flutter sends the hall once (setupHall) and a seat to sit in (sit); every
+// position is computed in Dart (lib/data/halls.dart), in metres: x across the
+// hall (right as you face the screen), y up, z back from the screen wall.
+(() => {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x050405);
+  scene.fog = new THREE.FogExp2(0x050405, 0.018);
+
+  const camera = new THREE.PerspectiveCamera(46, 1, 0.05, 200);
+  let hall = null, target = new THREE.Vector3(), seatsMesh = null, backsMesh = null, seatIndex = {};
+  let selected = -1;
+
+  // ---- Looking around: a drag turns your head, it eases back when you let go.
+  let yaw = 0, pitch = 0, dragging = false, lastX = 0, lastY = 0;
+  const el = renderer.domElement;
+  el.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    yaw = Math.max(-0.75, Math.min(0.75, yaw - (e.clientX - lastX) * 0.004));
+    pitch = Math.max(-0.35, Math.min(0.35, pitch - (e.clientY - lastY) * 0.004));
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  const release = () => { dragging = false; };
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+
+  // ---- Moving between seats: a short, eased walk with a little lift.
+  let from = null, to = null, t0 = 0;
+  const DURATION = 900;
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function material(color, rough = 0.9, extra = {}) {
+    return new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0, ...extra });
+  }
+
+  window.setupHall = (json) => {
+    hall = typeof json === 'string' ? JSON.parse(json) : json;
+    const { screen, width, depth, seats, rowDepth, rise, seatWidth } = hall;
+    const half = width / 2 + 1.2;
+    const backZ = depth + 2;
+    const topY = screen.bottom + screen.h + 2.5;
+
+    // Light: dim house lights, and the screen's glow spilling into the hall.
+    scene.add(new THREE.AmbientLight(0xffffff, 0.12));
+    const spill = new THREE.PointLight(0xffe2b0, 1.1, 40, 1.8);
+    spill.position.set(0, screen.bottom + screen.h * 0.5, 3);
+    scene.add(spill);
+    const fill = new THREE.HemisphereLight(0x3a3240, 0x120808, 0.35);
+    scene.add(fill);
+
+    // The room: carpet, walls, ceiling.
+    const carpet = material(0x2a1014, 1);
+    const wall = material(0x0c0a0d, 1);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, backZ + 2), carpet);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(0, 0, (backZ - 2) / 2);
+    scene.add(floor);
+    for (const side of [-1, 1]) {
+      const w = new THREE.Mesh(new THREE.PlaneGeometry(backZ + 2, topY + depth * rise / rowDepth), wall);
+      w.rotation.y = -side * Math.PI / 2;
+      w.position.set(side * half, (topY + depth * rise / rowDepth) / 2, (backZ - 2) / 2);
+      scene.add(w);
+      // Acoustic panels: soft vertical ribs catching a little light.
+      for (let z = 1; z < backZ; z += 2.2) {
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(0.08, topY * 0.7, 1.2), material(0x151018, 0.9));
+        rib.position.set(side * (half - 0.05), topY * 0.45, z);
+        scene.add(rib);
+      }
+    }
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, backZ + 2), material(0x0b090c, 1));
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.set(0, topY + depth * rise / rowDepth, (backZ - 2) / 2);
+    scene.add(ceiling);
+    const screenWall = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, topY + 1), material(0x050405, 1));
+    screenWall.position.set(0, (topY + 1) / 2, -0.05);
+    scene.add(screenWall);
+
+    // Stadium steps under the rows, each with a faint amber step light.
+    const stepMat = material(0x2a1014, 1);
+    const stepLight = new THREE.MeshBasicMaterial({ color: 0xffa64d });
+    const rows = [...new Set(seats.map((s) => s.d))].sort((a, b) => a - b);
+    for (const d of rows) {
+      const y = d * rise, z0 = hall.firstRow + d * rowDepth - rowDepth / 2;
+      if (y > 0.01) {
+        const step = new THREE.Mesh(new THREE.BoxGeometry(half * 2, y, rowDepth), stepMat);
+        step.position.set(0, y / 2, z0 + rowDepth / 2);
+        scene.add(step);
+      }
+      for (const side of [-1, 1]) {
+        const led = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.02, 0.04), stepLight);
+        led.position.set(side * (half - 0.6), y + 0.02, z0 + 0.02);
+        scene.add(led);
+      }
+    }
+
+    // Seats: a cushion and a back each, drawn as two instanced meshes.
+    const n = seats.length;
+    const sw = seatWidth * 0.86;
+    const cushionGeo = new THREE.BoxGeometry(sw, 0.14, 0.5);
+    const backGeo = new THREE.BoxGeometry(sw, 0.62, 0.12);
+    const velvet = material(0xffffff, 0.75);
+    seatsMesh = new THREE.InstancedMesh(cushionGeo, velvet, n);
+    backsMesh = new THREE.InstancedMesh(backGeo, velvet.clone(), n);
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), tilt = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.18);
+    seats.forEach((s, i) => {
+      seatIndex[s.id] = i;
+      m.compose(new THREE.Vector3(s.x, s.y + 0.42, s.z), q, new THREE.Vector3(1, 1, 1));
+      seatsMesh.setMatrixAt(i, m);
+      m.compose(new THREE.Vector3(s.x, s.y + 0.78, s.z + 0.28), tilt, new THREE.Vector3(1, 1, 1));
+      backsMesh.setMatrixAt(i, m);
+    });
+    paintSeats();
+    scene.add(seatsMesh, backsMesh);
+
+    // The screen: a curved panel, edges towards the seats, with a black frame.
+    const segs = 48;
+    const geo = new THREE.PlaneGeometry(screen.w, screen.h, segs, 1);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      pos.setZ(i, screen.curve * Math.pow(x / (screen.w / 2), 2));
+    }
+    geo.computeVertexNormals();
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0xe9dcc0, toneMapped: false });
+    const scr = new THREE.Mesh(geo, screenMat);
+    scr.position.set(0, screen.bottom + screen.h / 2, 0.05);
+    scene.add(scr);
+    if (hall.image) {
+      new THREE.TextureLoader().setCrossOrigin('anonymous').load(hall.image, (tex) => {
+        tex.encoding = THREE.sRGBEncoding;
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        // Crop the picture to the screen's shape.
+        const ia = tex.image.width / tex.image.height, sa = screen.w / screen.h;
+        if (ia > sa) { tex.repeat.set(sa / ia, 1); tex.offset.set((1 - sa / ia) / 2, 0); }
+        else { tex.repeat.set(1, ia / sa); tex.offset.set(0, (1 - ia / sa) / 2); }
+        screenMat.map = tex;
+        screenMat.color.set(0xffffff);
+        screenMat.needsUpdate = true;
+      });
+    }
+    target.set(0, screen.bottom + screen.h * 0.45, 0);
+    window.flutter_inappwebview?.callHandler('ready');
+  };
+
+  function paintSeats() {
+    if (!seatsMesh) return;
+    const c = new THREE.Color();
+    hall.seats.forEach((s, i) => {
+      if (i === selected) c.set(0xe6b34d);
+      else c.set(s.t === 0 ? 0x5e1420 : s.t === 1 ? 0x4c111b : 0x3a0d15);
+      seatsMesh.setColorAt(i, c);
+      backsMesh.setColorAt(i, c);
+    });
+    seatsMesh.instanceColor.needsUpdate = true;
+    backsMesh.instanceColor.needsUpdate = true;
+  }
+
+  // Sit in a seat: the camera walks there; the seat glows gold.
+  window.sit = (id, x, y, z) => {
+    selected = seatIndex[id] ?? -1;
+    paintSeats();
+    yaw = 0; pitch = 0;
+    const dest = new THREE.Vector3(x, y, z);
+    if (!to) { camera.position.copy(dest); to = dest; from = null; return; }
+    from = camera.position.clone();
+    to = dest;
+    t0 = performance.now();
+  };
+
+  const look = new THREE.Vector3();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!hall) return;
+    if (from && to) {
+      const t = Math.min(1, (now - t0) / DURATION), k = ease(t);
+      camera.position.lerpVectors(from, to, k);
+      camera.position.y += Math.sin(Math.PI * k) * 0.35;
+      if (t >= 1) from = null;
+    }
+    if (!dragging) { yaw *= 0.9; pitch *= 0.9; }
+    // Face the screen's middle, turned by the drag.
+    look.copy(target).sub(camera.position);
+    const dist = look.length();
+    const baseYaw = Math.atan2(look.x, -look.z), basePitch = Math.asin(look.y / dist);
+    const y = baseYaw + yaw, p = basePitch + pitch;
+    look.set(Math.sin(y) * Math.cos(p), Math.sin(p), -Math.cos(y) * Math.cos(p)).add(camera.position);
+    camera.lookAt(look);
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
