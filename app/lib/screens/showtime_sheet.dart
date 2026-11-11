@@ -217,8 +217,15 @@ class _ShowtimeSheet extends StatelessWidget {
                               Icons.event_seat_outlined,
                               size: 18,
                             ),
-                            label: Text(
-                              tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
+                                ),
+                                const SizedBox(width: 8),
+                                const BetaTag(),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 10),

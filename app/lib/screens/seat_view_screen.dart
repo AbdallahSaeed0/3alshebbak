@@ -150,9 +150,18 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
     final tier = _tierOf(view.score);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
-          style: AppText.display(22),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
+                style: AppText.display(22),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const BetaTag(),
+          ],
         ),
         backgroundColor: AppColors.background,
       ),
@@ -778,4 +787,23 @@ class _V {
   _V cross(_V o) => _V(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x);
   double get length => math.sqrt(dot(this));
   _V get normalized => _V(x / length, y / length, z / length);
+}
+
+/// "Still being tried out": hall layouts are recorded by hand and the screen
+/// sizes are typical ones, so the feature says so wherever it's offered.
+class BetaTag extends StatelessWidget {
+  const BetaTag({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(color: AppColors.gold.withValues(alpha: 0.7)),
+    ),
+    child: Text(
+      tr('تجريبي', 'Beta'),
+      style: AppText.body(10.5, color: AppColors.gold, weight: FontWeight.w700),
+    ),
+  );
 }
