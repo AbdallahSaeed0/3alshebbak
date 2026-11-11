@@ -22,7 +22,41 @@ const NEWS_MAX = 3000;
  * time. The app's notifications page shows the ones that match its own films
  * and cinemas, so it isn't empty after a reinstall or with alerts off.
  */
-export type News = { at: string; since: string | null; m: string; k: string; c: string[] };
+export type News = {
+  at: string;
+  since: string | null;
+  m: string;
+  k: string;
+  c: string[];
+  /** The new shows themselves, still to come: cinema → start times (epoch minutes). */
+  s?: Record<string, number[]>;
+};
+
+export type SeenShow = { movie_id: string; cinema_id: string; starts_at: string; first_seen_at: string };
+
+/**
+ * Attaches each news item's actual new shows: the ones first seen in its run's
+ * window, at its cinemas — read from showtimes_seen, the table the alerts were
+ * worked out from (showtimes' own first_seen_at moves when a show is listed
+ * again under a new id). Runs logged before the window was kept get the hour
+ * before them.
+ */
+export function attachShows(news: News[], seen: SeenShow[]): News[] {
+  const byMovie = new Map<string, SeenShow[]>();
+  for (const r of seen) byMovie.set(r.movie_id, [...(byMovie.get(r.movie_id) ?? []), r]);
+  return news.map((n) => {
+    const until = Date.parse(n.at);
+    const from = n.since ? Date.parse(n.since) : until - 3600_000;
+    const shows: Record<string, Set<number>> = {};
+    for (const r of byMovie.get(n.m) ?? []) {
+      const first = Date.parse(r.first_seen_at);
+      if (first < from || first >= until || !n.c.includes(r.cinema_id)) continue;
+      (shows[r.cinema_id] ??= new Set()).add(Math.round(Date.parse(r.starts_at) / 60_000));
+    }
+    const s = Object.fromEntries(Object.entries(shows).map(([c, t]) => [c, [...t].sort((a, b) => a - b)]));
+    return Object.keys(s).length ? { ...n, s } : n;
+  });
+}
 
 export function collectNews(rows: { run_at: string; since: string | null; movie_id: string | null; kind: string | null; cinemas: string[] | null }[]): News[] {
   const byKey = new Map<string, News>();
@@ -67,6 +101,11 @@ export async function publishSnapshot(db: SupabaseClient): Promise<number> {
         db.from('notification_log').select('*').eq('outcome', 'sent').gte('run_at', from).order('id'),
       )) as Parameters<typeof collectNews>[0],
     );
+    const seen = (await all(db, () =>
+      db.from('showtimes_seen').select('movie_id,cinema_id,starts_at,first_seen_at')
+        .gte('first_seen_at', from).gt('starts_at', new Date().toISOString()).order('id'),
+    )) as SeenShow[];
+    news = attachShows(news, seen);
   } catch (e) {
     console.log(`  ! snapshot without news: ${e instanceof Error ? e.message : e}`);
   }

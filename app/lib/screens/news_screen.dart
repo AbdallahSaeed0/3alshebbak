@@ -36,6 +36,10 @@ class _NewsScreenState extends State<NewsScreen> {
 
   Future<List<Showtime>> _load() {
     final data = AppScope.of(context);
+    // The shows the catalog recorded for this news, when it has them; else
+    // ask the database.
+    final recorded = recordedShows(widget.news, data.catalog);
+    if (recorded != null) return Future.value(recorded);
     return fetchNews(
       widget.news,
       data.catalog,

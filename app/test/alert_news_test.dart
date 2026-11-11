@@ -119,4 +119,32 @@ void main() {
       expect(shows.map((s) => '${s.movieId}@${s.cinemaId}'), ['tmdb:1@c']);
     },
   );
+
+  test('a big notification comes back whole, a page at a time', () async {
+    final offsets = <String>[];
+    final client = MockClient((req) async {
+      final offset = req.url.queryParameters['offset']!;
+      offsets.add(offset);
+      final n = offset == '0' ? 1000 : 3;
+      return http.Response(
+        jsonEncode([for (var i = 0; i < n; i++) _row('tmdb:1', 'a')]),
+        200,
+      );
+    });
+    final news = AlertNews(
+      films: const [
+        NewsFilm(movieId: 'tmdb:1', kind: NewsKind.shows, cinemas: ['a']),
+      ],
+      since: DateTime.utc(2026, 11, 9),
+      until: DateTime.utc(2026, 11, 10),
+    );
+    final shows = await fetchNews(
+      news,
+      _catalog,
+      myCinemas: const {},
+      client: client,
+    );
+    expect(shows.length, 1003);
+    expect(offsets, ['0', '1000']);
+  });
 }

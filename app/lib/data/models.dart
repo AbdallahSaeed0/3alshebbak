@@ -166,6 +166,7 @@ class RecentNews {
     required this.kind,
     required this.cinemas,
     this.since,
+    this.shows = const {},
   });
 
   final DateTime at;
@@ -176,12 +177,26 @@ class RecentNews {
   final String kind;
   final List<String> cinemas;
 
+  /// The new shows themselves, when the pipeline attached them: cinema →
+  /// start times.
+  final Map<String, List<DateTime>> shows;
+
   static RecentNews fromJson(Map<String, dynamic> j) => RecentNews(
     at: DateTime.parse(j['at'] as String),
     since: j['since'] == null ? null : DateTime.parse(j['since'] as String),
     movieId: j['m'] as String,
     kind: j['k'] as String,
     cinemas: (j['c'] as List).cast<String>(),
+    shows: {
+      for (final e in (j['s'] as Map<String, dynamic>? ?? const {}).entries)
+        e.key: [
+          for (final m in e.value as List)
+            DateTime.fromMillisecondsSinceEpoch(
+              (m as num).toInt() * 60000,
+              isUtc: true,
+            ),
+        ],
+    },
   );
 }
 
