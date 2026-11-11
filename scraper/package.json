@@ -12,6 +12,7 @@
     "notify-log": "tsx scripts/notify-log.ts",
     "users": "tsx scripts/users.ts",
     "review-matches": "tsx scripts/review-matches.ts",
+    "feedback": "tsx scripts/feedback.ts",
     "announce-release": "tsx scripts/announce-release.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test src/**/*.test.ts"
