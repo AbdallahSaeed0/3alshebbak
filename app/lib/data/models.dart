@@ -87,6 +87,7 @@ class Movie {
     this.rating,
     this.trailerKey,
     this.fallbackPosterUrl,
+    this.credits,
   });
 
   final String id;
@@ -109,6 +110,9 @@ class Movie {
   /// YouTube id of the trailer.
   final String? trailerKey;
   final String? fallbackPosterUrl;
+
+  /// Who's in it and who directed it, when TMDB knows.
+  final Credits? credits;
 
   String? get trailerUrl =>
       trailerKey == null ? null : 'https://www.youtube.com/watch?v=$trailerKey';
@@ -154,7 +158,50 @@ class Movie {
     rating: (j['rating'] as num?)?.toDouble(),
     trailerKey: j['trailerKey'] as String?,
     fallbackPosterUrl: j['fallbackPosterUrl'] as String?,
+    credits: Credits.fromJson(j['credits']),
   );
+}
+
+/// One actor in a film's billed cast.
+class CastMember {
+  const CastMember({required this.name, this.character, this.photoPath});
+
+  final String name;
+
+  /// The part they play, as TMDB lists it.
+  final String? character;
+  final String? photoPath;
+
+  String? get photoUrl =>
+      photoPath == null ? null : 'https://image.tmdb.org/t/p/w185$photoPath';
+}
+
+/// A film's billed cast and directors (scraper/src/tmdb.ts, Credits).
+class Credits {
+  const Credits({this.cast = const [], this.directors = const []});
+
+  final List<CastMember> cast;
+  final List<String> directors;
+
+  /// Null for no credits, or anything that isn't credits.
+  static Credits? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final cast = [
+      for (final p in (j['cast'] as List?) ?? const [])
+        if (p is Map && p['n'] is String)
+          CastMember(
+            name: p['n'] as String,
+            character: p['c'] as String?,
+            photoPath: p['p'] as String?,
+          ),
+    ];
+    final directors = [
+      for (final d in (j['dir'] as List?) ?? const [])
+        if (d is String) d,
+    ];
+    if (cast.isEmpty && directors.isEmpty) return null;
+    return Credits(cast: cast, directors: directors);
+  }
 }
 
 /// One film's news in one alerts run: what notifications said, for anyone

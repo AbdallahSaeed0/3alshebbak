@@ -208,6 +208,7 @@ CatalogData _parse(List<String> bodies) {
         rating: (m['rating'] as num?)?.toDouble(),
         trailerKey: m['trailer_key'] as String?,
         fallbackPosterUrl: m['fallback_poster_url'] as String?,
+        credits: Credits.fromJson(m['credits']),
       ),
   };
 

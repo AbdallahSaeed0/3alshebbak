@@ -39,7 +39,20 @@ export interface Movie {
   trailerKey: string | null;
   /** A chain's own poster, for films with no TMDB match. */
   fallbackPosterUrl: string | null;
+  /** Who's in it and who directed it. */
+  credits: Credits | null;
 }
+
+/** Short keys: this goes into the catalog file every phone downloads. */
+export interface Credits {
+  /** Billed cast, top first: name, character, TMDB profile photo path. */
+  cast: { n: string; c: string | null; p: string | null }[];
+  /** Directors' names. */
+  dir: string[];
+}
+
+/** The billed cast the film page shows. */
+const MAX_CAST = 15;
 
 export interface Catalog {
   movies: Movie[];
@@ -73,6 +86,11 @@ interface TmdbDetails {
   vote_average?: number;
   vote_count?: number;
   videos?: { results: TmdbVideo[] };
+}
+
+interface TmdbCredits {
+  cast: { name: string; character?: string; profile_path: string | null; order: number }[];
+  crew: { name: string; job: string }[];
 }
 
 interface TmdbVideo {
@@ -230,6 +248,21 @@ class Tmdb {
     );
   }
 
+  /** Who's in a film and who directed it; null when TMDB lists nobody. */
+  async credits(id: number): Promise<Credits | null> {
+    const raw = await this.cached(
+      `credits:${id}`,
+      () => this.get<TmdbCredits>(`/movie/${id}/credits`, { language: 'en-US' }),
+      () => true,
+    );
+    const cast = [...raw.cast]
+      .sort((a, b) => a.order - b.order)
+      .slice(0, MAX_CAST)
+      .map((p) => ({ n: p.name, c: p.character?.trim() || null, p: p.profile_path }));
+    const dir = [...new Set(raw.crew.filter((p) => p.job === 'Director').map((p) => p.name))];
+    return cast.length || dir.length ? { cast, dir } : null;
+  }
+
   async details(id: number): Promise<{ en: TmdbDetails; arTitle: string | null; trailerKey: string | null }> {
     const { en, ar } = await this.cached(
       // v2: with the rating and videos.
@@ -278,6 +311,7 @@ function localMovie(normalized: string, film: Film): Movie {
     rating: null,
     trailerKey: null,
     fallbackPosterUrl: film.posterUrl ?? null,
+    credits: null,
   };
 }
 
@@ -309,6 +343,11 @@ export async function buildCatalog(films: Film[], log: (m: string) => void = () 
         tmdbId = pinned !== undefined ? pinned : await tmdb.search(group[0].title);
         if (tmdbId != null && !movies.has(`tmdb:${tmdbId}`)) {
           const { en, arTitle, trailerKey } = await tmdb.details(tmdbId);
+          // Credits are extra: a failed lookup leaves them out, not the film.
+          const credits = await tmdb.credits(tmdbId).catch((e) => {
+            log(`TMDB credits ${tmdbId}: ${errorMessage(e)}`);
+            return null;
+          });
           movies.set(`tmdb:${tmdbId}`, {
             id: `tmdb:${tmdbId}`,
             tmdbId,
@@ -324,6 +363,7 @@ export async function buildCatalog(films: Film[], log: (m: string) => void = () 
             rating: (en.vote_count ?? 0) >= MIN_VOTES && en.vote_average ? Math.round(en.vote_average * 10) / 10 : null,
             trailerKey,
             fallbackPosterUrl: group.find((f) => f.posterUrl)?.posterUrl ?? null,
+            credits,
           });
         }
       } catch (e) {

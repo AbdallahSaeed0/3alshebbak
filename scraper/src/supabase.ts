@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { ScrapeResult } from './model.js';
 import type { Catalog } from './tmdb.js';
+import { errorMessage } from './http.js';
 import { presaleFrom } from './time.js';
 
 /** Sources that add only presale days to cinemas elCinema lists (vox.ts, premiere.ts). */
@@ -64,10 +65,7 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
     ),
   );
 
-  await upsert(
-    db,
-    'movies',
-    catalog.movies.map((m) => ({
+  const movieRows = catalog.movies.map((m) => ({
       id: m.id,
       tmdb_id: m.tmdbId,
       title: m.title,
@@ -82,9 +80,17 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
       rating: m.rating,
       trailer_key: m.trailerKey,
       fallback_poster_url: m.fallbackPosterUrl,
+      credits: m.credits,
       updated_at: now,
-    })),
-  );
+    }));
+  try {
+    await upsert(db, 'movies', movieRows);
+  } catch (e) {
+    // A database without the credits column yet (migration
+    // 20261112090000_movie_credits.sql): save the films without their cast.
+    if (!/credits/.test(errorMessage(e))) throw e;
+    await upsert(db, 'movies', movieRows.map(({ credits: _, ...row }) => row));
+  }
 
   await upsert(
     db,

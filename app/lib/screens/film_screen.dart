@@ -12,6 +12,7 @@ import '../services/premiere_live.dart';
 import '../services/vox_live.dart';
 import '../theme.dart';
 import '../util/format.dart';
+import '../widgets/cast_section.dart';
 import '../widgets/common.dart';
 import '../widgets/trailer_popup.dart';
 import '../widgets/schedule.dart';
@@ -253,6 +254,14 @@ class _FilmScreenState extends State<FilmScreen> {
                         14,
                         color: AppColors.text.withValues(alpha: 0.85),
                       ).copyWith(height: 1.8),
+                    ),
+                  ],
+                  if (movie.credits case final credits?) ...[
+                    const SizedBox(height: 22),
+                    CastSection(
+                      movie: movie,
+                      credits: credits,
+                      onFilm: (m) => openFilm(context, m),
                     ),
                   ],
                   const SizedBox(height: 22),
