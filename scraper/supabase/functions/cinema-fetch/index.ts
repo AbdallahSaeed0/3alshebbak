@@ -15,7 +15,9 @@ Deno.serve(async (request: Request) => {
     for (const name of ['accept', 'accept-language', 'content-type', 'referer', 'origin', 'user-agent', 'cookie', 'authorization', 'x-requested-with']) {
       if (typeof input.headers?.[name] === 'string') headers.set(name, input.headers[name]);
     }
-    headers.set('User-Agent', '3alShebbakBot/0.1 (public cinema showtimes; https://github.com/AbdallahSaeed0/3alshebbak)');
+    if (!['rnscinemas.com', 'www.rnscinemas.com'].includes(url.hostname)) {
+      headers.set('User-Agent', '3alShebbakBot/0.1 (public cinema showtimes; https://github.com/AbdallahSaeed0/3alshebbak)');
+    }
     const method = input.method ?? 'GET';
     if (typeof input.body === 'string' && input.body.length > 256_000) return new Response('Request too large', { status: 413 });
     let response: Response | undefined;

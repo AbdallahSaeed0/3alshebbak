@@ -12,13 +12,14 @@ export async function fetchText(url: string, retries = 2): Promise<string> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      if (['rnscinemas.com', 'www.rnscinemas.com'].includes(new URL(url).hostname) && cinemaRelayConfigured()) {
+      const renaissance = ['rnscinemas.com', 'www.rnscinemas.com'].includes(new URL(url).hostname);
+      if (renaissance && cinemaRelayConfigured()) {
         const response = await cinemaFetch(url, 'GET', { 'accept-language': 'en' });
         if (response.status !== 200) throw new Error(`HTTP ${response.status}`);
         return response.body;
       }
       const res = await fetch(url, {
-        headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en' },
+        headers: renaissance ? { 'Accept-Language': 'en' } : { 'User-Agent': USER_AGENT, 'Accept-Language': 'en' },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
