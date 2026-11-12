@@ -275,6 +275,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 },
               ),
             ),
+          const KeyboardSpace(),
         ],
       ),
     );

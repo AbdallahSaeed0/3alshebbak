@@ -175,6 +175,7 @@ class _CinemasScreenState extends State<CinemasScreen> {
                 for (final e in sections.entries)
                   ..._section(e.key, e.value, data),
                 SliverToBoxAdapter(child: SizedBox(height: barSpace(context))),
+                const KeyboardSpace(),
               ],
             ),
     );

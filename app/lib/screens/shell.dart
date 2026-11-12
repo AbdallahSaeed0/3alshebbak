@@ -114,6 +114,11 @@ class _ShellState extends State<Shell> {
     return Scaffold(
       // Pages run under the bar, so it frosts whatever scrolls past.
       extendBody: true,
+      // The keyboard doesn't shrink the pages: shrinking them laid out all
+      // four tabs on every frame of the keyboard sliding, and the bar crawled
+      // back up after a search. Pages with a text field leave room for the
+      // keyboard themselves (KeyboardSpace).
+      resizeToAvoidBottomInset: false,
       body: NotificationListener<ScrollUpdateNotification>(
         onNotification: _onScroll,
         child: IndexedStack(

@@ -13,6 +13,18 @@ import '../util/i18n.dart';
 double barSpace(BuildContext context) =>
     MediaQuery.paddingOf(context).bottom + 16;
 
+/// Room at the end of a scroll view for the keyboard while it's up, so the
+/// last results can be scrolled into view. Only this sliver rebuilds as the
+/// keyboard slides, not the page around it.
+class KeyboardSpace extends StatelessWidget {
+  const KeyboardSpace({super.key});
+
+  @override
+  Widget build(BuildContext context) => SliverToBoxAdapter(
+    child: SizedBox(height: MediaQuery.viewInsetsOf(context).bottom),
+  );
+}
+
 class Poster extends StatelessWidget {
   const Poster({
     super.key,
