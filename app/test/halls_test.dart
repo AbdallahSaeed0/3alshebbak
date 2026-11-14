@@ -154,6 +154,46 @@ void main() {
     expect(halls.forShowtime(_show('VIP', at: 'renaissance:banha')), isNull);
   });
 
+  test('Premiere: shows by hall id, special halls by format', () {
+    Showtime at(String cinema, String hall) => Showtime(
+      cinemaId: cinema,
+      movieId: 'tmdb:1',
+      businessDate: '2026-11-14',
+      startsAt: DateTime.utc(2026, 11, 14, 21),
+      wallClock: DateTime(2026, 11, 14, 23),
+      format: 'Standard',
+      hall: hall,
+    );
+    final p90 = halls.forShowtime(at('elcinema:premiere-point90', 'prm:4:14'))!;
+    expect(p90.name, 'Screen 3');
+    expect(p90.seats.length, 225);
+    expect(
+      halls.forShowtime(at('premiere:nile-cinema', 'prm:1:2'))!.name,
+      'Screen 2',
+    );
+    // Point90's MX4D, Arkan's MAX and its Plus hall (elCinema calls it VIP)
+    expect(
+      halls
+          .forShowtime(_show('MX4D · 4DX', at: 'elcinema:premiere-point90'))!
+          .seats
+          .length,
+      80,
+    );
+    expect(
+      halls.forShowtime(_show('MAX', at: 'elcinema:cima-arkan'))!.name,
+      'MAX Cima',
+    );
+    expect(
+      halls.forShowtime(_show('VIP · VIP', at: 'elcinema:cima-arkan'))!.name,
+      'Plus Cima',
+    );
+    // an ordinary show without its hall gets none
+    expect(
+      halls.forShowtime(_show('Standard', at: 'premiere:nile-cinema')),
+      isNull,
+    );
+  });
+
   test('formats match part by part, whole, 2D/3D aside', () {
     expect(Halls.formatParts('MX4D · 4DX'), {'MX4D', '4DX'});
     expect(Halls.formatParts('2D · IMAX'), {'IMAX'});

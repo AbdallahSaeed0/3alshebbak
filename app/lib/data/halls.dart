@@ -49,7 +49,8 @@ class Hall {
   final List<Seat> seats;
 
   /// The ids a show's [Showtime.hall] can carry for this hall
-  /// (`elcinema:<screen id>`); one hall can be sold as two screens.
+  /// (`elcinema:<screen id>`, `rns:…`, `prm:<cinema>:<screen>`); one hall
+  /// can be sold as two screens.
   final Set<String> hallIds;
 
   /// Tickets carry no seat (Zawya): the plan still shows where to sit.
@@ -105,6 +106,7 @@ class Hall {
         // short on shows, to keep the catalog file small (renaissance.ts)
         if (j['rnsScreenId'] case final String id)
           'rns:${id.substring(id.length - 6)}',
+        if (j['premiereScreenId'] case final String id) 'prm:$id',
       },
       freeSeating: j['freeSeating'] == true,
     );

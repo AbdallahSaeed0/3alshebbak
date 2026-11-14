@@ -43,7 +43,8 @@ export function premiereFormat(name: string): string {
 }
 
 interface Listing { id: string; title: string; posterUrl: string | null; info: string | null; cinemas: string[]; url: string }
-type Days = Record<string, { name: string; formats: { name: string; times: string[] }[] }[]>;
+/** `halls`: time label → the show's hall, "prm:<cinema id>:<screen id>" (premiere.page.js). */
+type Days = Record<string, { name: string; formats: { name: string; times: string[]; halls?: Record<string, string> }[] }[]>;
 
 declare global {
   interface Window {
@@ -126,7 +127,9 @@ export const premiere: Source = {
                     for (const t of f.times) {
                       const start = showStart(date, t);
                       // Times are buttons on the movie page, not links; book from there.
-                      if (start) out.showtime({ cinemaId, filmId, businessDate: date, start, format, bookingUrl: movie.url });
+                      if (start) {
+                        out.showtime({ cinemaId, filmId, businessDate: date, start, format, bookingUrl: movie.url, hall: f.halls?.[t] });
+                      }
                     }
                   }
                 }

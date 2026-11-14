@@ -1,5 +1,5 @@
 {
-  "_about": "Hall layouts, read once per hall from the seat map the cinema shows during booking (a person went as far as the seat page; no seat was picked): elCinema's for Premiere halls, VOX's own (egy.voxcinemas.com, as a guest) for VOX halls, Scene's own (<venue>.scenecinemas.com; its plan is drawn turned 180°, recorded as shown) for Scene halls, Renaissance's own booking page data (rnscinemas.com/en/start_booking/<id>, matched by screen id) for Renaissance halls; for elCinema-sold cinemas also elCinema's hall lookup (booking/ajax_dropdowns, type screens), which returns each hall's seat plan without any booking. Rows run from the screen backwards (VOX letters its rows from the back, so its A is last). Each row lists its cells left to right as you face the screen: a seat number, or '.' for a gap or aisle; a row of only '.' is a gap between rows. A hall with no formats is recorded but not matched to shows; formats match a show's format part by part, whole words (see Halls.forShowtime). Prices are what the hall showed when recorded.",
+  "_about": "Hall layouts, read once per hall from the seat map the cinema shows during booking (a person went as far as the seat page; no seat was picked): elCinema's for Premiere halls, VOX's own (egy.voxcinemas.com, as a guest) for VOX halls, Scene's own (<venue>.scenecinemas.com; its plan is drawn turned 180°, recorded as shown) for Scene halls, Renaissance's own booking page data (rnscinemas.com/en/start_booking/<id>, matched by screen id) for Renaissance halls, Premiere's own seat page (premiere-cinemas.com/en/seats/..., as a guest; matched by premiereScreenId, '<cinema id>:<screen id>') for Premiere halls; for elCinema-sold cinemas also elCinema's hall lookup (booking/ajax_dropdowns, type screens), which returns each hall's seat plan without any booking. Rows run from the screen backwards (VOX letters its rows from the back, so its A is last). Each row lists its cells left to right as you face the screen: a seat number, or '.' for a gap or aisle; a row of only '.' is a gap between rows. A hall with no formats is recorded but not matched to shows; formats match a show's format part by part, whole words (see Halls.forShowtime). Prices are what the hall showed when recorded.",
   "elcinema:americana-plaza": {
     "venue": "Premiere Americana Plaza",
     "halls": [
@@ -35,7 +35,8 @@
               "O|40 38 36 34 32 30 . . 24 22 20 18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19 21 23 25 . 29 31 33 35 37 39"
             ]
           }
-        ]
+        ],
+        "premiereScreenId": "2:14"
       },
       {
         "elcinemaScreenId": "20006",
@@ -57,6 +58,274 @@
               "C|16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15",
               "D|. . . . . . . . . . . . . . . . .",
               "E|16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15"
+            ]
+          }
+        ],
+        "premiereScreenId": "2:6"
+      },
+      {
+        "premiereScreenId": "2:1",
+        "name": "Screen 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|18 16 14 12 10 08 06 . . . . . . . . . . . .",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:2",
+        "name": "Screen 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|. . . . . . . . . . . . 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:3",
+        "name": "Screen 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|. . . . . . . . . . . . 05 07 09 11 13 15 17",
+              "D|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:4",
+        "name": "Screen 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 . . . . . . . . . . . .",
+              "D|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:5",
+        "name": "Screen 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 . . . . . . . . . . . . .",
+              "D|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "I|20 18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:7",
+        "name": "Screen 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|18 16 14 12 10 08 06 . . . . . . . . . . . .",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:8",
+        "name": "Screen 8",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|18 16 14 12 10 08 06 . . . . . . . . . . . .",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:9",
+        "name": "Screen 9",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|. . . . . . . . . . . . 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:10",
+        "name": "Screen 10",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "D|. . . . . . . . . . . . 05 07 09 11 13 15 17",
+              "E|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . 01 03 05 07 09 11 13 15 17",
+              "J|18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "2:11",
+        "name": "Screen 11",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 100
+            },
+            "rows": [
+              "A|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "B|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "C|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "D|18 16 14 12 10 08 06 . . . . . . . . . . . . .",
+              "E|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "F|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "G|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "H|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "I|18 16 14 12 10 08 06 04 02 . . 01 03 05 07 09 11 13 15 17",
+              "J|20 18 16 14 12 10 08 06 04 02 01 03 05 07 09 11 13 15 17 19"
             ]
           }
         ]
@@ -2779,6 +3048,946 @@
               "K|14 13 12 11 10 9 . . . 7 6 5 4 3 2 1 .",
               "L|. . . 8 7 6 5 . . 4 3 2 1 . . . .",
               "M|. . 10 9 8 7 6 . . 5 4 3 2 1 . . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "premiere:nile-cinema": {
+    "venue": "Premiere Nile Cinema",
+    "halls": [
+      {
+        "premiereScreenId": "1:1",
+        "name": "Screen 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Lazy Boy",
+            "prices": {
+              "Lazy Boy": 150
+            },
+            "rows": [
+              "B|. . 1 2 . 3 4 5 6",
+              "C|1 2 3 4 . 5 6 7 8",
+              "D|. . . 1 2 3 4 5 6",
+              "E|. . . 1 . 3 4 5 6",
+              "F|. . . 1 2 3 4 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:2",
+        "name": "Screen 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Lazy Boy",
+            "prices": {
+              "Lazy Boy": 280
+            },
+            "rows": [
+              "B|1 2 . 3 4 5 6 7",
+              "C|1 2 . 3 4 5 6 7",
+              "D|. . . 1 2 3 4 5",
+              "E|. . . 1 2 3 4 5",
+              "F|. . 1 2 3 4 5 6"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:3",
+        "name": "Screen 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Lazy Boy",
+            "prices": {
+              "Lazy Boy": 150
+            },
+            "rows": [
+              "B|1 2 . 3 4 5 6 7",
+              "C|1 2 . 3 4 5 6 7",
+              "D|. . . 1 2 3 4 5",
+              "E|. . . 1 2 3 4 5",
+              "F|. . 1 2 3 4 5 6"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:4",
+        "name": "Screen 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 180
+            },
+            "rows": [
+              "A|. . 15 14 13 12 11 10 . . 9 8 7 6 5 4 3 2 1",
+              "B|. 14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 . .",
+              "C|. 16 15 14 13 12 11 10 . . 9 8 7 6 5 4 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . .",
+              "D|17 16 15 14 13 12 11 10 . . 9 8 7 6 5 4 3 2 1",
+              "E|17 16 15 14 13 12 11 10 . . 9 8 7 6 5 4 3 2 1",
+              "F|17 16 15 14 13 12 11 10 . . 9 8 7 6 5 4 3 2 1",
+              "G|16 15 14 13 12 11 10 9 . . 8 7 6 5 4 3 2 1 .",
+              "H|19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:5",
+        "name": "Screen 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|15 14 13 12 11 10 9 8 7 . . 6 5 4 3 2 1 . .",
+              "B|16 15 14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "C|16 15 14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . . . . . .",
+              "D|17 16 15 14 13 12 11 10 9 . . 8 7 6 5 4 3 2 1",
+              "E|17 16 15 14 13 12 11 10 9 . . 8 7 6 5 4 3 2 1",
+              "F|17 16 15 14 13 12 11 10 9 . . 8 7 6 5 4 3 2 1",
+              "G|. 16 15 14 13 12 11 10 9 . . 8 7 6 5 4 3 2 1",
+              "H|19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:6",
+        "name": "Screen 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "B|8 7 6 5 4 3 . . 2 1",
+              "C|8 7 6 5 4 3 . . 2 1",
+              "D|8 7 6 5 4 3 . . 2 1",
+              "E|8 7 6 5 4 3 . . 2 1",
+              "F|8 7 6 5 4 3 . . 2 1",
+              "G|8 7 6 5 4 3 . . . .",
+              "H|8 7 6 5 4 3 . . . .",
+              "I|8 7 6 5 4 3 . . . .",
+              "J|6 5 4 3 2 1 . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:7",
+        "name": "Screen 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "B|8 7 6 5 4 3 . . 2 1",
+              "C|8 7 6 5 4 3 . . 2 1",
+              "D|8 7 6 5 4 3 . . 2 1",
+              "E|8 7 6 5 4 3 . . 2 1",
+              "F|8 7 6 5 4 3 . . 2 1",
+              "G|8 7 6 5 4 3 . . . .",
+              "H|8 7 6 5 4 3 . . . .",
+              "I|8 7 6 5 4 3 . . . .",
+              "J|7 6 5 4 3 2 1 . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "1:8",
+        "name": "Screen 8",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "B|9 8 7 6 5 4 3 . . 2 1",
+              "C|9 8 7 6 5 4 3 . . 2 1",
+              "D|9 8 7 6 5 4 3 . . 2 1",
+              "E|9 8 7 6 5 4 3 . . 2 1",
+              "F|9 8 7 6 5 4 3 . . . .",
+              "G|9 8 7 6 5 4 3 . . . .",
+              "H|9 8 7 6 5 4 3 . . . .",
+              "I|. . 7 6 5 4 3 2 1 . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "premiere:galaxy-elmanial": {
+    "venue": "Premiere Galaxy elManial",
+    "halls": [
+      {
+        "premiereScreenId": "3:7",
+        "name": "Screen 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|. . . . . . . 11 9 7 5 3 1 2 4 6 8 10 .",
+              "B|. . . . . 13 11 9 7 5 3 1 2 4 6 8 10 12 14",
+              "C|. . . . . 13 11 9 7 5 3 1 2 4 6 8 10 12 14",
+              "D|. . . . . 13 11 9 7 5 . 1 2 4 6 8 10 12 14",
+              "E|. . . . . . . . . . . 2 4 6 16 10 12 14 8",
+              "F|13 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 .",
+              "G|. 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 .",
+              "H|13 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 .",
+              "I|. 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 14",
+              "J|13 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 14",
+              "K|. 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 14",
+              "L|13 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 14",
+              "M|. 11 9 7 5 3 1 . . . . . 2 4 6 8 10 12 14",
+              "N|13 11 9 7 5 3 1 . . . . . . . 2 4 6 . .",
+              "O|. 11 9 7 5 3 1 . . . . . . . 2 4 . . .",
+              "P|. . 9 7 5 3 1 . . . . . . . 2 4 . . .",
+              "Q|. . 9 7 5 3 1 . . . . . . . 2 4 6 . .",
+              "R|. . . 3 1 . . . . . . . . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "3:8",
+        "name": "Screen 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|. 11 9 7 5 3 1 . 2 4 6 8 10 12 .",
+              "B|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "C|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "D|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "E|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "F|. 11 9 7 5 3 1 . 2 4 6 8 10 12 .",
+              "G|. 11 9 7 5 3 1 . 2 4 6 8 10 12 .",
+              "H|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "I|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "J|. 9 7 5 3 1 . . 2 4 6 8 10 . .",
+              "K|. 9 7 5 3 1 . . 2 4 6 8 . . .",
+              "L|. 9 7 5 3 1 . . 2 4 6 8 . . .",
+              "M|. 9 7 5 3 1 . . 2 4 6 8 10 . .",
+              "N|. . 5 3 1 . . . 2 4 6 8 . . .",
+              "O|. 7 5 3 1 . . . 2 4 6 8 . . .",
+              "P|. 7 5 3 1 . . . 2 4 6 8 . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "3:9",
+        "name": "Screen 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "B|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "C|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "D|. . 9 7 5 3 1 . . 2 4 6 8 10",
+              "E|. . 9 7 5 3 1 . . 2 4 6 8 .",
+              "F|. . 9 7 5 3 1 . . 2 4 6 8 10",
+              "G|. . . 7 5 3 1 . . 2 4 6 8 10",
+              "H|. . . 7 5 3 1 . . 2 4 6 8 .",
+              "I|. . . 7 5 3 1 . . 2 4 6 8 ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "3:10",
+        "name": "Screen 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|. 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "B|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "C|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "D|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "E|13 11 9 7 5 3 1 . 2 4 6 8 10 12 14",
+              "F|. 11 9 7 5 3 1 . 2 4 6 8 10 12 .",
+              "G|. 11 9 7 5 3 1 . 2 4 6 8 10 12 .",
+              "H|13 11 9 7 5 3 1 . . . . . . . .",
+              "I|. . 9 7 5 3 1 . . . . . . . .",
+              "J|. . 9 7 5 3 1 . 2 4 6 . . . .",
+              "K|. . 9 7 5 3 1 . 2 4 6 8 10 . .",
+              "L|. . 9 7 5 3 1 . 2 4 6 8 10 . .",
+              "M|. . 9 7 5 3 1 . 2 4 6 8 10 . .",
+              "N|. . . 7 5 3 1 . 2 4 6 . . . .",
+              "O|. . . 5 3 1 . . . . . . . . .",
+              "P|. . . 5 3 1 . . . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "3:11",
+        "name": "Screen 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "B|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "C|13 11 9 7 5 3 1 . 2 4 6 8 10 12",
+              "D|. 9 7 5 3 1 . . 2 4 6 8 10 .",
+              "E|. 9 7 5 3 1 . . 2 4 6 8 10 .",
+              "F|. 9 7 5 3 1 . . 2 4 6 8 10 .",
+              "G|. 9 7 5 3 1 . . 2 4 6 8 10 .",
+              "H|. 5 3 1 . . . . 2 4 6 8 . .",
+              "I|. . . . . . . . . 2 4 6 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "3:12",
+        "name": "Screen 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 90
+            },
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1",
+              "C|12 11 10 9 8 7 6 5 4 3 2 1",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1",
+              "F|. . 10 9 8 7 6 5 4 3 2 1",
+              "G|. . . 9 8 7 6 5 4 3 2 1",
+              "H|. . 10 9 8 7 6 5 4 3 2 1",
+              "I|. . 10 9 8 7 6 5 4 3 2 1",
+              "J|. . 10 9 8 7 6 5 4 3 2 1",
+              "K|. . 10 9 8 7 6 5 4 3 2 1",
+              "L|. . . 9 8 7 6 5 4 3 2 1",
+              "M|. . . . 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "elcinema:premiere-point90": {
+    "venue": "Premiere Point90",
+    "halls": [
+      {
+        "premiereScreenId": "4:17",
+        "name": "Screen MX4D",
+        "formats": [
+          "MX4D"
+        ],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "MX4D",
+            "prices": {
+              "MX4D": 275
+            },
+            "rows": [
+              "A|. 8 6 4 2 . . 1 3 5 7 .",
+              "B|. 8 6 4 2 . . 1 3 5 7 .",
+              "C|. 8 6 4 2 . . 1 3 5 7 .",
+              "D|. 8 6 4 2 . . 1 3 5 7 .",
+              "E|. 8 6 4 2 . . 1 3 5 7 .",
+              "F|. 8 6 4 2 . . 1 3 5 7 .",
+              "G|8 6 4 2 . . . . . . . .",
+              "H|8 6 4 2 . . 1 3 5 7 . .",
+              "I|8 6 4 2 . . 1 3 5 7 . .",
+              "J|10 8 6 4 2 1 3 5 7 9 11 13"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:1",
+        "name": "Screen 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 160
+            },
+            "rows": [
+              "A|. 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 .",
+              "B|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "C|. . . . . . . . . . 1 3 5 7 9 11 13 15",
+              "D|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "E|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "F|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "G|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "H|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "I|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "J|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "K|. . . . 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "L|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "M|18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:12",
+        "name": "Screen 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 200
+            },
+            "rows": [
+              "A|. 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 .",
+              "B|16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "C|. . . . . . . . . . . 1 3 5 7 9 11 13 15",
+              "D|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "E|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "F|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "G|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "H|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "I|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "J|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "K|. . . . 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "L|16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15",
+              "M|18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:14",
+        "name": "Screen 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 160
+            },
+            "rows": [
+              "A|. . . . . . . 4 2 . . . 1 3 . . . . . . .",
+              "B|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "C|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "D|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "E|. . . . . . . . . . . . 1 3 5 7 9 11 13 15 17",
+              "F|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "G|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "H|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "I|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "J|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "K|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "L|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "M|. . . 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "N|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "O|. 18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19 21"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:16",
+        "name": "Screen 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 160
+            },
+            "rows": [
+              "A|. . . . . . . 4 2 . . . 1 3 . . . . . . .",
+              "B|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "C|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "D|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "E|18 16 14 12 10 8 6 4 2 . . . . . . . . . . . .",
+              "F|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "G|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "H|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "I|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "J|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "K|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "L|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "M|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 . . .",
+              "N|18 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13 15 17",
+              "O|. 18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19 21"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:5",
+        "name": "Screen 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 200
+            },
+            "rows": [
+              "A|. 14 12 10 8 6 4 . . . . 3 5 7 9 11 13 .",
+              "B|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "C|16 14 12 10 8 6 4 2 . . . . . . . . . .",
+              "D|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "E|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "F|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "G|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "H|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "I|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "J|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "K|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "L|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "M|18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:6",
+        "name": "Screen 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 200
+            },
+            "rows": [
+              "A|. . . . 8 6 4 2 . . 1 3 5 7 . . . .",
+              "B|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "C|16 14 12 10 8 6 4 2 . . . . . . . . . .",
+              "D|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "E|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "F|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "G|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "H|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "I|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "J|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "K|16 14 12 10 8 6 4 2 . . 1 3 5 7 . . . .",
+              "L|16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15",
+              "M|18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:7",
+        "name": "Screen 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 160
+            },
+            "rows": [
+              "A|. . . 4 2 . 1 3 5 7 9 11",
+              "B|10 8 6 4 2 . 1 3 5 7 9 11",
+              "C|10 8 6 4 2 . 1 3 5 7 9 11",
+              "D|10 8 6 4 2 . 1 3 5 7 9 11",
+              "E|10 8 6 4 2 . 1 3 5 7 9 11",
+              "F|10 8 6 4 2 . 1 3 5 7 9 11",
+              "G|10 8 6 4 . . . . 5 7 9 11",
+              "H|10 8 6 4 . . . . 5 7 9 11",
+              "I|10 8 6 4 2 . . 3 5 7 9 11"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:8",
+        "name": "Screen 8",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 200
+            },
+            "rows": [
+              "A|. 4 2 . . . 1 3 5 7 9 11",
+              "B|10 8 6 4 2 . 1 3 5 7 9 11",
+              "C|10 8 6 4 2 . 1 3 5 7 9 11",
+              "D|10 8 6 4 2 . 1 3 5 7 9 11",
+              "E|10 8 6 4 2 . 1 3 5 7 9 11",
+              "F|10 8 6 4 2 . 1 3 5 7 9 11",
+              "G|10 8 6 4 . . . . 5 7 9 11",
+              "H|10 8 6 4 . . . . 5 7 9 11",
+              "I|10 8 6 4 2 . . 3 5 7 9 11"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:9",
+        "name": "Screen 9",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 200
+            },
+            "rows": [
+              "A|6 4 2 . . 1 3",
+              "B|4 2 . . 1 3 5",
+              "C|6 4 2 . . 1 3",
+              "D|4 2 . . 1 3 5",
+              "E|6 4 2 . . 1 3",
+              "F|4 2 . . 1 3 5",
+              "G|6 4 2 . . 1 3",
+              "H|4 2 . . 1 3 5",
+              "I|6 4 2 . . 1 3",
+              "J|4 2 . . 1 3 5",
+              "K|. . 1 3 5 7 9"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "4:10",
+        "name": "Screen 10",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 160
+            },
+            "rows": [
+              "A|8 6 4 2 . 1 3 5 7",
+              "B|8 6 4 2 . 1 3 5 7",
+              "C|8 6 4 2 . 1 3 5 7",
+              "D|8 6 4 2 . 1 3 5 7",
+              "E|8 6 4 2 . 1 3 5 7",
+              "F|. . . . . . 1 3 5",
+              "G|. . . . 1 3 5 7 9",
+              "H|. . . . 1 3 5 7 9",
+              "I|4 2 . . 1 3 5 7 9",
+              "J|4 2 . . 1 3 5 7 9"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "elcinema:cima-arkan": {
+    "venue": "Premiere Cima Arkan",
+    "halls": [
+      {
+        "premiereScreenId": "5:9",
+        "name": "MAX Cima",
+        "formats": [
+          "MAX"
+        ],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . . 20 18 16 14 12 10 8 6 . 4 2 . . . . 1 3 . 5 7 9 11 13 15 17 19 . . . .",
+              "B|. . . . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . . . .",
+              "C|. . . . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . . . .",
+              "D|. . . . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . . . .",
+              "E|. . . . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . . . .",
+              "F|. . . . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . . . .",
+              "G|30 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 29",
+              "H|30 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 29",
+              "I|. 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 .",
+              "J|. 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 .",
+              "K|. 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 .",
+              "L|. 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 .",
+              "M|. 28 26 . 24 22 20 18 16 14 12 10 . 8 6 4 2 1 3 5 7 . 9 11 13 15 17 19 21 23 . 25 27 ."
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:8",
+        "name": "Plus Cima",
+        "formats": [
+          "Plus",
+          "VIP"
+        ],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Lazy Boy",
+            "prices": {
+              "Lazy Boy": 400
+            },
+            "rows": [
+              "A|8 7 . . 6 5 4 3 . . 2 1",
+              "B|8 7 . . 6 5 4 3 . . 2 1",
+              "C|8 7 . . 6 5 4 3 . . 2 1",
+              "D|8 7 . . 6 5 4 3 . . 2 1",
+              "E|12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:1",
+        "name": "Cima 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . . 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "B|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "C|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "D|. . 16 14 12 10 8 6 4 2 . . . . . . . . .",
+              "E|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "F|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "G|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "H|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "I|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "J|. . 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "K|18 16 14 . 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:11",
+        "name": "Cima 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . 8 6 4 2 . . 1 3 5 7 . . . .",
+              "B|. . . 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "C|. . . . . . . . . 1 3 5 7 9 11 . .",
+              "D|. . . 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "E|. . . 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "F|. . . 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "G|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "H|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "I|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 . .",
+              "J|14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:4",
+        "name": "Cima 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . . 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "B|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "C|. . 18 16 14 12 10 8 6 4 2 . . . . . . . . .",
+              "D|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "E|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "F|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 . . .",
+              "G|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "H|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "I|. . 18 16 14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13",
+              "J|22 20 18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:5",
+        "name": "Cima 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . 8 6 4 2 . . 1 3 5 7 9 11 . . . .",
+              "B|. . . 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "C|. . . 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "D|. . . . . . . . . 1 3 5 7 9 11 13 15 . .",
+              "E|. . . 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "F|. . . 8 6 4 2 . . 1 3 05 7 9 11 13 15 . .",
+              "G|. . . 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "H|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "I|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "J|14 12 10 8 6 4 2 . . 1 3 5 7 9 11 13 15 . .",
+              "K|14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19 21 23"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:6",
+        "name": "Cima 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . . 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "B|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "C|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "D|. . 16 14 12 10 8 6 4 2 . . . . . . . . . .",
+              "E|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "F|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "G|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 . . .",
+              "H|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13",
+              "I|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13",
+              "J|. . 16 14 12 10 8 6 4 2 . . . 1 3 5 7 9 11 13",
+              "K|20 18 16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17 19"
+            ]
+          }
+        ]
+      },
+      {
+        "premiereScreenId": "5:7",
+        "name": "Cima 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Premiere's own seat page (premiere-cinemas.com/en/seats/<cinema>/<show>/<md>/<screen>); premiereScreenId is \"<cinema id>:<screen id>\".",
+        "sections": [
+          {
+            "name": "Standard",
+            "prices": {
+              "Standard": 300
+            },
+            "rows": [
+              "A|. . . . 8 6 4 2 . . . 1 3 5 7 . .",
+              "B|. . 12 10 8 6 4 2 . . . 1 3 5 7 . .",
+              "C|. . 12 10 8 6 4 2 . . . . . . . . .",
+              "D|. . 12 10 8 6 4 2 . . . 1 3 5 7 . .",
+              "E|. . 12 10 8 6 4 2 . . . 1 3 5 7 . .",
+              "F|. . 12 10 8 6 4 2 . . . 1 3 5 7 . .",
+              "G|. . 12 10 8 6 4 2 . . . 1 3 5 7 9 11",
+              "H|. . 12 10 8 6 4 2 . . . 1 3 5 7 9 11",
+              "I|. . 12 10 8 6 4 2 . . . 1 3 5 7 9 11",
+              "J|16 14 12 10 8 6 4 2 1 3 5 7 9 11 13 15 17"
             ]
           }
         ]
