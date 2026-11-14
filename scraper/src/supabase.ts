@@ -39,7 +39,13 @@ async function upsert(db: SupabaseClient, table: string, rows: object[], ignoreD
   }
 }
 
-export async function upload(db: SupabaseClient, results: ScrapeResult[], catalog: Catalog, runStartedAt: string) {
+/**
+ * Saves a run's films and shows. Returns how many upcoming shows it removed
+ * (gone from their source, or settled between sources), so the caller knows
+ * whether the app's catalog file needs rebuilding.
+ */
+export async function upload(db: SupabaseClient, results: ScrapeResult[], catalog: Catalog, runStartedAt: string): Promise<number> {
+  let removed = 0;
   const now = new Date().toISOString();
 
   await upsert(
@@ -149,13 +155,14 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
       true,
     );
 
-    const { error } = await db
+    const { error, count } = await db
       .from('showtimes')
-      .delete()
+      .delete({ count: 'exact' })
       .eq('source', r.source)
       .gt('starts_at', now)
       .lt('last_seen_at', runStartedAt);
     if (error) throw new Error(`showtimes cleanup (${r.source}): ${error.message}`);
+    removed += count ?? 0;
 
     await db.from('scrape_runs').insert({
       source: r.source,
@@ -170,22 +177,24 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
 
   // A presale day that's now inside elCinema's week is elCinema's to list; the
   // presale copy goes, whichever sources this run had.
-  const { error: overlap } = await db
+  const { error: overlap, count: overlapping } = await db
     .from('showtimes')
-    .delete()
+    .delete({ count: 'exact' })
     .in('source', PRESALE_SOURCES)
     .like('cinema_id', 'elcinema:%')
     .lt('business_date', presaleFrom());
   if (overlap) throw new Error(`presale cleanup: ${overlap.message}`);
-  await reconcileSources(db);
+  removed += overlapping ?? 0;
+  removed += await reconcileSources(db);
 
   // Over shows are no use to the alerts.
   const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
   const { error } = await db.from('showtimes_seen').delete().lt('starts_at', dayAgo);
   if (error) throw new Error(`showtimes_seen cleanup: ${error.message}`);
+  return removed;
 }
 
-type Row = { id: string; source: string; movie_id: string; cinema_id: string; business_date: string; starts_at: string };
+export type Row = { id: string; source: string; movie_id: string; cinema_id: string; business_date: string; starts_at: string };
 
 /**
  * One copy of each show at elCinema's cinemas, from the source nearest the
@@ -200,7 +209,15 @@ type Row = { id: string; source: string; movie_id: string; cinema_id: string; bu
  *   - a show both Premiere's site and the booking page list keeps Premiere's
  *     copy (it runs in the cloud; the booking page only from a local machine).
  */
-export async function reconcileSources(db: SupabaseClient) {
+export async function reconcileSources(db: SupabaseClient): Promise<number> {
+  // In the database (20261114150000_reconcile_in_database.sql): nothing to
+  // download. Until that's run, the same rules here, on downloaded rows.
+  const { data: removed, error: rpcError } = await db.rpc('reconcile_sources');
+  if (!rpcError) return removed as number;
+  // PGRST202: no such function yet. Anything else is a real failure.
+  if (rpcError.code !== 'PGRST202') {
+    throw new Error(`reconcile sources: ${rpcError.message}`);
+  }
   const rows: Row[] = [];
   // Two weeks back too: a film whose last booked day has passed (The Odyssey
   // replaced at IMAX) must not get elCinema's stale later days back.
@@ -218,8 +235,18 @@ export async function reconcileSources(db: SupabaseClient) {
     rows.push(...(data as Row[]));
     if (data.length < 1000) break;
   }
+  const drop = reconcileDrops(rows, Date.now());
+  for (let i = 0; i < drop.length; i += 200) {
+    const { error } = await db.from('showtimes').delete().in('id', drop.slice(i, i + 200));
+    if (error) throw new Error(`reconcile sources: ${error.message}`);
+  }
+  return drop.length;
+}
+
+/** The ids reconcileSources removes from [rows] (the last two weeks' shows at elCinema's cinemas). */
+export function reconcileDrops(rows: Row[], now: number): string[] {
   const of = (source: string, upcoming = true) =>
-    rows.filter((r) => r.source === source && (!upcoming || Date.parse(r.starts_at) > Date.now()));
+    rows.filter((r) => r.source === source && (!upcoming || Date.parse(r.starts_at) > now));
   const show = (r: Row) => `${r.movie_id}|${r.cinema_id}|${Date.parse(r.starts_at)}`;
   const bookingDays = new Set(of('elcinema-presales').map((r) => `${r.cinema_id}|${r.business_date}`));
   const bookingFilms = new Set(of('elcinema-presales', false).map((r) => `${r.movie_id}|${r.cinema_id}`));
@@ -234,11 +261,7 @@ export async function reconcileSources(db: SupabaseClient) {
     ),
     ...of('elcinema-presales').filter((r) => premiere.has(show(r))),
   ].map((r) => r.id);
-  for (let i = 0; i < drop.length; i += 200) {
-    const { error } = await db.from('showtimes').delete().in('id', drop.slice(i, i + 200));
-    if (error) throw new Error(`reconcile sources: ${error.message}`);
-  }
-  return drop.length;
+  return [...new Set(drop)];
 }
 
 /**

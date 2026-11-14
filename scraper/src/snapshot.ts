@@ -1,7 +1,8 @@
 // The whole catalog the app shows, as one file on Supabase Storage's CDN:
 // the app opens with one download instead of a page of cinemas, one of
-// movies and a dozen pages of showtimes from the database. Written after
-// every sync; the app falls back to the database when it's missing or old
+// movies and a dozen pages of showtimes from the database. Rewritten after a
+// sync that changed something, and at least hourly; the app falls back to the
+// database when it's missing or old
 // (app/lib/data/supabase_repository.dart). Same rows and columns as the
 // app's own queries, so one parser reads both.
 
@@ -151,4 +152,57 @@ export async function publishSnapshot(db: SupabaseClient): Promise<number> {
   });
   if (error) throw new Error(`upload snapshot: ${error.message}`);
   return body.length;
+}
+
+/** scrape_runs' source for each published snapshot: when it was last built. */
+const SNAPSHOT_MARK = 'snapshot';
+
+/**
+ * Rebuilt at least this often even with nothing new, so shows that have
+ * started drop out of the file and it never looks stale to the app (which
+ * trusts it for 90 minutes).
+ */
+const SNAPSHOT_MAX_AGE_MS = 50 * 60_000;
+
+/**
+ * Why the catalog file needs rebuilding now, or null when it's up to date.
+ * Rebuilding reads every upcoming show from the database, so it isn't done
+ * after the many runs that change nothing (a VOX check every ten minutes).
+ * Each check here is a count, with no rows downloaded.
+ */
+export async function snapshotDue(db: SupabaseClient, removedShows: number): Promise<string | null> {
+  if (removedShows > 0) return `${removedShows} shows removed`;
+  const { data: last, error } = await db
+    .from('scrape_runs')
+    .select('started_at')
+    .eq('source', SNAPSHOT_MARK)
+    .order('started_at', { ascending: false })
+    .limit(1);
+  if (error) throw new Error(`last snapshot: ${error.message}`);
+  const at = last?.[0]?.started_at as string | undefined;
+  if (!at) return 'no snapshot yet';
+  if (Date.now() - Date.parse(at) > SNAPSHOT_MAX_AGE_MS) return 'hourly refresh';
+  const since = new Date(at).toISOString();
+  const count = async (table: string, filter: (q: any) => any) => {
+    const { count: n, error: e } = await filter(db.from(table).select('id', { count: 'exact', head: true }));
+    if (e) throw new Error(`${table} since last snapshot: ${e.message}`);
+    return n ?? 0;
+  };
+  // A new row: a new show, or one that came back under a new id.
+  const added = await count('showtimes', (q) => q.gte('first_seen_at', since));
+  if (added) return `${added} new shows`;
+  const sent = await count('notification_log', (q) => q.eq('outcome', 'sent').gte('run_at', since));
+  if (sent) return 'new notifications';
+  return null;
+}
+
+/** Notes a published snapshot, built from what the database held at [startedAt]. */
+export async function recordSnapshot(db: SupabaseClient, startedAt: string, bytes: number) {
+  const { error } = await db.from('scrape_runs').insert({
+    source: SNAPSHOT_MARK,
+    started_at: startedAt,
+    ok: true,
+    warnings: [`${bytes} bytes`],
+  });
+  if (error) throw new Error(`record snapshot: ${error.message}`);
 }

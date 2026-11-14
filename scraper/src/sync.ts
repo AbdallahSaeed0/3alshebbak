@@ -9,7 +9,7 @@ import { placeCinemas } from './locations.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
-import { publishSnapshot } from './snapshot.js';
+import { publishSnapshot, recordSnapshot, snapshotDue } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
 import { weeklyRoundup } from './weekly.js';
 
@@ -56,18 +56,33 @@ async function main() {
     console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set: wrote out/catalog.json only (dry run)');
     return;
   }
-  await upload(db, results, catalog, runStartedAt);
+  const removed = await upload(db, results, catalog, runStartedAt);
   const showtimes = results.reduce((n, r) => n + r.showtimes.length, 0);
   console.log(`✓ supabase: ${results.map((r) => r.source).join(', ')} — ${showtimes} showtimes`);
-  // Best effort: without it the app reads the database directly, as before.
   try {
+    await notifyDrops(db, runStartedAt);
+  } finally {
+    // After the alerts, so a tapped notification finds its shows in the file.
+    await refreshSnapshot(db, removed);
+  }
+  await weeklyRoundup(db);
+}
+
+/**
+ * Rebuilds the app's catalog file when something in it changed. Best effort:
+ * without it the app reads the database directly, as before.
+ */
+async function refreshSnapshot(db: NonNullable<ReturnType<typeof supabaseFromEnv>>, removed: number) {
+  try {
+    const why = await snapshotDue(db, removed);
+    if (!why) return console.log('  snapshot: nothing new, kept');
+    const startedAt = new Date().toISOString();
     const bytes = await publishSnapshot(db);
-    console.log(`✓ snapshot: ${(bytes / 1e6).toFixed(1)} MB`);
+    await recordSnapshot(db, startedAt, bytes);
+    console.log(`✓ snapshot: ${(bytes / 1e6).toFixed(1)} MB (${why})`);
   } catch (e) {
     console.log(`  ! snapshot not published: ${errorMessage(e)}`);
   }
-  await notifyDrops(db, runStartedAt);
-  await weeklyRoundup(db);
 }
 
 main().catch((e) => {
