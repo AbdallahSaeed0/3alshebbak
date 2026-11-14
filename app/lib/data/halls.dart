@@ -39,12 +39,21 @@ class Hall {
     required this.depths,
     required this.rowNames,
     required this.prices,
+    this.hallIds = const {},
+    this.freeSeating = false,
   }) : geometry = HallGeometry.forFormats(formats);
 
   final String cinemaId;
   final String name;
   final List<String> formats;
   final List<Seat> seats;
+
+  /// The ids a show's [Showtime.hall] can carry for this hall
+  /// (`elcinema:<screen id>`); one hall can be sold as two screens.
+  final Set<String> hallIds;
+
+  /// Tickets carry no seat (Zawya): the plan still shows where to sit.
+  final bool freeSeating;
 
   /// Grid size: the widest row's cells, and rows front to back.
   final int columns;
@@ -78,6 +87,10 @@ class Hall {
         }
       }
     }
+    final screenIds = {
+      if (j['elcinemaScreenId'] case final String id) id,
+      ...((j['elcinemaScreenIds'] as List?) ?? const []).cast<String>(),
+    };
     return Hall(
       cinemaId: cinemaId,
       name: j['name'] as String,
@@ -87,6 +100,8 @@ class Hall {
       depths: rowNames.length,
       rowNames: rowNames,
       prices: prices,
+      hallIds: {for (final id in screenIds) 'elcinema:$id'},
+      freeSeating: j['freeSeating'] == true,
     );
   }
 
@@ -295,13 +310,35 @@ class Halls {
   /// The hall a show is in, when the format says which: a cinema's IMAX or
   /// MX4D hall is the only one of its kind. Shows in a cinema's ordinary
   /// halls could be in any of them, so they get none.
+  ///
+  /// A format is matched part by part ("MX4D · 4DX" → MX4D, 4DX), whole, and
+  /// with 2D/3D set aside ("IMAX 3D" → IMAX): so a MAX hall gets "MAX" shows
+  /// but not "IMAX" or "MAX VIP" ones.
+  ///
+  /// A show that names its hall ([Showtime.hall], from elCinema's booking
+  /// lookup) gets that hall, or none when its plan isn't recorded: the format
+  /// can't tell a cinema's numbered halls apart.
   Hall? forShowtime(Showtime s) {
     final halls = _byCinema[s.cinemaId];
     if (halls == null) return null;
-    final format = s.format.toUpperCase();
+    if (s.hall case final hall?) {
+      for (final h in halls) {
+        if (h.hallIds.contains(hall)) return h;
+      }
+      return null;
+    }
+    final parts = formatParts(s.format);
     for (final h in halls) {
-      if (h.formats.any((f) => format.contains(f.toUpperCase()))) return h;
+      if (h.formats.any((f) => parts.contains(f.toUpperCase()))) return h;
     }
     return null;
   }
+
+  @visibleForTesting
+  static Set<String> formatParts(String format) => {
+    for (final p in format.toUpperCase().split(RegExp(r'[·|/,]')))
+      if (p.replaceAll(RegExp(r'\b[23]D\b'), '').trim() case final part
+          when part.isNotEmpty)
+        part.replaceAll(RegExp(r'\s+'), ' '),
+  };
 }

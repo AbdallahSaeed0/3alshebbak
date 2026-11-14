@@ -75,6 +75,12 @@ class PrivacyScreen extends StatelessWidget {
           ),
           _Para(
             tr(
+              'لو التطبيق وقع أو حصل فيه خطأ: بيتبعت تقرير عن الخطأ عن طريق Firebase Crashlytics من Google، فيه مكان الخطأ في الكود، وموديل الموبايل ونسخة النظام ونسخة التطبيق. مفيش اسم ولا حساب ولا مكان ولا إعداداتك. ده عشان نصلّح الأعطال بسرعة.',
+              "If the app crashes or hits an error: a report goes through Google's Firebase Crashlytics with where in the code it happened, the phone model, system version and app version. No name, account, location or settings. It's so we can fix problems quickly.",
+            ),
+          ),
+          _Para(
+            tr(
               'عشان إعداداتك ترجع لو مسحت التطبيق ونزّلته تاني على نفس الموبايل: بنحفظ على السيرفر السينمات اللي اخترتها، والأفلام اللي بتتابعها، واختيارات الإشعارات، واللغة والشكل، مربوطين برقم متشفّر بيتعمل على موبايلك ومالوش علاقة بيك ولا برقم تليفونك. مكانك عمره ما بيتحفظ.',
               'So your settings come back if you delete the app and install it again on the same phone: our server keeps the cinemas you picked, the films you follow, your alert choices, language and look, under a scrambled code made on your phone that isn\'t tied to you or your phone number. Your location is never kept.',
             ),

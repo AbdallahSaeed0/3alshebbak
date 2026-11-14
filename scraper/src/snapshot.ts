@@ -12,6 +12,8 @@ export const SNAPSHOT = 'catalog.json';
 
 const CINEMA_COLUMNS = 'id,chain,name,name_ar,city,area,url,attribution,lat,lng,location_approximate';
 const SHOWTIME_COLUMNS = 'cinema_id,movie_id,business_date,starts_at,format,booking_url,price_egp';
+/** The hall a show is in, where known (migration 20261114120000_showtime_hall.sql). */
+const SHOWTIME_HALL = ',hall';
 const PAGE = 1000;
 const NEWS_DAYS = 14;
 const NEWS_MAX = 3000;
@@ -83,6 +85,18 @@ async function all(db: SupabaseClient, query: () => any): Promise<unknown[]> {
   }
 }
 
+/** Upcoming shows, with their hall where the database has the column yet. */
+async function showtimeRows(db: SupabaseClient, since: string): Promise<unknown[]> {
+  const query = (columns: string) => () =>
+    db.from('showtimes').select(columns).gte('starts_at', since).order('starts_at').order('id');
+  try {
+    return await all(db, query(SHOWTIME_COLUMNS + SHOWTIME_HALL));
+  } catch (e) {
+    if (!/hall/.test(e instanceof Error ? e.message : String(e))) throw e;
+    return all(db, query(SHOWTIME_COLUMNS));
+  }
+}
+
 /** Builds the snapshot from the database and uploads it. Returns its size in bytes. */
 export async function publishSnapshot(db: SupabaseClient): Promise<number> {
   // Shows that ended an hour ago are of no use, as in the app's own query.
@@ -90,7 +104,7 @@ export async function publishSnapshot(db: SupabaseClient): Promise<number> {
   const [cinemas, movies, showtimes] = await Promise.all([
     all(db, () => db.from('cinemas').select(CINEMA_COLUMNS).order('id')),
     all(db, () => db.from('movies').select('*').order('id')),
-    all(db, () => db.from('showtimes').select(SHOWTIME_COLUMNS).gte('starts_at', since).order('starts_at').order('id')),
+    showtimeRows(db, since),
   ]);
   // Best effort: a snapshot without news still opens the app.
   let news: News[] = [];

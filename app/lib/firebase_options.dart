@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
-/// Firebase, used only for push notifications ("tickets are out").
+/// Firebase, for push notifications ("tickets are out") and crash reports
+/// (services/crash_reports.dart).
 ///
 /// Project `shebbak-app`, with an Android and an Apple app. On the web this is
 /// null and the app runs without push. iOS delivery goes through the APNs key
@@ -34,3 +35,13 @@ const _ios = FirebaseOptions(
   storageBucket: 'shebbak-app.firebasestorage.app',
   iosBundleId: 'com.shebbak.shebbak',
 );
+
+Future<FirebaseApp>? _firebase;
+
+/// Starts Firebase once, for whichever needs it first (push or crash
+/// reports). A failed start is tried again next call.
+Future<FirebaseApp> ensureFirebase() => _firebase ??=
+    Firebase.initializeApp(options: firebaseOptions).catchError((Object e) {
+      _firebase = null;
+      throw e;
+    });

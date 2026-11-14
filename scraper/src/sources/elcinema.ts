@@ -13,13 +13,124 @@
 // table of times and prices.
 
 import * as cheerio from 'cheerio';
-import { clean, errorMessage, fetchText, sleep } from '../http.js';
+import { clean, errorMessage, fetchText, sleep, USER_AGENT } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
 import { showStart } from '../time.js';
 
 const ORIGIN = 'https://elcinema.com';
 const PAUSE_MS = 1500;
 export const ATTRIBUTION = 'elCinema.com';
+
+/**
+ * Cinemas elCinema sells with several halls whose plans are recorded
+ * (data/halls.json): Sun City, Sun City VIP, Galaxy El Maadi, Grand Hurghada,
+ * El Tahrir, Zawya. For their shows the hall is asked from elCinema's booking
+ * lookup, the request its booking page makes when a time is picked: a read,
+ * no booking is started.
+ */
+const HALL_LOOKUP = new Set(['3101119', '3101257', '3101080', '3101334', '3101618', '3101183']);
+/** Schedule days that get the hall lookup: one request per show, so the near ones. */
+const HALL_LOOKUP_DAYS = 3;
+const LOOKUP_PAUSE_MS = 400;
+const LOOKUP_TIMEOUT_MS = 20_000;
+
+/**
+ * elCinema's booking lookup (POST /en/booking/ajax_dropdowns). Like any Rails
+ * form it wants the session cookie and CSRF token its booking page sets, so
+ * one booking page is read first.
+ */
+export class HallLookup {
+  private cookie = '';
+  private token = '';
+
+  private async session(ref: string) {
+    if (this.token) return;
+    const res = await fetch(ref, {
+      headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en' },
+      signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`booking page HTTP ${res.status}`);
+    this.cookie = res.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+    this.token = /name="csrf-token" content="([^"]+)"/.exec(await res.text())?.[1] ?? '';
+    if (!this.token) throw new Error('no CSRF token on the booking page (layout changed?)');
+  }
+
+  private async ask(ref: string, data: Record<string, string>): Promise<unknown> {
+    await this.session(ref);
+    const fields = { time: '0', screen_id: '0', category: '2d', source: '1', ...data };
+    const res = await fetch(`${ORIGIN}/en/booking/ajax_dropdowns`, {
+      method: 'POST',
+      headers: {
+        'User-Agent': USER_AGENT,
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': this.token,
+        Cookie: this.cookie,
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      },
+      body: new URLSearchParams(Object.entries(fields).map(([k, v]) => [`data[${k}]`, v])),
+      signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+    });
+    if (res.status === 422) {
+      this.token = ''; // a new session next time
+      throw new Error('elCinema booking lookup refused the session');
+    }
+    if (!res.ok) throw new Error(`elCinema booking lookup HTTP ${res.status}`);
+    return res.json();
+  }
+
+  /** Start time "HH:MM" → elCinema screen id, for one film at one theater on one day. */
+  async screens(workId: string, theaterId: string, date: string): Promise<Map<string, string>> {
+    const ref = `${ORIGIN}/en/booking/${workId}/${theaterId}/`;
+    const found = new Map<string, string>();
+    const times = await this.ask(ref, { work_id: workId, theater_id: theaterId, date, type: 'times' });
+    if (!Array.isArray(times)) return found;
+    for (const t of times as { value?: string; category?: string }[]) {
+      if (!t.value) continue;
+      await sleep(LOOKUP_PAUSE_MS);
+      const screens = await this.ask(ref, {
+        work_id: workId,
+        theater_id: theaterId,
+        date,
+        time: t.value,
+        category: t.category || '2d',
+        type: 'screens',
+      });
+      // Two screens for one show (Galaxy's VIP and VIPremium) are the same
+      // hall sold at two prices: the first names it.
+      const first = Array.isArray(screens) ? (screens[0] as { screen_id?: number } | undefined) : undefined;
+      if (first?.screen_id) found.set(t.value.slice(11, 16), String(first.screen_id));
+    }
+    return found;
+  }
+}
+
+/** Each show's hall at a HALL_LOOKUP theater for one day: "<work id>|HH:MM" → "elcinema:<screen id>". */
+async function hallsForDay(
+  out: ResultBuilder,
+  lookup: HallLookup,
+  $: cheerio.CheerioAPI,
+  theater: Theater,
+  date: string,
+): Promise<Map<string, string>> {
+  const halls = new Map<string, string>();
+  const works = new Set(
+    $(`a[href^="/en/booking/"]`)
+      .map((_, a) => new RegExp(`^/en/booking/(\\d+)/${theater.id}/`).exec($(a).attr('href') ?? '')?.[1])
+      .get()
+      .filter(Boolean) as string[],
+  );
+  for (const workId of works) {
+    try {
+      for (const [time, screen] of await lookup.screens(workId, theater.id, date)) {
+        halls.set(`${workId}|${time}`, `elcinema:${screen}`);
+      }
+    } catch (e) {
+      out.warn(`elCinema ${theater.id} hall lookup, work ${workId} on ${date}: ${errorMessage(e)}`);
+    }
+    await sleep(LOOKUP_PAUSE_MS);
+  }
+  return halls;
+}
 
 interface Theater {
   /** elCinema theater id. */
@@ -59,6 +170,7 @@ export const THEATERS: Theater[] = [
   // Galaxy
   { id: '3101080', chain: 'Galaxy', venue: 'Galaxy El Maadi', city: 'Cairo', area: 'Maadi' },
   { id: '3101576', chain: 'Galaxy', venue: 'Galaxy El Maadi', hall: 'Dine-in', city: 'Cairo', area: 'Maadi' },
+  { id: '3101411', chain: 'Galaxy', venue: 'Galaxy El Maadi', hall: 'VIP', city: 'Cairo', area: 'Maadi' },
   { id: '3101132', chain: 'Galaxy', venue: 'Galaxy Cineplex Mall of Arabia', city: 'Cairo', area: '6th of October' },
   { id: '3101077', chain: 'Galaxy', venue: 'Galaxy El Gezeera Plaza', city: 'Mansoura' },
   { id: '3101269', chain: 'Galaxy', venue: 'Galaxy Mall of University', city: 'Mansoura' },
@@ -132,7 +244,13 @@ export function elcinemaCinemaId(chain: string, venue: string): string | null {
   return THEATERS.some((t) => t.chain === chain && slugify(t.venue) === s) ? `elcinema:${s}` : null;
 }
 
-function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, theater: Theater, date: string) {
+function parseDay(
+  out: ResultBuilder,
+  $: cheerio.CheerioAPI,
+  theater: Theater,
+  date: string,
+  halls?: Map<string, string>,
+) {
   // The picker shows the day actually rendered; a date past the schedule falls back to today.
   const shown = $('#theater-showtimes-date-selector option[selected]').attr('value');
   if (shown && shown !== date) {
@@ -187,6 +305,8 @@ function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, theater: Theater, d
         format,
         bookingUrl,
         priceEgp: Number.isFinite(price) ? price : undefined,
+        // elCinema's times are the day's wall clock, after-midnight ones too
+        hall: halls?.get(`${workId}|${start.slice(11, 16)}`),
       });
     });
   });
@@ -196,6 +316,11 @@ export const elcinema: Source = {
   id: 'elcinema',
   async scrape() {
     const out = new ResultBuilder('elcinema');
+    const lookup = new HallLookup();
+    const halls = async ($: cheerio.CheerioAPI, theater: Theater, date: string, day: number) =>
+      HALL_LOOKUP.has(theater.id) && day < HALL_LOOKUP_DAYS
+        ? hallsForDay(out, lookup, $, theater, date)
+        : undefined;
     // Strictly one request at a time, with a pause: this is someone else's site.
     for (const theater of THEATERS) {
       try {
@@ -205,11 +330,12 @@ export const elcinema: Source = {
           out.warn(`elCinema ${theater.id} (${theater.venue}${theater.hall ? ` ${theater.hall}` : ''}): no date picker — nothing scheduled, or layout changed`);
           continue;
         }
-        parseDay(out, $today, theater, dates[0]);
-        for (const date of dates.slice(1)) {
+        parseDay(out, $today, theater, dates[0], await halls($today, theater, dates[0], 0));
+        for (const [i, date] of dates.slice(1).entries()) {
           await sleep(PAUSE_MS);
           try {
-            parseDay(out, cheerio.load(await fetchText(theaterUrl(theater.id, date))), theater, date);
+            const $day = cheerio.load(await fetchText(theaterUrl(theater.id, date)));
+            parseDay(out, $day, theater, date, await halls($day, theater, date, i + 1));
           } catch (e) {
             out.warn(errorMessage(e));
           }

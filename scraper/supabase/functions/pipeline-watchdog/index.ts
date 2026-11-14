@@ -41,10 +41,12 @@ Deno.serve(async (request: Request) => {
     if (!auth.ok) throw new Error(`Watchdog Firebase auth HTTP ${auth.status}`);
     const { access_token } = await auth.json();
     const labels: Record<string, string> = { dispatch: 'تشغيل الفحص', vox: 'VOX', renaissance: 'رينيسانس', scene: 'Scene', elcinema: 'elCinema', premiere: 'بريمير', alerts: 'الإشعارات', token_expiry: 'صلاحية مفتاح GitHub' };
+    // low:<source> — it ran, but with far fewer shows than usual.
+    const label = (p: string) => p.startsWith('low:') ? `${labels[p.slice(4)] ?? p.slice(4)} (حفلات أقل بكتير من العادي)` : labels[p] ?? p;
     const sent = await fetch(`https://fcm.googleapis.com/v1/projects/${account.project_id}/messages:send`, {
       method: 'POST', headers: { Authorization: `Bearer ${access_token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: { token: context.device_token,
-        notification: { title: 'عالشباك · محتاج مراجعة تحديث الداتا', body: `فيه تأخير أو مشكلة في: ${context.problems.map((p: string) => labels[p] ?? p).join('، ')}.` },
+        notification: { title: 'عالشباك · محتاج مراجعة تحديث الداتا', body: `فيه تأخير أو مشكلة في: ${context.problems.map(label).join('، ')}.` },
         data: { kind: 'pipeline_health' }, android: { priority: 'high' },
       } }), signal: AbortSignal.timeout(15_000),
     });

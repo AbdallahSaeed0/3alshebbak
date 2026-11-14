@@ -11,6 +11,7 @@ import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
 import { publishSnapshot } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
+import { weeklyRoundup } from './weekly.js';
 
 /** Older scrape output is skipped: re-uploading it would mark stale shows as seen now. */
 const MAX_AGE_MS = 2 * 3600_000;
@@ -66,6 +67,7 @@ async function main() {
     console.log(`  ! snapshot not published: ${errorMessage(e)}`);
   }
   await notifyDrops(db, runStartedAt);
+  await weeklyRoundup(db);
 }
 
 main().catch((e) => {

@@ -48,6 +48,12 @@ export interface Showtime {
   /** Deep link to this exact show on the chain's own site, when it has one. */
   bookingUrl?: string;
   priceEgp?: number;
+  /**
+   * The hall the show is in, when the source says: "elcinema:<screen id>"
+   * (elCinema's booking lookup). The app matches it to a recorded hall plan
+   * (data/halls.json, elcinemaScreenId).
+   */
+  hall?: string;
 }
 
 export interface ScrapeResult {

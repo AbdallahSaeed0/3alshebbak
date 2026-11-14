@@ -23,6 +23,7 @@ class Prefs extends ChangeNotifier {
     this._english,
     this._everyFilm,
     this._allCinemaAlerts,
+    this._weeklyRoundup,
   );
 
   /// In-memory only, for tests.
@@ -36,6 +37,7 @@ class Prefs extends ChangeNotifier {
     bool english = false,
     bool everyFilm = false,
     bool allCinemaAlerts = false,
+    bool weeklyRoundup = true,
   }) : _store = null,
        _cinemas = cinemas ?? {...defaultCinemas},
        _following = following ?? {},
@@ -45,7 +47,8 @@ class Prefs extends ChangeNotifier {
        _appearance = appearance,
        _english = english,
        _everyFilm = everyFilm,
-       _allCinemaAlerts = allCinemaAlerts;
+       _allCinemaAlerts = allCinemaAlerts,
+       _weeklyRoundup = weeklyRoundup;
 
   static const _cinemasKey = 'my_cinemas';
   static const _followingKey = 'following';
@@ -56,6 +59,7 @@ class Prefs extends ChangeNotifier {
   static const _englishKey = 'english';
   static const _everyFilmKey = 'alerts_every_film';
   static const _allCinemaAlertsKey = 'alerts_all_cinemas';
+  static const _weeklyRoundupKey = 'alerts_weekly';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -91,6 +95,7 @@ class Prefs extends ChangeNotifier {
       store.getBool(_englishKey) ?? false,
       store.getBool(_everyFilmKey) ?? false,
       store.getBool(_allCinemaAlertsKey) ?? false,
+      store.getBool(_weeklyRoundupKey) ?? true,
     );
   }
 
@@ -104,6 +109,7 @@ class Prefs extends ChangeNotifier {
   bool _english;
   bool _everyFilm;
   bool _allCinemaAlerts;
+  bool _weeklyRoundup;
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
@@ -125,6 +131,15 @@ class Prefs extends ChangeNotifier {
   void setAllCinemaAlerts(bool on) {
     _allCinemaAlerts = on;
     _store?.setBool(_allCinemaAlertsKey, on);
+    notifyListeners();
+  }
+
+  /// Wednesday's notification of the films new that week at my cinemas.
+  bool get weeklyRoundup => _weeklyRoundup;
+
+  void setWeeklyRoundup(bool on) {
+    _weeklyRoundup = on;
+    _store?.setBool(_weeklyRoundupKey, on);
     notifyListeners();
   }
 
@@ -201,6 +216,7 @@ class Prefs extends ChangeNotifier {
     'following': _following.toList()..sort(),
     'everyFilm': _everyFilm,
     'allCinemaAlerts': _allCinemaAlerts,
+    'weeklyRoundup': _weeklyRoundup,
     'homeCity': _homeCity,
     'appearance': _appearance.name,
     'english': _english,
@@ -218,6 +234,7 @@ class Prefs extends ChangeNotifier {
       ..addAll(list(b['following']));
     _everyFilm = b['everyFilm'] == true;
     _allCinemaAlerts = b['allCinemaAlerts'] == true;
+    _weeklyRoundup = b['weeklyRoundup'] != false;
     _homeCity = b['homeCity'] as String?;
     _appearance =
         Appearance.values.asNameMap()[b['appearance']] ?? Appearance.system;
@@ -229,6 +246,7 @@ class Prefs extends ChangeNotifier {
       s.setStringList(_followingKey, _following.toList());
       s.setBool(_everyFilmKey, _everyFilm);
       s.setBool(_allCinemaAlertsKey, _allCinemaAlerts);
+      s.setBool(_weeklyRoundupKey, _weeklyRoundup);
       _homeCity == null
           ? s.remove(_homeCityKey)
           : s.setString(_homeCityKey, _homeCity!);

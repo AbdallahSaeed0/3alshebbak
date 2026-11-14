@@ -413,6 +413,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                   onChanged: prefs.setAllCinemaAlerts,
                 ),
+              if (Push.available)
+                _Row(
+                  icon: Icons.event_repeat_outlined,
+                  title: tr('ملخص الأربع', 'Wednesday roundup'),
+                  detail: tr(
+                    'كل أربع: الأفلام الجديدة في سينماتك',
+                    "Every Wednesday: the week's new films at your cinemas",
+                  ),
+                  trailing: Switch(
+                    value: prefs.weeklyRoundup,
+                    onChanged: prefs.setWeeklyRoundup,
+                  ),
+                  onTap: () => prefs.setWeeklyRoundup(!prefs.weeklyRoundup),
+                ),
               if (Push.available &&
                   defaultTargetPlatform == TargetPlatform.android)
                 _Row(

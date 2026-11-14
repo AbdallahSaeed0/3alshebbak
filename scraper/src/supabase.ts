@@ -111,23 +111,28 @@ export async function upload(db: SupabaseClient, results: ScrapeResult[], catalo
   for (const r of results) {
     // `first_seen_at` is deliberately not sent: the column default sets it on
     // insert and an upsert leaves it alone after that.
-    await upsert(
-      db,
-      'showtimes',
-      r.showtimes.map((s) => ({
-        id: showtimeId(s.cinemaId, s.filmId, s.start, s.format),
-        source: r.source,
-        cinema_id: s.cinemaId,
-        movie_id: catalog.filmToMovie[s.filmId],
-        source_film_id: s.filmId,
-        business_date: s.businessDate,
-        starts_at: s.start,
-        format: s.format,
-        booking_url: s.bookingUrl ?? null,
-        price_egp: s.priceEgp ?? null,
-        last_seen_at: runStartedAt,
-      })),
-    );
+    const showtimeRows = r.showtimes.map((s) => ({
+      id: showtimeId(s.cinemaId, s.filmId, s.start, s.format),
+      source: r.source,
+      cinema_id: s.cinemaId,
+      movie_id: catalog.filmToMovie[s.filmId],
+      source_film_id: s.filmId,
+      business_date: s.businessDate,
+      starts_at: s.start,
+      format: s.format,
+      booking_url: s.bookingUrl ?? null,
+      price_egp: s.priceEgp ?? null,
+      hall: s.hall ?? null,
+      last_seen_at: runStartedAt,
+    }));
+    try {
+      await upsert(db, 'showtimes', showtimeRows);
+    } catch (e) {
+      // A database without the hall column yet (migration
+      // 20261114120000_showtime_hall.sql): save the shows without it.
+      if (!/hall/.test(errorMessage(e))) throw e;
+      await upsert(db, 'showtimes', showtimeRows.map(({ hall: _, ...row }) => row));
+    }
 
     // The alerts' memory (004_showtimes_seen.sql): insert-only, so a show that
     // drops out for a run and comes back keeps its first sighting.

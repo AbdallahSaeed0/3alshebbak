@@ -47,6 +47,20 @@ class _ShowtimeSheet extends StatelessWidget {
     final wall = showtime.wallClock;
     final until = showtime.startsAt.difference(data.now);
     final booking = showtime.bookingUrl;
+    // Start building the 3D hall now, so it opens at once from the button.
+    final seatHall = Halls.instance?.forShowtime(showtime);
+    if (seatHall != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          SeatViewPreload.warm(
+            context,
+            seatHall,
+            movie: movie,
+            bookingUrl: booking,
+          );
+        }
+      });
+    }
 
     Widget field(String label, String value) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,8 +225,12 @@ class _ShowtimeSheet extends StatelessWidget {
                         if (Halls.instance?.forShowtime(showtime)
                             case final hall?) ...[
                           OutlinedButton.icon(
-                            onPressed: () =>
-                                openSeatView(context, hall, movie: movie),
+                            onPressed: () => openSeatView(
+                              context,
+                              hall,
+                              movie: movie,
+                              bookingUrl: booking,
+                            ),
                             icon: const Icon(
                               Icons.event_seat_outlined,
                               size: 18,

@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -69,7 +68,7 @@ class Push implements FilmAlerts {
 
   Future<void> _start() async {
     try {
-      await Firebase.initializeApp(options: firebaseOptions);
+      await ensureFirebase();
       final messaging = FirebaseMessaging.instance;
       FirebaseMessaging.onMessageOpenedApp.listen(_opened);
       final initial = await messaging.getInitialMessage();
@@ -212,6 +211,8 @@ class Push implements FilmAlerts {
                 ...prefs.following,
                 if (prefs.everyFilm) '*',
                 if (prefs.allCinemaAlerts) '@all-cinemas',
+                // Wednesday's roundup is on unless turned off (weekly.ts).
+                if (!prefs.weeklyRoundup) '@no-weekly',
                 // Play installs update through Play, not GitHub's APK.
                 if (fromPlayStore) '@play',
               ],

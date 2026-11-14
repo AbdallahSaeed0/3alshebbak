@@ -257,6 +257,7 @@ class Showtime {
     required this.format,
     this.bookingUrl,
     this.priceEgp,
+    this.hall,
   });
 
   final String cinemaId;
@@ -276,6 +277,10 @@ class Showtime {
   final String? bookingUrl;
   final int? priceEgp;
 
+  /// The hall the show is in, when the source says ("elcinema:1290004"):
+  /// picks the exact hall plan for the seat view (data/halls.dart).
+  final String? hall;
+
   /// [start] is ISO 8601 with Cairo's offset, e.g. "2026-11-01T19:30:00+02:00".
   factory Showtime.fromJson(Map<String, dynamic> j, String movieId) {
     final start = j['start'] as String;
@@ -288,6 +293,7 @@ class Showtime {
       format: j['format'] as String,
       bookingUrl: j['bookingUrl'] as String?,
       priceEgp: j['priceEgp'] as int?,
+      hall: j['hall'] as String?,
     );
   }
 }

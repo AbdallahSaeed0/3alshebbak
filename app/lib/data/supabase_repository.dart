@@ -231,6 +231,9 @@ CatalogData _parse(List<String> bodies) {
           format: s['format'] as String,
           bookingUrl: s['booking_url'] as String?,
           priceEgp: s['price_egp'] as int?,
+          // In the snapshot once the database has the column; the app's own
+          // fallback query doesn't ask for it, so an older database still works.
+          hall: s['hall'] as String?,
         ),
       );
     }

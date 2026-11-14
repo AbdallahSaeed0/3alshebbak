@@ -5,7 +5,8 @@
 //   npm run users -- --days 60
 //
 // Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (scraper/.env), and
-// supabase/migrations/20261110090000_users_and_inbox.sql run once.
+// supabase/migrations/20261110090000_users_and_inbox.sql run once (and
+// 20261113121000_retention.sql for the "do they come back" table).
 import { supabaseFromEnv } from '../src/supabase.js';
 
 try { process.loadEnvFile(); } catch { /* CI may supply the environment. */ }
@@ -45,4 +46,20 @@ console.log(`فتحوه في آخر 30 يوم:              ${await installs(sin
 console.log('اليوم         يوزرز   أندرويد   آيفون');
 for (const d of daily ?? []) {
   console.log(`${d.day}   ${String(d.users).padStart(5)}   ${String(d.android).padStart(7)}   ${String(d.ios).padStart(5)}`);
+}
+
+// Do they come back? Installs by the week they first opened the app.
+const { data: cohorts, error: rErr } = await db.from('retention')
+  .select('cohort_week,new_installs,d1_pct,week1_pct,week2_pct').limit(8);
+if (rErr) {
+  console.log(`
+(retention: ${rErr.message} — run supabase/migrations/20261113121000_retention.sql)`);
+} else {
+  const pct = (v: number | null) => (v == null ? '…' : `${v}%`).padStart(9);
+  console.log('\nبيرجعوا؟ (حسب أسبوع أول فتح)');
+  console.log('الأسبوع       جداد   تاني يوم   أول أسبوع   تاني أسبوع');
+  for (const c of cohorts ?? []) {
+    console.log(`${c.cohort_week}   ${String(c.new_installs).padStart(4)}  ${pct(c.d1_pct)}  ${pct(c.week1_pct)}   ${pct(c.week2_pct)}`);
+  }
+  console.log('… = الأسبوع ده لسه مخلصش');
 }

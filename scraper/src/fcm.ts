@@ -5,7 +5,8 @@ import { createSign } from 'node:crypto';
 
 type ServiceAccount = { project_id: string; client_email: string; private_key: string };
 
-export type Push = { token: string; title: string; body: string; data?: Record<string, string> };
+/** ttlSeconds: how long FCM keeps it for an offline phone (default 4 weeks). */
+export type Push = { token: string; title: string; body: string; data?: Record<string, string>; ttlSeconds?: number };
 
 /** Thrown for a token FCM says is gone (app uninstalled, token rotated). */
 export class StaleToken extends Error {}
@@ -48,6 +49,7 @@ export class Fcm {
   }
 
   async send(push: Push): Promise<void> {
+    const ttl = push.ttlSeconds ?? 2419200;
     const res = await fetch(`https://fcm.googleapis.com/v1/projects/${this.account.project_id}/messages:send`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${await this.token()}`, 'Content-Type': 'application/json' },
@@ -56,11 +58,11 @@ export class Fcm {
           token: push.token,
           notification: { title: push.title, body: push.body },
           data: push.data ?? {},
-          // Kept by FCM for a phone that's offline (4 weeks, the most it
-          // allows), and delivered when it's back, even with the app closed.
-          android: { priority: 'high', ttl: '2419200s', notification: { notification_priority: 'PRIORITY_HIGH' } },
+          // Kept by FCM for a phone that's offline (4 weeks unless the push
+          // says less; the most it allows), and delivered when it's back, even with the app closed.
+          android: { priority: 'high', ttl: `${ttl}s`, notification: { notification_priority: 'PRIORITY_HIGH' } },
           // iPhones: deliver now (10), keep for 4 weeks, play the default sound.
-          apns: { headers: { 'apns-priority': '10', 'apns-expiration': String(Math.floor(Date.now() / 1000) + 2419200) }, payload: { aps: { sound: 'default' } } },
+          apns: { headers: { 'apns-priority': '10', 'apns-expiration': String(Math.floor(Date.now() / 1000) + ttl) }, payload: { aps: { sound: 'default' } } },
         },
       }),
     });

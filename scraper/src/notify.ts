@@ -496,7 +496,7 @@ const ARABIC_LETTERS = /[ء-ي]/;
 const OTHER_SCRIPT_LETTERS = /[پ-ۿ]/;
 
 /** As the app shows it (Movie.displayTitle): Arabic films by their Arabic title, foreign ones in English. */
-function displayTitle(m: { tmdb_id: number | null; title: string; title_ar: string | null; original_title: string | null }) {
+export function displayTitle(m: { tmdb_id: number | null; title: string; title_ar: string | null; original_title: string | null }) {
   const original = m.original_title ?? (m.tmdb_id == null ? (m.title_ar ?? '') : m.title);
   const arabic = ARABIC_LETTERS.test(original) && !OTHER_SCRIPT_LETTERS.test(original);
   return arabic ? (m.title_ar ?? m.original_title ?? m.title) : m.title;

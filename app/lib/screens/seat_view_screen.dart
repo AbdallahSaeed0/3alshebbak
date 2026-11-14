@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -12,13 +13,161 @@ import '../data/halls.dart';
 import '../data/models.dart';
 import '../theme.dart';
 import '../util/i18n.dart';
+import '../util/links.dart';
+import 'showtime_sheet.dart' show bookingSite;
 
-void openSeatView(BuildContext context, Hall hall, {Movie? movie}) =>
-    Navigator.of(context).push(
+void openSeatView(
+  BuildContext context,
+  Hall hall, {
+  Movie? movie,
+  String? bookingUrl,
+}) => Navigator.of(context)
+    .push(
       MaterialPageRoute<void>(
-        builder: (_) => SeatViewScreen(hall: hall, movie: movie),
+        builder: (_) =>
+            SeatViewScreen(hall: hall, movie: movie, bookingUrl: bookingUrl),
       ),
+    )
+    // back on the ticket: have the hall ready again for another look
+    .then((_) {
+      if (context.mounted) {
+        SeatViewPreload.warm(
+          context,
+          hall,
+          movie: movie,
+          bookingUrl: bookingUrl,
+        );
+      }
+    });
+
+/// The 3D hall, built in a hidden web view as soon as a show's ticket opens,
+/// so "pick your seat" opens on a hall that's already drawn instead of
+/// starting the web view, three.js and the shaders from scratch (~3 s on a
+/// phone). One at a time; one nobody opens is let go after a few minutes.
+class SeatViewPreload {
+  SeatViewPreload._(this._key);
+
+  static const page = 'assets/seatview/index.html';
+  static SeatViewPreload? _current;
+
+  static bool get supported =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
+  // No disableHorizontalScroll/disableVerticalScroll: on Android, with both
+  // set the plugin swallows every finger move, so the hall couldn't be
+  // dragged. The page doesn't scroll anyway (overflow hidden, touch-action
+  // none).
+  static InAppWebViewSettings settings() =>
+      InAppWebViewSettings(supportZoom: false, disallowOverScroll: true);
+
+  /// Drags move around the hall, not the page.
+  static final drags = <Factory<OneSequenceGestureRecognizer>>{
+    Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+  };
+
+  /// The page's messages: 'ready', 'failed', 'seat' (id), 'book' (id).
+  static void listen(
+    InAppWebViewController c,
+    void Function(String name, List<dynamic> args) on,
+  ) {
+    for (final name in const ['ready', 'failed', 'seat', 'book']) {
+      c.addJavaScriptHandler(
+        handlerName: name,
+        callback: (args) => on(name, args),
+      );
+    }
+  }
+
+  final String _key;
+  late final HeadlessInAppWebView web;
+  bool isReady = false;
+  bool _failed = false;
+  bool _taken = false;
+  Timer? _expiry;
+
+  /// The screen showing this page, once it has taken it.
+  void Function(String name, List<dynamic> args)? listener;
+
+  static String _keyFor(Hall hall, Movie? movie, String? bookingUrl) => [
+    hall.cinemaId,
+    hall.name,
+    movie?.backdropPath ?? movie?.posterPath,
+    bookingUrl,
+    Lang.english,
+  ].join('|');
+
+  /// Starts building [hall] in the background, unless it already is.
+  static void warm(
+    BuildContext context,
+    Hall hall, {
+    Movie? movie,
+    String? bookingUrl,
+  }) {
+    if (!supported) return;
+    final key = _keyFor(hall, movie, bookingUrl);
+    final current = _current;
+    if (current != null && current._key == key && !current._failed) {
+      current._expireLater();
+      return;
+    }
+    current?._release();
+    final mq = MediaQuery.of(context);
+    // the size the screen will have: below the app bar, above the system bar
+    final height =
+        (mq.size.height - mq.padding.top - kToolbarHeight - mq.padding.bottom) *
+        mq.devicePixelRatio;
+    final json = _SeatViewScreenState.hallJson(
+      hall,
+      movie: movie,
+      bookingUrl: bookingUrl,
+      start: hall.bestSeat,
     );
+    final p = SeatViewPreload._(key);
+    p.web = HeadlessInAppWebView(
+      initialFile: page,
+      initialSize: Size(-1, height),
+      initialSettings: settings(),
+      onWebViewCreated: (c) => listen(c, p._onPage),
+      onLoadStop: (c, _) => c.evaluateJavascript(source: 'setupHall($json)'),
+    );
+    _current = p;
+    p._expireLater();
+    p.web.run();
+  }
+
+  /// The page built for [hall], if there is one; the caller then owns it.
+  static SeatViewPreload? take(Hall hall, {Movie? movie, String? bookingUrl}) {
+    final p = _current;
+    if (p == null || p._failed || p._key != _keyFor(hall, movie, bookingUrl)) {
+      return null;
+    }
+    _current = null;
+    p._taken = true;
+    p._expiry?.cancel();
+    return p;
+  }
+
+  void _onPage(String name, List<dynamic> args) {
+    if (name == 'ready') isReady = true;
+    if (name == 'failed') _failed = true;
+    listener?.call(name, args);
+  }
+
+  void _expireLater() {
+    _expiry?.cancel();
+    _expiry = Timer(const Duration(minutes: 3), () {
+      if (identical(_current, this)) _current = null;
+      _release();
+    });
+  }
+
+  void _release() {
+    _expiry?.cancel();
+    if (!_taken) web.dispose();
+  }
+}
 
 /// How good a seat is, in three steps the map can show at a glance.
 enum _Tier { best, good, plain }
@@ -38,10 +187,15 @@ class SeatViewScreen extends StatefulWidget {
     this.movie,
     this.backdrop,
     this.seat,
+    this.bookingUrl,
   });
 
   final Hall hall;
   final Movie? movie;
+
+  /// The show's page on the booking site, for the "book" button. The site
+  /// can't be told the seat, so the person is reminded which one they chose.
+  final String? bookingUrl;
 
   /// The picture for the screen when it's already at hand (else the film's
   /// TMDB backdrop is fetched), and the seat to start in (else the best).
@@ -60,64 +214,207 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
   };
   late ui.Image? _backdrop = widget.backdrop;
 
-  /// The 3D hall (assets/seatview/index.html), on phones; the flat drawing
-  /// shows until it's ready, and instead of it elsewhere.
+  /// The 3D hall explorer (assets/seatview/index.html) fills the screen on
+  /// phones; the flat drawing below is for everywhere else, and for phones
+  /// whose web view can't draw 3D.
   static bool get _has3d =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
-  InAppWebViewController? _web;
   bool _ready = false;
+  bool _failed = false;
 
-  String get _imageUrl {
-    final path = widget.movie?.backdropPath ?? widget.movie?.posterPath;
-    return path == null ? '' : 'https://image.tmdb.org/t/p/w1280$path';
-  }
+  /// Set when the hall was already built in the background (from the show's
+  /// ticket): the screen shows that page instead of loading its own.
+  SeatViewPreload? _preload;
 
-  /// Everything the 3D page draws, worked out here so its numbers are the
-  /// same ones the ratings use.
-  String _hallJson() {
-    final h = widget.hall, g = h.geometry;
+  static (String, String) _rating(SeatView v) => switch (v.issue) {
+    null => (tr('مثالي', 'Ideal'), 'good'),
+    ViewIssue.close => (tr('قريب', 'Close'), 'ok'),
+    ViewIssue.aBitFar => (tr('بعيد شوية', 'A bit far'), 'ok'),
+    ViewIssue.tooClose => (tr('قريب أوي', 'Too close'), 'bad'),
+    ViewIssue.farBack => (tr('بعيد', 'Far back'), 'bad'),
+    ViewIssue.toTheSide => (tr('على الجنب', 'Side angle'), 'bad'),
+  };
+
+  /// Everything the 3D page draws, worked out here so its positions and
+  /// ratings are the same ones the rest of the app uses.
+  static String hallJson(
+    Hall h, {
+    Movie? movie,
+    String? bookingUrl,
+    required Seat start,
+  }) {
+    final g = h.geometry;
+    final booking = bookingUrl;
+    final path = movie?.backdropPath ?? movie?.posterPath;
     return jsonEncode({
+      'lang': Lang.english ? 'en' : 'ar',
+      'free': h.freeSeating,
+      'motion': h.formats.join(' ').toUpperCase().contains('4D'),
       'screen': {
         'w': g.screenWidth,
         'h': g.screenHeight,
         'bottom': g.screenBottom,
         'curve': g.curve,
       },
-      'width': h.columns * g.seatWidth,
-      'depth': h.seatZ(h.seats.last),
+      'columns': h.columns,
+      'depths': h.depths,
       'firstRow': g.firstRowDistance,
       'rowDepth': g.rowDepth,
       'rise': g.rise,
       'seatWidth': g.seatWidth,
-      'image': _imageUrl.isEmpty ? null : _imageUrl,
+      'image': path == null ? null : 'https://image.tmdb.org/t/p/w1280$path',
+      'best': h.seats.indexOf(h.bestSeat),
+      'start': h.seats.indexOf(start),
+      'text': {
+        'row': tr('صف', 'Row'),
+        'seat': tr('كرسي', 'Seat'),
+        'selected': h.freeSeating
+            ? tr('جلوس حر · مكان مقترح', 'Free seating · a suggested spot')
+            : tr('الكرسي اللي اخترته', 'Your seat'),
+        'yourView': tr('المنظر من كرسيك', 'Your view'),
+        'viewFrom': tr('شوف من هنا', 'View from seat'),
+        'overview': tr('القاعة كلها', 'Whole hall'),
+        'best': tr('أحسن كرسي', 'Best seat'),
+        'book': booking == null
+            ? null
+            : tr(
+                'احجز على موقع ${bookingSite(booking)}',
+                'Book on ${bookingSite(booking)}',
+              ),
+        'viewFromShort': tr('المنظر من', 'View from'),
+        'expand': tr('كبّر', 'Expand'),
+        'noGl': tr(
+          'العرض الـ3D مش شغال على الموبايل ده',
+          '3D view isn\'t available on this phone',
+        ),
+      },
       'seats': [
         for (final s in h.seats)
-          {
-            'id': s.label,
-            'x': h.seatX(s),
-            'y': h.floorY(s.depth),
-            'z': h.seatZ(s),
-            'd': s.depth,
-            't': _tiers[s]!.index,
-          },
+          () {
+            final (label, tone) = _rating(h.viewFrom(s));
+            return {
+              'id': s.label,
+              'row': s.row,
+              'num': s.number,
+              'c': s.col,
+              'd': s.depth,
+              'x': h.seatX(s),
+              'y': h.floorY(s.depth),
+              'z': h.seatZ(s),
+              'r': label,
+              'k': tone,
+            };
+          }(),
       ],
     });
   }
 
-  void _sit3d() {
-    final h = widget.hall;
-    _web?.evaluateJavascript(
-      source:
-          'sit(${jsonEncode(_seat.label)}, ${h.seatX(_seat)}, ${h.eyeY(_seat)}, ${h.seatZ(_seat)})',
-    );
+  void _select(Seat s) => setState(() => _seat = s);
+
+  /// A message from the 3D page.
+  void _onPage(String name, List<dynamic> args) {
+    if (!mounted) return;
+    final s = _seatById(args.isEmpty ? null : args.first);
+    switch (name) {
+      case 'ready':
+        setState(() => _ready = true);
+      case 'failed':
+        setState(() => _failed = true);
+      case 'seat':
+        if (s != null) _seat = s;
+      case 'book':
+        _book(s ?? _seat);
+    }
   }
 
-  void _select(Seat s) {
-    setState(() => _seat = s);
-    _sit3d();
+  Seat? _seatById(Object? id) {
+    for (final s in widget.hall.seats) {
+      if (s.label == id) return s;
+    }
+    return null;
   }
+
+  /// Off to the booking site, with a reminder of the seat: the site can't be
+  /// told which one.
+  void _book(Seat s) {
+    final url = widget.bookingUrl;
+    if (url == null) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.hall.freeSeating
+                ? tr(
+                    'الجلوس حر: اقعد في صف ${s.row} أو جنبه',
+                    'Free seating: sit in row ${s.row} or near it',
+                  )
+                : tr(
+                    'اختار صف ${s.row} كرسي ${s.number} في صفحة الحجز',
+                    'Pick row ${s.row}, seat ${s.number} on the booking page',
+                  ),
+          ),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    openSite(url);
+  }
+
+  PreferredSizeWidget _appBar() => AppBar(
+    title: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(
+            tr('اختار كرسيك', 'Pick your seat'),
+            style: AppText.display(22),
+          ),
+        ),
+        const SizedBox(width: 8),
+        const BetaTag(),
+      ],
+    ),
+    backgroundColor: AppColors.background,
+  );
+
+  Widget _build3d() => Scaffold(
+    appBar: _appBar(),
+    backgroundColor: const Color(0xFF0B0A08),
+    // Clear of Android's navigation bar, so the buttons at the bottom of the
+    // page aren't under it.
+    body: SafeArea(
+      top: false,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          AnimatedOpacity(
+            opacity: _ready ? 1 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: _preload != null
+                ? InAppWebView(
+                    headlessWebView: _preload!.web,
+                    gestureRecognizers: SeatViewPreload.drags,
+                  )
+                : InAppWebView(
+                    initialFile: SeatViewPreload.page,
+                    initialSettings: SeatViewPreload.settings(),
+                    gestureRecognizers: SeatViewPreload.drags,
+                    onWebViewCreated: (c) =>
+                        SeatViewPreload.listen(c, (n, a) => _onPage(n, a)),
+                    onLoadStop: (c, _) => c.evaluateJavascript(
+                      source:
+                          'setupHall(${hallJson(widget.hall, movie: widget.movie, bookingUrl: widget.bookingUrl, start: _seat)})',
+                    ),
+                  ),
+          ),
+          if (!_ready)
+            const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ],
+      ),
+    ),
+  );
 
   ImageStream? _stream;
   ImageStreamListener? _listener;
@@ -125,6 +422,18 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
   @override
   void initState() {
     super.initState();
+    if (_has3d && widget.seat == null) {
+      _preload = SeatViewPreload.take(
+        widget.hall,
+        movie: widget.movie,
+        bookingUrl: widget.bookingUrl,
+      );
+      final p = _preload;
+      if (p != null) {
+        _ready = p.isReady;
+        p.listener = _onPage;
+      }
+    }
     final path = widget.movie?.backdropPath ?? widget.movie?.posterPath;
     if (_backdrop == null && path != null) {
       _stream = NetworkImage(
@@ -140,31 +449,19 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
   @override
   void dispose() {
     if (_listener != null) _stream?.removeListener(_listener!);
+    _preload?.listener = null;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_has3d && !_failed) return _build3d();
     final hall = widget.hall;
     final view = hall.viewFrom(_seat);
     final tier = _tierOf(view.score);
+    final booking = widget.bookingUrl;
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
-                style: AppText.display(22),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const BetaTag(),
-          ],
-        ),
-        backgroundColor: AppColors.background,
-      ),
+      appBar: _appBar(),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
         children: [
@@ -183,40 +480,6 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
                       painter: _ViewPainter(hall, _seat, _backdrop),
                     ),
                   ),
-                  if (_has3d)
-                    AnimatedOpacity(
-                      opacity: _ready ? 1 : 0,
-                      duration: const Duration(milliseconds: 400),
-                      child: InAppWebView(
-                        initialFile: 'assets/seatview/index.html',
-                        initialSettings: InAppWebViewSettings(
-                          transparentBackground: true,
-                          supportZoom: false,
-                          disableHorizontalScroll: true,
-                          disableVerticalScroll: true,
-                          disallowOverScroll: true,
-                        ),
-                        // Drags turn your head in the hall, not the page.
-                        gestureRecognizers: {
-                          Factory<OneSequenceGestureRecognizer>(
-                            () => EagerGestureRecognizer(),
-                          ),
-                        },
-                        onWebViewCreated: (c) {
-                          _web = c;
-                          c.addJavaScriptHandler(
-                            handlerName: 'ready',
-                            callback: (_) {
-                              _sit3d();
-                              if (mounted) setState(() => _ready = true);
-                            },
-                          );
-                        },
-                        onLoadStop: (c, _) => c.evaluateJavascript(
-                          source: 'setupHall(${_hallJson()})',
-                        ),
-                      ),
-                    ),
                   PositionedDirectional(
                     start: 12,
                     top: 12,
@@ -263,6 +526,25 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
           ),
           const SizedBox(height: 12),
           const _Legend(),
+          if (booking != null) ...[
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => _book(_seat),
+              icon: const Icon(Icons.open_in_new, size: 18),
+              label: Text(
+                tr(
+                  'احجز على موقع ${bookingSite(booking)}',
+                  'Book on ${bookingSite(booking)}',
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: AppColors.onGold,
+                minimumSize: const Size.fromHeight(52),
+                textStyle: AppText.body(16, weight: FontWeight.w700),
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
           Text(
             tr(

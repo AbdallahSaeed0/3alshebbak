@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Firebase is set up from Dart (lib/firebase_options.dart), without the
+     Crashlytics Gradle plugin, so builds carry no Crashlytics build id: tell
+     the SDK not to insist on one (it would stop the app at launch). Dart
+     errors are reported in full; only native stack traces lack symbols. -->
+<resources>
+    <bool name="com.crashlytics.RequireBuildId">false</bool>
+</resources>
