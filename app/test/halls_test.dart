@@ -53,7 +53,6 @@ void main() {
     for (final at in [almaza, moe, alex]) {
       expect(halls.forShowtime(_show('MAX VIP', at: at)), isNull, reason: at);
     }
-    expect(halls.forShowtime(_show('Gold', at: almaza)), isNull);
     // Almaza has one Kids hall in use; Mall of Egypt two different ones
     expect(halls.forShowtime(_show('Kids', at: almaza))!.seats.length, 69);
     expect(halls.forShowtime(_show('Kids', at: moe)), isNull);
@@ -152,6 +151,40 @@ void main() {
     expect(vip.seats.length, 28);
     // without a hall, Banha's VIP stays unknown (two VIP halls)
     expect(halls.forShowtime(_show('VIP', at: 'renaissance:banha')), isNull);
+  });
+
+  test('VOX Gold: one plan for a cinema\'s Gold halls', () {
+    for (final cinema in [
+      'elcinema:city-centre-almaza',
+      'elcinema:mall-of-egypt',
+    ]) {
+      final gold = halls.forShowtime(_show('Gold', at: cinema))!;
+      expect(gold.name, 'GOLD');
+      expect(gold.rowNames.length, 5);
+    }
+    // Alexandria has no Gold hall
+    expect(
+      halls.forShowtime(_show('Gold', at: 'elcinema:city-centre-alexandria')),
+      isNull,
+    );
+    // a standard show still gets none: each cinema has many standard halls,
+    // recorded but not linked
+    for (final cinema in [
+      'elcinema:city-centre-almaza',
+      'elcinema:mall-of-egypt',
+      'elcinema:city-centre-alexandria',
+    ]) {
+      expect(halls.forShowtime(_show('Standard', at: cinema)), isNull);
+    }
+    final json =
+        jsonDecode(File('assets/halls/halls.json').readAsStringSync())
+            as Map<String, dynamic>;
+    int standard(String c) => ((json[c] as Map)['halls'] as List)
+        .where((h) => '${h['voxScreen']}'.startsWith('CINEMA '))
+        .length;
+    expect(standard('elcinema:city-centre-almaza'), 9);
+    expect(standard('elcinema:mall-of-egypt'), 13);
+    expect(standard('elcinema:city-centre-alexandria'), 6);
   });
 
   test('Premiere: shows by hall id, special halls by format', () {
