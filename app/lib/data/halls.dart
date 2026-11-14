@@ -100,7 +100,12 @@ class Hall {
       depths: rowNames.length,
       rowNames: rowNames,
       prices: prices,
-      hallIds: {for (final id in screenIds) 'elcinema:$id'},
+      hallIds: {
+        for (final id in screenIds) 'elcinema:$id',
+        // short on shows, to keep the catalog file small (renaissance.ts)
+        if (j['rnsScreenId'] case final String id)
+          'rns:${id.substring(id.length - 6)}',
+      },
       freeSeating: j['freeSeating'] == true,
     );
   }

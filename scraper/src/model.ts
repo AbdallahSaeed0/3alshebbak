@@ -50,8 +50,9 @@ export interface Showtime {
   priceEgp?: number;
   /**
    * The hall the show is in, when the source says: "elcinema:<screen id>"
-   * (elCinema's booking lookup). The app matches it to a recorded hall plan
-   * (data/halls.json, elcinemaScreenId).
+   * (elCinema's booking lookup) or "rns:<last 6 of screen id>" (Renaissance's
+   * booking data). The app matches it to a recorded hall plan
+   * (data/halls.json, elcinemaScreenId / rnsScreenId).
    */
   hall?: string;
 }

@@ -1,5 +1,5 @@
 {
-  "_about": "Hall layouts, read once per hall from the seat map the cinema shows during booking (a person went as far as the seat page; no seat was picked): elCinema's for Premiere halls, VOX's own (egy.voxcinemas.com, as a guest) for VOX halls, Scene's own (<venue>.scenecinemas.com; its plan is drawn turned 180°, recorded as shown) for Scene halls, Renaissance's own (rnscinemas.com/en/booking/<id>) for Renaissance halls; for elCinema-sold cinemas also elCinema's hall lookup (booking/ajax_dropdowns, type screens), which returns each hall's seat plan without any booking. Rows run from the screen backwards (VOX letters its rows from the back, so its A is last). Each row lists its cells left to right as you face the screen: a seat number, or '.' for a gap or aisle; a row of only '.' is a gap between rows. A hall with no formats is recorded but not matched to shows; formats match a show's format part by part, whole words (see Halls.forShowtime). Prices are what the hall showed when recorded.",
+  "_about": "Hall layouts, read once per hall from the seat map the cinema shows during booking (a person went as far as the seat page; no seat was picked): elCinema's for Premiere halls, VOX's own (egy.voxcinemas.com, as a guest) for VOX halls, Scene's own (<venue>.scenecinemas.com; its plan is drawn turned 180°, recorded as shown) for Scene halls, Renaissance's own booking page data (rnscinemas.com/en/start_booking/<id>, matched by screen id) for Renaissance halls; for elCinema-sold cinemas also elCinema's hall lookup (booking/ajax_dropdowns, type screens), which returns each hall's seat plan without any booking. Rows run from the screen backwards (VOX letters its rows from the back, so its A is last). Each row lists its cells left to right as you face the screen: a seat number, or '.' for a gap or aisle; a row of only '.' is a gap between rows. A hall with no formats is recorded but not matched to shows; formats match a show's format part by part, whole words (see Halls.forShowtime). Prices are what the hall showed when recorded.",
   "elcinema:americana-plaza": {
     "venue": "Premiere Americana Plaza",
     "halls": [
@@ -414,87 +414,6 @@
               "HH|. 25 24 23 22 21 . . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . 31 32 33 34 35 .",
               "II|26 25 24 23 22 21 . . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . 31 32 33 34 35 36",
               "JJ|26 25 24 23 22 21 . . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . 31 32 33 34 35 36"
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "renaissance:banha": {
-    "venue": "Renaissance Nile View Banha",
-    "halls": [
-      {
-        "name": "VIP (seat 1 on the right)",
-        "formats": [],
-        "rnsBooking": "6af4765fea6f0000530093fd",
-        "recordedAt": "2026-11-14",
-        "_note": "Banha has two VIP halls of 28 seats, mirror images (seat 1 on the right in one, on the left in the other), showing different films at the same times; a showtime doesn't say which, so neither is matched to shows.",
-        "sections": [
-          {
-            "name": "VIP",
-            "prices": {},
-            "rows": [
-              "D|7 . 6 5 4 3 2 1",
-              "|. . . . . . . .",
-              "C|7 . 6 5 4 3 2 1",
-              "|. . . . . . . .",
-              "B|7 . 6 5 4 3 2 1",
-              "|. . . . . . . .",
-              "A|7 . 6 5 4 3 2 1"
-            ]
-          }
-        ]
-      },
-      {
-        "name": "VIP (seat 1 on the left)",
-        "formats": [],
-        "rnsBooking": "6af0b9d8ea6f000053008972",
-        "recordedAt": "2026-11-14",
-        "_note": "Banha has two VIP halls of 28 seats, mirror images (seat 1 on the right in one, on the left in the other), showing different films at the same times; a showtime doesn't say which, so neither is matched to shows.",
-        "sections": [
-          {
-            "name": "VIP",
-            "prices": {},
-            "rows": [
-              "D|. 1 2 3 4 5 6 7",
-              "|. . . . . . . .",
-              "C|. 1 2 3 4 5 6 7",
-              "|. . . . . . . .",
-              "B|. 1 2 3 4 5 6 7",
-              "|. . . . . . . .",
-              "A|. 1 2 3 4 5 6 7"
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "renaissance:madinty": {
-    "venue": "Renaissance Madinaty",
-    "halls": [
-      {
-        "name": "VIP",
-        "formats": [
-          "VIP"
-        ],
-        "rnsBooking": "6af21356256f0000f100b5e8",
-        "recordedAt": "2026-11-14",
-        "checkedThrough": "2026-11-17",
-        "_note": "Every VIP show 15-17 Nov 2026 ran back to back in this one hall (checked on the 15th and 17th); re-check if VIP shows start overlapping.",
-        "sections": [
-          {
-            "name": "VIP",
-            "prices": {},
-            "rows": [
-              "A|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
-              "|. . . . . . . . . . . . . .",
-              "B|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
-              "|. . . . . . . . . . . . . .",
-              "C|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
-              "|. . . . . . . . . . . . . .",
-              "D|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
-              "|. . . . . . . . . . . . . .",
-              "E|. 12 11 10 9 8 7 6 5 4 3 2 1 ."
             ]
           }
         ]
@@ -1344,6 +1263,1522 @@
               "F|1 2 3 4 5 6 . . 7 8 9 10",
               "G|1 2 3 4 5 6 . . 7 8 9 10",
               "H|1 2 3 4 5 . . . 6 7 . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:al-masrya-plaza-agazig": {
+    "venue": "Renaissance Al Masrya Plaza (Zagazig)",
+    "halls": [
+      {
+        "rnsScreenId": "67b46b29b76f775a420e8d4c",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "M|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "K|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "I|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "G|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "E|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "D|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "C|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "B|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "A|. 1 2 . 3 4 5 6 7 8 9 10 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "67b46b3bb76f775a420e8d4d",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "M|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "K|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "I|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "G|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "E|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "D|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "C|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "B|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "A|. 1 2 . 3 4 5 6 7 8 9 10 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "67b46b1a1a34b2f7fc0398a4",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "M|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "K|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "I|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "G|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "E|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "D|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "C|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "B|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "A|. 1 2 . 3 4 5 6 7 8 9 10 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "67b46b0aae3681d98c01ea78",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "M|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "K|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "I|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "G|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "E|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "D|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "C|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "B|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "A|. 1 2 . 3 4 5 6 7 8 9 10 ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:al_rehab": {
+    "venue": "Renaissance Al Rehab",
+    "halls": [
+      {
+        "rnsScreenId": "623c37dcdd97f616977fdc72",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "L|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "K|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "J|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "I|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "H|. . 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "G|. . 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "F|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "E|. 23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "D|. . 21 20 19 18 . . 17 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 . .",
+              "C|. . 21 20 19 18 . . 17 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 . .",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "B|. . . . 11 10 . . . . . 9 8 7 6 5 4 3 . . . . . 2 1 . . . .",
+              "A|. . . . 11 10 . . . . . 9 8 7 6 5 4 3 . . . . . 2 1 . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c3a496b2cb35fdc7b6d22",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "H|. 21 20 19 18 . . 17 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 .",
+              "G|21 20 19 18 17 . . . 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 .",
+              "F|23 22 21 20 19 . . 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "E|. 20 19 18 17 . . . 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 .",
+              "D|. 21 20 19 18 . . 17 16 15 14 13 12 11 10 9 8 7 6 5 . . 4 3 2 1 .",
+              "C|10 9 8 7 6 . . . . . . . . . . . . . . . . . 5 4 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "B|. 20 19 18 17 . . 16 15 14 13 12 11 10 9 8 7 6 5 . . . 4 3 2 1 .",
+              "A|. . 16 15 14 . . . 13 12 11 10 9 8 7 6 5 4 . . . . 3 2 1 . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:banha": {
+    "venue": "Renaissance Nile View Banha",
+    "halls": [
+      {
+        "rnsScreenId": "65f04bedb889a6036f21c092",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "D|. 1 2 3 4 5 6 7",
+              "|. . . . . . . .",
+              "C|. 1 2 3 4 5 6 7",
+              "|. . . . . . . .",
+              "B|. 1 2 3 4 5 6 7",
+              "|. . . . . . . .",
+              "A|. 1 2 3 4 5 6 7"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "65f04c3461d2224f0478e352",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "|. . . . . . . . . . .",
+              "G|1 2 3 4 5 6 7 8 9 10 .",
+              "F|1 2 3 4 5 6 7 8 9 10 11",
+              "E|1 2 3 4 5 6 7 8 9 10 11",
+              "D|1 2 3 4 5 6 7 8 9 10 11",
+              "C|1 2 3 4 5 6 7 8 9 10 11",
+              "B|1 2 3 4 5 6 7 8 9 10 11",
+              "A|1 2 3 4 5 6 7 8 9 10 11"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6616c787e03ebc8d98017382",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "|. . . . . . . . . . .",
+              "G|1 2 3 4 5 6 7 8 9 10 .",
+              "F|1 2 3 4 5 6 7 8 9 10 11",
+              "E|1 2 3 4 5 6 7 8 9 10 11",
+              "D|1 2 3 4 5 6 7 8 9 10 11",
+              "C|1 2 3 4 5 6 7 8 9 10 11",
+              "B|1 2 3 4 5 6 7 8 9 10 11",
+              "A|1 2 3 4 5 6 7 8 9 10 11"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "65f04c1416719e20ab271673",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "F|1 2 3 4 5 6 . . 7 8 9 10 11 12",
+              "E|1 2 3 4 5 6 . . 7 8 9 10 11 12",
+              "D|1 2 3 4 5 6 . . 7 8 9 10 11 12",
+              "|. . . . . . . . . . . . . .",
+              "C|. . . 1 2 3 . . 4 5 6 7 . .",
+              "B|. . . 1 2 3 . . 4 5 6 7 . .",
+              "A|. . . 1 2 3 4 5 6 7 8 9 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "65f04c0916719e20ab271672",
+        "name": "VIP",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "D|7 6 5 4 3 2 1 .",
+              "|. . . . . . . .",
+              "C|7 6 5 4 3 2 1 .",
+              "|. . . . . . . .",
+              "B|7 6 5 4 3 2 1 .",
+              "|. . . . . . . .",
+              "A|7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "65f04c2716719e20ab271675",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "F|11 10 9 8 7 6 . . 5 4 3 2 1",
+              "E|11 10 9 8 7 6 . . 5 4 3 2 1",
+              "D|11 10 9 8 7 6 . . 5 4 3 2 1",
+              "C|11 10 9 8 7 6 . . 5 4 3 2 1",
+              "B|11 10 9 8 7 6 . . 5 4 3 2 1",
+              "A|6 5 4 3 2 1 . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "65f04c1d16719e20ab271674",
+        "name": "Hall 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "F|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "E|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "D|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "|. . . . . . . . . . . . . .",
+              "C|. . . 7 6 5 . . 4 3 2 1 . .",
+              "B|. . . 7 6 5 . . 4 3 2 1 . .",
+              "A|. . . 9 8 7 6 5 4 3 2 1 . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:dandy_mall": {
+    "venue": "Renaissance Dandy Mall",
+    "halls": [
+      {
+        "rnsScreenId": "623c30c59fe2a164e14e9982",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "B|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "C|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "D|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "E|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "F|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "G|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "H|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "I|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "J|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "K|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "L|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . . . .",
+              "M|. . 13 12 . . 11 10 9 8 7 6 5 4 3 . . . 2 1 . .",
+              "N|. . . 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c31047b73bf5a0d4c6792",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "B|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "C|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "D|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "E|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "F|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "G|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "H|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "I|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "J|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "K|. . . . . 12 11 10 9 8 7 6 5 4 3 2 1 . . . . .",
+              "L|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "M|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "N|18 17 16 . . 15 14 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "O|22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c2c8a0ebb941cde4041d2",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "B|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "C|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "D|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "E|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "F|6 5 4 . . . . . . . . . . . . . . 3 2 1",
+              "G|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "H|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "I|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "J|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "K|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "L|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "M|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "N|20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c2e2938c7905fa61dadc2",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "B|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "C|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "D|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "E|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "F|6 5 4 . . . . . . . . . . . . . . 3 2 1",
+              "G|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "H|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "I|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "J|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "K|12 11 10 . . 9 8 7 . . . . 6 5 4 . . 3 2 1",
+              "L|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "M|16 15 14 . . 13 12 11 10 9 8 7 6 5 4 . . 3 2 1",
+              "N|19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "61fa9ad230bf2c50a629d392",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|25 24 23 22 21 . . 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "B|25 24 23 22 21 . . 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "C|25 24 23 22 21 . . 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "D|25 24 23 22 21 . . 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "E|25 24 23 22 21 . . 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "F|23 22 21 20 . . . 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "G|12 11 10 9 8 7 . . . . . . . . . . . . . . . . . 6 5 4 3 2 1",
+              "H|22 21 20 19 18 17 . 16 15 14 13 12 . . . . . 11 10 9 8 7 . 6 5 4 3 2 1",
+              "I|22 21 20 19 18 17 . 16 15 14 13 12 . . . . . 11 10 9 8 7 . 6 5 4 3 2 1",
+              "J|22 21 20 19 18 17 . 16 15 14 13 12 . . . . . 11 10 9 8 7 . 6 5 4 3 2 1",
+              "K|27 26 25 24 23 22 . 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 . 6 5 4 3 2 1",
+              "L|27 26 25 24 23 22 . 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 . 6 5 4 3 2 1",
+              "M|27 26 25 24 23 22 . 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 . 6 5 4 3 2 1",
+              "N|27 26 25 24 23 22 . 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 . 6 5 4 3 2 1",
+              "O|27 26 25 24 23 22 . 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 . 6 5 4 3 2 1",
+              "P|29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:downtown": {
+    "venue": "Renaissance Downtown",
+    "halls": [
+      {
+        "rnsScreenId": "627aec5813677c23d1157ec2",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "M|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "L|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "K|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "J|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "I|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "H|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "G|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "F|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "E|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "D|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "C|1 2 3 4 5 6 . 7 8 9 10 11 12",
+              "B|. . . . . . . . 8 9 10 11 12",
+              "A|. . . . . . . . . 9 10 11 12"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "626cb8c6143c6b3f1a35dd32",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|1 2 3 4 5 . . . . . 10 11 12 13 14 15 16 17 18 19 . . . . . . 25 26 27 28 29",
+              "B|1 2 3 4 5 . . . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . . . 25 26 27 28 29",
+              "C|1 2 3 4 5 6 . . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . . 24 25 26 27 28 29",
+              "D|1 2 3 4 5 6 . . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "E|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "F|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "G|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "H|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "I|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "J|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "K|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "L|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "M|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "N|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "O|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "P|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "Q|1 2 3 4 5 6 7 . 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . 23 24 25 26 27 28 29",
+              "R|. . . . 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aec8bd0f9f954a576b8a2",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "M|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "L|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "K|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "J|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "I|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "H|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "G|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "F|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "E|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "D|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "C|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "B|1 2 3 4 5 6 7 8 9 . 10 11 12 13 14 15 16 17",
+              "A|1 2 3 4 5 6 7 8 9 . . . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aec6913677c23d1157ec3",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "O|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "N|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "M|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "L|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "K|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "J|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "I|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "H|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "G|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "F|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "E|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "D|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "C|1 2 3 4 5 6 . . . . . . . .",
+              "B|1 2 3 4 5 6 . 7 8 9 . . . .",
+              "A|1 2 3 4 5 6 . 7 8 9 . . . .",
+              "X|. . . . 1 2 3 5 6 7 . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aec7efc13c344a35715f2",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "O|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "N|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "M|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "L|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "K|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "J|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "I|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "H|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "G|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "F|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "E|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "D|1 2 3 4 5 6 . 7 8 9 10 11 12 .",
+              "C|1 2 3 4 5 6 . . . . . . . .",
+              "B|1 2 3 4 5 6 . 7 8 9 . . . .",
+              "A|1 2 3 4 5 6 . 7 8 9 . . . .",
+              "X|. . . . . 1 2 4 5 6 . . . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:madinty": {
+    "venue": "Renaissance Madinaty",
+    "halls": [
+      {
+        "rnsScreenId": "6242c658bb5d8e49242cfbe2",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|7 6 . 5 4 3 . 2 1 . .",
+              "B|7 6 . 5 4 3 . 2 1 . .",
+              "C|6 5 . 4 3 . . 2 1 . .",
+              "D|6 5 . 4 3 . . 2 1 . .",
+              "E|6 5 . 4 3 . . 2 1 . .",
+              "F|7 6 . 5 4 . . 3 2 1 .",
+              "G|8 7 . 6 5 . 4 3 . 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242d5a9790c5e019239f052",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "|. . . . . . . . . . . . .",
+              "A|. . . 6 5 . 4 3 . 2 1 . .",
+              "|. . . . . . . . . . . . .",
+              "B|. . . 6 5 . 4 3 . 2 1 . .",
+              "|. . . . . . . . . . . . .",
+              "C|. . . 6 5 . 4 3 . 2 1 . .",
+              "|. . . . . . . . . . . . .",
+              "D|. 8 7 . 6 5 . 4 3 . 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242ca29b5d5c264a5521912",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . .",
+              "F|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "G|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "H|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "I|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "J|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "K|. . . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "L|. 14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "M|. 14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . . . . .",
+              "N|. . 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242c375e657bb7c69352862",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "|. . . . . . . . . . . . . .",
+              "E|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "F|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "G|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "H|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "I|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "J|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "K|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "L|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242d21592104515f175aa62",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . . . .",
+              "F|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "G|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "H|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "I|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "J|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "K|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "L|14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "M|14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "N|17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242d3ceb309ee1fd0015502",
+        "name": "Hall 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "B|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "C|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "D|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "E|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "|. . . . . . . . . . . . . . . . . .",
+              "F|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "G|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "H|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "I|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "J|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "K|. . . . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "L|13 12 11 . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "M|13 12 11 . . 10 9 8 7 6 5 4 3 2 1 . . .",
+              "N|18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242c8e6ba0aac1ae925f472",
+        "name": "Hall 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "F|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "G|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "H|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "I|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "J|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "K|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "L|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "M|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "N|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242bff72e6fa605b0200d62",
+        "name": "Hall 8",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "|. . . . . . . . . . . . . . .",
+              "E|12 11 10 9 8 7 6 . . 5 4 . . . .",
+              "F|12 11 10 9 8 7 6 . . 5 4 . . . .",
+              "G|12 11 10 9 8 7 6 . . 5 4 . . . .",
+              "H|12 11 10 9 8 7 6 . . 5 4 . . . .",
+              "I|12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "J|12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "K|12 11 10 9 8 7 6 . . 5 4 3 2 1 .",
+              "L|15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242d736ea4d8a5c54722ba2",
+        "name": "VIP",
+        "formats": [
+          "VIP"
+        ],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "B|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "C|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "D|. 11 10 9 8 7 . 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "E|. 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242ceaf932bc165e0131a82",
+        "name": "Hall 9",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "F|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "G|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "H|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "I|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "J|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "K|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "L|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "M|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "N|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242c7813fecde76a00d5be2",
+        "name": "Hall 10",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1",
+              "B|. 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1",
+              "C|. 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1",
+              "D|. 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1",
+              "|. . . . . . . . . . . . . . . . .",
+              "E|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "F|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "G|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "H|. . . . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "I|14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "J|14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "K|14 13 12 . . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . . . .",
+              "L|. 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242cd93d2f38265217a7f12",
+        "name": "Hall 11",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "E|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "F|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "G|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "H|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "I|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "J|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "K|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "L|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "|. . . . . . . . . . . . . .",
+              "M|. 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242cbc44c94a667e232f662",
+        "name": "Hall 12",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "F|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "G|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "H|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "I|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "J|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "K|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "L|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "M|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "N|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242c55d91ade50f09137bc2",
+        "name": "Hall 13",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "E|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "F|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "G|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "H|12 11 10 9 8 7 6 . . 5 4 . . .",
+              "I|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "J|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "K|12 11 10 9 8 7 6 . . 5 4 3 2 1",
+              "L|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242cfac588cf95037024432",
+        "name": "Hall 14",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "F|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "G|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "H|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "I|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "J|. . . 9 8 . . 7 6 5 4 3 2 1",
+              "K|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "L|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "M|12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "N|14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:san_stephano": {
+    "venue": "Renaissance San Stefano",
+    "halls": [
+      {
+        "rnsScreenId": "6242bbcc47af4661ff079302",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "|. . . . . . . . . . . . . .",
+              "D|10 9 8 7 6 5 . . 4 3 . 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "C|10 9 8 7 6 5 . . 4 3 . 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "B|. . . . . . . . 4 3 . 2 1 .",
+              "|. . . . . . . . . . . . . .",
+              "A|. . . 9 8 7 . 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c3f6f0cb9ef0839301822",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 12 13 . .",
+              "M|1 2 3 4 5 6 7 8 9 10 11 12 13 14 . .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 12 13 . .",
+              "K|1 2 3 4 5 6 7 8 9 10 11 12 13 14 . .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 12 13 . .",
+              "I|1 2 3 4 5 6 7 8 9 10 11 12 13 14 . .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 12 13 . .",
+              "G|1 2 3 4 5 6 7 8 9 10 11 12 13 14 . .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 12 13 . .",
+              "E|1 2 3 4 5 6 7 8 9 10 11 12 13 14 . .",
+              "|. . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . .",
+              "D|. 1 2 3 4 5 6 . . . 7 8 9 10 11 .",
+              "C|. 1 2 3 4 5 6 . . . 7 8 9 10 11 .",
+              "B|. 1 2 3 4 5 6 . . . 7 8 9 10 11 .",
+              "A|. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "62421ef9250c6b505175a292",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "I|. 1 2 3 . . . 4 5 6 7 8 9 10 . . 11 12 13 . .",
+              "H|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "G|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "F|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "E|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "D|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "C|1 2 3 4 . . 5 6 7 8 9 10 11 12 . . 13 14 15 16 .",
+              "B|1 2 3 4 . . . 5 6 7 8 9 10 11 . . 12 13 14 15 .",
+              "A|. 1 2 3 . 4 5 6 7 8 9 10 11 12 13 . 14 15 16 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "623c420c53f1295a2a332f02",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "M|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "K|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "I|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "H|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "G|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "F|. 1 2 3 4 5 6 7 8 9 10 11 .",
+              "E|. . 1 2 3 4 5 6 7 8 9 10 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "D|. 1 2 3 4 5 6 . . 7 8 9 .",
+              "C|. 1 2 3 4 5 6 . . 7 8 9 .",
+              "B|. 1 2 3 4 5 6 . . 7 8 9 .",
+              "A|. 1 2 3 4 5 6 7 8 9 10 11 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "624221f88704e15585178062",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "M|. . 10 9 8 7 6 5 4 3 2 1 .",
+              "L|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "K|. . 10 9 8 7 6 5 4 3 2 1 .",
+              "J|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "I|. . 10 9 8 7 6 5 4 3 2 1 .",
+              "H|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "G|. . 10 9 8 7 6 5 4 3 2 1 .",
+              "F|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. . 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "D|. 9 8 7 . . 6 5 4 3 2 1 .",
+              "C|. 9 8 7 . . 6 5 4 3 2 1 .",
+              "B|. 9 8 7 . . 6 5 4 3 2 1 .",
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242208b4fdbb877b931f192",
+        "name": "Hall 6",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "N|. 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "M|14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "L|. 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "K|14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "J|. 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "I|14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "H|. 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "G|14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "F|. 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|14 13 12 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . .",
+              "D|11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "C|11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "B|11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "A|. 13 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242be633763c962797bc5a2",
+        "name": "Hall 7",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "I|. 13 12 11 . . . 10 9 8 7 6 5 4 . . . 3 2 1 .",
+              "H|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "G|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "F|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "E|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "D|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "C|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "B|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "A|. 16 15 14 . 13 12 11 10 9 8 7 6 5 4 . . . 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "62421d97992fec5a7552ece2",
+        "name": "Hall 8",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "J|. 16 15 14 13 . 12 11 10 9 8 7 6 5 . 4 3 2 1 .",
+              "I|17 16 15 14 13 . . 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "H|18 17 16 15 14 . 13 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "G|17 16 15 14 13 . . 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "F|18 17 16 15 14 . 13 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "E|17 16 15 14 13 . . 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "D|18 17 16 15 14 . 13 12 11 10 9 8 7 6 . 5 4 3 2 1",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "B|. 12 11 10 . . . . 9 8 7 6 5 4 3 2 1 . . .",
+              "A|. 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "6242bcf8ce6eba3e92432cf2",
+        "name": "Hall 9",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "I|. 1 2 3 4 . 5 6 7 8 9 10 11 12 . 13 14 15 16 .",
+              "H|1 2 3 4 5 . 6 7 8 9 10 11 12 . . 13 14 15 16 17",
+              "G|1 2 3 4 5 . 6 7 8 9 10 11 12 13 . 14 15 16 17 18",
+              "F|1 2 3 4 5 . 6 7 8 9 10 11 12 . . 13 14 15 16 17",
+              "E|1 2 3 4 5 . 6 7 8 9 10 11 12 13 . 14 15 16 17 18",
+              "D|1 2 3 4 5 . 6 7 8 9 10 11 12 . . 13 14 15 16 17",
+              "C|1 2 3 4 5 . 6 7 8 9 10 11 12 13 . 14 15 16 17 18",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . .",
+              "B|. . . . . 1 2 3 4 5 6 7 . . 8 9 . . . .",
+              "A|. . 1 2 3 4 5 6 7 8 9 10 11 . 12 13 14 . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "62421b7477eb835247686dd2",
+        "name": "Hall 10",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "I|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "H|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "G|15 14 13 12 11 10 9 . 8 7 6 5 4 3 2 1 .",
+              "F|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "E|15 14 13 12 11 10 9 . 8 7 6 5 4 3 2 1 .",
+              "D|7 6 5 4 3 2 1 . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . .",
+              "B|. . 13 12 11 10 9 8 7 . . 4 3 2 1 . .",
+              "A|. . 13 12 11 10 9 8 7 6 5 4 3 2 1 . .",
+              "|. . . . . . . . . . . . . . . . ."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "renaissance:semoha": {
+    "venue": "Renaissance Smouha",
+    "halls": [
+      {
+        "rnsScreenId": "627aeb56b072e8664f14e042",
+        "name": "Hall 1",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "B|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "C|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "D|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "E|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "F|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "G|7 6 5 4 3 2 1 . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . .",
+              "H|10 9 8 7 6 5 4 . . . 3 2 1 . . .",
+              "I|10 9 8 7 6 5 4 . . . 3 2 1 . . .",
+              "J|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "K|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "L|. . . 8 7 6 5 . . 4 3 2 1 . . .",
+              "M|. . 10 9 8 7 6 . . 5 4 3 2 . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aeb6f4b1d555d5000d2b2",
+        "name": "Hall 2",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "B|11 10 9 8 7 6 . . . 5 4 3 2 1",
+              "C|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "D|11 10 9 8 7 6 . . . 5 4 3 2 1",
+              "E|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "F|11 10 9 8 7 6 . . . 5 4 3 2 1",
+              "G|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "H|11 10 9 8 7 6 . . . 5 4 3 2 1",
+              "I|12 11 10 9 8 7 . . 6 5 4 3 2 1",
+              "J|. . . . . . . . 6 5 4 3 2 1"
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627909eac7003f20da1c0df2",
+        "name": "Hall 3",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "R|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "Q|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "P|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "O|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "N|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "M|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "L|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "K|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "J|. 1 2 3 4 5 6 7 8 9 10 11 12 . . 13 14 15 16 17 18 19 20 21 22 23 24 . . . . .",
+              "I|. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "H|. . . . . . 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 . . . . . . . . . .",
+              "G|. . 1 2 3 . 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 . 20 21 22 . . . . . .",
+              "F|1 2 3 4 5 . 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 . 22 23 24 25 26 . . . .",
+              "E|. . . . . . 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .",
+              "D|1 2 3 4 5 6 7 8 . 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 . . . . .",
+              "C|1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 . . . . . .",
+              "B|. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 . . . . . . . .",
+              "A|. . . . . 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 . . . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aeb47f474ea046a4e3d52",
+        "name": "Hall 4",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "B|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "C|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "D|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "E|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "F|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1",
+              "G|7 6 5 4 3 2 1 . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . .",
+              "H|10 9 8 7 6 5 4 . . . 3 2 1 . . .",
+              "I|10 9 8 7 6 5 4 . . . 3 2 1 . . .",
+              "J|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "K|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1",
+              "L|. . . . 7 6 5 . . 4 3 2 1 . . .",
+              "M|. . . 9 8 7 . . . 5 4 3 2 1 . ."
+            ]
+          }
+        ]
+      },
+      {
+        "rnsScreenId": "627aeb5fb072e8664f14e043",
+        "name": "Hall 5",
+        "formats": [],
+        "recordedAt": "2026-11-14",
+        "_note": "Read from Renaissance's booking page data (start_booking); matched to shows by screen id. Shows booked together in one batch share a hall.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "B|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "C|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "D|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "E|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "F|. 12 11 10 9 8 7 . . . 6 5 4 3 2 1 .",
+              "G|7 6 5 4 3 2 1 . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . .",
+              "H|10 9 8 7 6 5 4 . . . 3 2 1 . . . .",
+              "I|10 9 8 7 6 5 4 . . . 3 2 1 . . . .",
+              "J|14 13 12 11 10 9 8 . . 7 6 5 4 3 2 1 .",
+              "K|14 13 12 11 10 9 . . . 7 6 5 4 3 2 1 .",
+              "L|. . . 8 7 6 5 . . 4 3 2 1 . . . .",
+              "M|. . 10 9 8 7 6 . . 5 4 3 2 1 . . ."
             ]
           }
         ]

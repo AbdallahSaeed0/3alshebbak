@@ -11,7 +11,8 @@
 
 import * as cheerio from 'cheerio';
 import { clean, errorMessage, fetchText, pool, slugOf } from '../http.js';
-import { ResultBuilder, type Source } from '../model.js';
+import { ResultBuilder, type Showtime, type Source } from '../model.js';
+import { supabaseFromEnv } from '../supabase.js';
 import { cairoToday, dayFromLabel, fromDmy, showStart, toDmy } from '../time.js';
 
 const ORIGIN = 'https://rnscinemas.com';
@@ -63,6 +64,89 @@ async function filmPageDays(out: ResultBuilder): Promise<Set<string>> {
     }
   });
   return days;
+}
+
+/**
+ * Each show's hall, for the app's seat view (data/halls.json, rnsScreenId).
+ * Renaissance names no hall where shows are listed; the data its booking page
+ * loads (`/en/start_booking/<show id>`, the request any visitor's booking page
+ * makes: no seat is held) carries the hall's screen id. Shows are created in
+ * batches, one per film schedule, whose ids share their first eight hex
+ * digits (the id's creation time), and a batch plays in one hall — checked
+ * across all 192 batches of a week on 2026-11-14 — so one lookup tags a batch.
+ *
+ * That data is ~220 KB a show and, on CI, comes through the Supabase relay,
+ * so a batch is looked up once: the halls of batches already stored with a
+ * hall are read back from the database (a few KB) and only new batches —
+ * a handful a run, once the week's schedule is in — are fetched.
+ */
+async function tagHalls(showtimes: Showtime[], warn: (message: string) => void) {
+  const batches = new Map<string, { id: string; shows: Showtime[] }>();
+  for (const s of showtimes) {
+    const id = showId(s.bookingUrl);
+    if (!id) continue;
+    const key = batchKey(s.cinemaId, id);
+    const batch = batches.get(key) ?? { id, shows: [] };
+    batch.shows.push(s);
+    batches.set(key, batch);
+  }
+  const known = await storedBatchHalls(warn);
+  const todo: { id: string; shows: Showtime[] }[] = [];
+  for (const [key, batch] of batches) {
+    const hall = known.get(key);
+    if (hall) for (const s of batch.shows) s.hall = hall;
+    else todo.push(batch);
+  }
+  await pool(todo, PARALLEL, async ({ id, shows }) => {
+    try {
+      const html = await fetchText(`${ORIGIN}/en/start_booking/${id}`);
+      const screen = /screen_id\s*=\s*["']?([0-9a-f]{24})/.exec(html)?.[1];
+      if (!screen) return warn(`Renaissance ${id}: no screen id in its booking data (layout changed?)`);
+      for (const s of shows) s.hall = rnsHall(screen);
+    } catch (e) {
+      warn(`Renaissance hall lookup ${id}: ${errorMessage(e)}`);
+    }
+  });
+  console.log(`  renaissance halls: ${batches.size - todo.length} batches known, ${todo.length} looked up`);
+}
+
+/**
+ * A Renaissance hall as stored on a show: its screen id's last six hex digits
+ * ("rns:7fdc72"), kept short because every show in the app's catalog file
+ * carries it; unique among the halls of a branch (data/halls.json, rnsScreenId).
+ */
+const rnsHall = (screenId: string) => `rns:${screenId.slice(-6)}`;
+
+const showId = (bookingUrl?: string | null) => /\/booking\/([0-9a-f]{24})$/.exec(bookingUrl ?? '')?.[1];
+const batchKey = (cinemaId: string, showId: string) => `${cinemaId}|${showId.slice(0, 8)}`;
+
+/** Batch → hall, from the shows already stored with a hall (none without a database). */
+async function storedBatchHalls(warn: (message: string) => void): Promise<Map<string, string>> {
+  const known = new Map<string, string>();
+  const db = supabaseFromEnv();
+  if (!db) return known;
+  const since = new Date(Date.now() - 86_400_000).toISOString();
+  try {
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await db
+        .from('showtimes')
+        .select('cinema_id,booking_url,hall')
+        .eq('source', 'renaissance')
+        .like('hall', 'rns:%')
+        .gte('starts_at', since)
+        .range(from, from + 999);
+      if (error) throw new Error(error.message);
+      for (const r of data ?? []) {
+        const id = showId(r.booking_url as string | null);
+        if (id) known.set(batchKey(r.cinema_id as string, id), r.hall as string);
+      }
+      if (!data || data.length < 1000) break;
+    }
+  } catch (e) {
+    // e.g. no hall column yet: every batch is looked up this time
+    warn(`Renaissance stored halls: ${errorMessage(e)}`);
+  }
+  return known;
 }
 
 function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, branchUrl: string, businessDate: string) {
@@ -152,6 +236,7 @@ export const renaissance: Source = {
 
     const result = out.build();
     if (!result.showtimes.length) throw new Error('Site layout changed: Renaissance pages loaded but no showtimes were read');
+    await tagHalls(result.showtimes, (m) => result.warnings.push(m));
     return result;
   },
 };

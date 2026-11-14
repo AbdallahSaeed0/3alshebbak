@@ -131,6 +131,29 @@ void main() {
     expect(zawya.freeSeating, isTrue);
   });
 
+  test('Renaissance shows find their hall by screen id', () {
+    Showtime at(String cinema, String hall, String format) => Showtime(
+      cinemaId: cinema,
+      movieId: 'tmdb:1',
+      businessDate: '2026-11-15',
+      startsAt: DateTime.utc(2026, 11, 15, 8),
+      wallClock: DateTime(2026, 11, 15, 10),
+      format: format,
+      hall: hall,
+    );
+    final rehab = halls.forShowtime(
+      at('renaissance:al_rehab', 'rns:7fdc72', 'Regular'),
+    )!;
+    expect(rehab.seats.length, 246);
+    expect(rehab.rowNames[1], 'L'); // nearest the screen, after a gap
+    final vip = halls.forShowtime(
+      at('renaissance:banha', 'rns:271672', 'VIP'),
+    )!;
+    expect(vip.seats.length, 28);
+    // without a hall, Banha's VIP stays unknown (two VIP halls)
+    expect(halls.forShowtime(_show('VIP', at: 'renaissance:banha')), isNull);
+  });
+
   test('formats match part by part, whole, 2D/3D aside', () {
     expect(Halls.formatParts('MX4D · 4DX'), {'MX4D', '4DX'});
     expect(Halls.formatParts('2D · IMAX'), {'IMAX'});

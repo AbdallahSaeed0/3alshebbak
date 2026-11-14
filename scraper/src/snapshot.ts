@@ -91,7 +91,11 @@ async function showtimeRows(db: SupabaseClient, since: string): Promise<unknown[
   const query = (columns: string) => () =>
     db.from('showtimes').select(columns).gte('starts_at', since).order('starts_at').order('id');
   try {
-    return await all(db, query(SHOWTIME_COLUMNS + SHOWTIME_HALL));
+    const rows = (await all(db, query(SHOWTIME_COLUMNS + SHOWTIME_HALL))) as Record<string, unknown>[];
+    // Most shows have no hall: leave the key out rather than ship
+    // `"hall":null` thousands of times in a file every app open downloads.
+    for (const r of rows) if (r.hall == null) delete r.hall;
+    return rows;
   } catch (e) {
     if (!/hall/.test(e instanceof Error ? e.message : String(e))) throw e;
     return all(db, query(SHOWTIME_COLUMNS));
