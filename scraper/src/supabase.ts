@@ -266,10 +266,16 @@ export function reconcileDrops(rows: Row[], now: number): string[] {
 
 /**
  * Movies a re-match replaced (a title that's now joined to its TMDB entry)
- * stay behind otherwise. One delete per id: a movie that past showtimes or an
- * unsynced source still point at is refused by its foreign key and kept.
+ * stay behind otherwise. In the database, one call
+ * (20261114170000_remove_orphan_movies.sql): only movies no show or source
+ * film points at go. Until that's run, one delete per id, and the foreign
+ * keys refuse the ones still in use.
  */
 async function removeOrphanMovies(db: SupabaseClient, current: Set<string>) {
+  const { error: rpcError } = await db.rpc('remove_orphan_movies', { keep: [...current] });
+  if (!rpcError) return;
+  // PGRST202: no such function yet. Anything else is a real failure.
+  if (rpcError.code !== 'PGRST202') throw new Error(`remove orphan movies: ${rpcError.message}`);
   const { data, error } = await db.from('movies').select('id');
   if (error) throw new Error(`movies: ${error.message}`);
   for (const { id } of data as { id: string }[]) {
