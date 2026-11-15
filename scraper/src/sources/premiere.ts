@@ -76,6 +76,11 @@ export const premiere: Source = {
     const out = new ResultBuilder('premiere');
     const context = await newContext();
     if (cinemaRelayConfigured()) {
+      // Each relay call is an Edge Function invocation and its answer egress
+      // on Supabase's quota. The pages ask for the same things over and over
+      // (a film's show data on every click, the site's scripts on every page),
+      // so within a run each one goes through the relay once.
+      const answers = new Map<string, Promise<Awaited<ReturnType<typeof cinemaFetch>>>>();
       await context.route('**/*', async (route) => {
         const request = route.request();
         const host = new URL(request.url()).hostname;
@@ -84,7 +89,15 @@ export const premiere: Source = {
           return route.abort();
         }
         try {
-          const response = await cinemaFetch(request.url(), request.method(), await request.allHeaders(), request.postData() ?? undefined);
+          const key = `${request.method()} ${request.url()} ${request.postData() ?? ''}`;
+          let answer = answers.get(key);
+          if (!answer) {
+            answer = cinemaFetch(request.url(), request.method(), await request.allHeaders(), request.postData() ?? undefined);
+            answers.set(key, answer);
+            // A failed or refused answer is asked again next time.
+            answer.then((r) => r.status !== 200 && answers.delete(key), () => answers.delete(key));
+          }
+          const response = await answer;
           await route.fulfill({ status: response.status, headers: response.headers, body: response.body });
         } catch (error) {
           out.warn(`Premiere transport: ${errorMessage(error)}`);

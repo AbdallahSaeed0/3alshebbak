@@ -68,8 +68,16 @@ jobs:
                 *) echo "Unknown source: $source"; exit 1 ;;
               esac
             done
+            LIST="$(echo $REQUESTED_SOURCES)"
+            # The scheduler's half-past run (slot 3) asks for Renaissance and
+            # Premiere again; they go through the Supabase cinema-fetch relay,
+            # whose invocations and egress count against the free plan, so
+            # they run once an hour, at the top of the hour, instead.
+            if [ "$LIST" = "renaissance scene vox premiere" ]; then
+              LIST="scene vox"
+            fi
             # Normalize whitespace before passing the allowlisted names on.
-            echo "list=$(echo $REQUESTED_SOURCES)" >> "$GITHUB_OUTPUT"
+            echo "list=$LIST" >> "$GITHUB_OUTPUT"
           else
             echo "list=renaissance scene elcinema vox premiere" >> "$GITHUB_OUTPUT"
           fi

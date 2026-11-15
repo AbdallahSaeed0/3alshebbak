@@ -18,7 +18,9 @@ in the User-Agent of every plain HTTP request. Copy `.env.example` to `.env`.
 
 Supabase Cron on the existing project dispatches `.github/workflows/pipeline.yml`
 every 10 minutes (UTC minutes 7, 17, 27, 37, 47, 57). VOX runs every
-time, Renaissance, Scene and Premiere twice an hour, and elCinema once an hour. It
+time, Scene twice an hour, and Renaissance, Premiere and elCinema once an hour
+(Renaissance and Premiere go through the Supabase cinema-fetch relay, whose
+invocations and egress count against the free plan). It
 needs the repository secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
 `TMDB_API_KEY` and `SCRAPER_CONTACT`. Run it by hand from the Actions tab
 (optionally naming sources). GitHub's native cron is disabled; Supabase is
