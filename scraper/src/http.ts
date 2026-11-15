@@ -14,7 +14,9 @@ export async function fetchText(url: string, retries = 2): Promise<string> {
     try {
       const renaissance = ['rnscinemas.com', 'www.rnscinemas.com'].includes(new URL(url).hostname);
       if (renaissance && cinemaRelayConfigured()) {
-        const response = await cinemaFetch(url, 'GET', { 'accept-language': 'en' });
+        // Listing pages are read by their markup; the booking page's scripts hold the hall id.
+        const trim = !url.includes('/start_booking/');
+        const response = await cinemaFetch(url, 'GET', { 'accept-language': 'en' }, undefined, trim);
         if (response.status !== 200) throw new Error(`HTTP ${response.status}`);
         return response.body;
       }

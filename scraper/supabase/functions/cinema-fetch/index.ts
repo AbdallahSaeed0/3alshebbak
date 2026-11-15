@@ -1,5 +1,12 @@
 // Private transport for public cinema pages. No arbitrary destinations or redirects.
 const hosts = new Set(['rnscinemas.com', 'www.rnscinemas.com', 'www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com']);
+// A copy of scraper/src/trim-html.ts: a page cut down to its markup, sent back
+// when the caller asks (`trim: true`), since every byte returned is egress.
+const trimHtml = (html: string) => html
+  .replace(/<head\b[\s\S]*?<\/head>/gi, '')
+  .replace(/<(script|style|svg|noscript)\b[\s\S]*?<\/\1>/gi, '')
+  .replace(/<!--[\s\S]*?-->/g, '')
+  .replace(/\s+/g, ' ');
 const allowed = (url: URL) => url.protocol === 'https:' && !url.port && !url.username && !url.password && hosts.has(url.hostname);
 
 Deno.serve(async (request: Request) => {
@@ -29,7 +36,8 @@ Deno.serve(async (request: Request) => {
       url = next;
     }
     if (!response) throw new Error('No response');
-    const body = await response.text();
+    let body = await response.text();
+    if (input.trim === true && /html/i.test(response.headers.get('content-type') ?? '')) body = trimHtml(body);
     if (body.length > 4_000_000) return new Response('Response too large', { status: 413 });
     const resultHeaders: Record<string, string> = {};
     for (const name of ['content-type', 'set-cookie', 'access-control-allow-origin', 'access-control-allow-credentials']) {

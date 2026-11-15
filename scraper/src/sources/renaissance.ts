@@ -149,9 +149,11 @@ async function storedBatchHalls(warn: (message: string) => void): Promise<Map<st
   return known;
 }
 
-function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, branchUrl: string, businessDate: string) {
+/** Reads one branch-day page; returns how many shows it had. */
+function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, branchUrl: string, businessDate: string): number {
   const branchSlug = slugOf(branchUrl);
   let cinemaId: string | null = null;
+  let shows = 0;
 
   $('.veneu_item').each((_, item) => {
     const block = $(item);
@@ -190,8 +192,10 @@ function parseDay(out: ResultBuilder, $: cheerio.CheerioAPI, branchUrl: string, 
         format: experience && experience !== '2D' ? `${hall} · ${experience}` : hall,
         bookingUrl: clean(link.attr('data-booking-url')) || undefined,
       });
+      shows++;
     });
   });
+  return shows;
 }
 
 export const renaissance: Source = {
@@ -213,26 +217,39 @@ export const renaissance: Source = {
       }
     });
 
-    // Presale days past what the branch pages link, for every branch: a page
-    // with nothing on that day just reads as empty.
-    const linked = new Set(pages.map((p) => p.date));
+    // The linked days, day by day: branch pages link a week ahead before
+    // Renaissance has put shows up, so once a day is empty at every branch,
+    // the linked days after it are left alone (each page is a relay call and
+    // its egress on Supabase's quota). Presales come from the film pages.
+    const readDay = async (date: string, urls: string[]) => {
+      let shows = 0;
+      await pool(urls, PARALLEL, async (url) => {
+        try {
+          shows += parseDay(out, cheerio.load(await fetchText(url)), url.slice(0, url.lastIndexOf('/')), date);
+        } catch (e) {
+          out.warn(errorMessage(e));
+          shows += 1; // a failed page isn't an empty one
+        }
+      });
+      return shows;
+    };
+    const byDate = new Map<string, string[]>();
+    for (const p of pages) byDate.set(p.date, [...(byDate.get(p.date) ?? []), p.url]);
+    const linked = [...byDate.keys()].sort();
+    for (const date of linked) {
+      if (!(await readDay(date, byDate.get(date)!))) break;
+    }
+
+    // Presale days past those, for every branch: a page with nothing on that
+    // day just reads as empty.
     try {
       for (const date of await filmPageDays(out)) {
-        if (linked.has(date)) continue;
-        for (const branchUrl of branches) pages.push({ url: `${branchUrl}/${toDmy(date)}`, date });
+        if (byDate.has(date)) continue;
+        await readDay(date, branches.map((b) => `${b}/${toDmy(date)}`));
       }
     } catch (e) {
       out.warn(`presale days: ${errorMessage(e)}`);
     }
-
-    await pool(pages, PARALLEL, async ({ url, date }) => {
-      try {
-        const branchUrl = url.slice(0, url.lastIndexOf('/'));
-        parseDay(out, cheerio.load(await fetchText(url)), branchUrl, date);
-      } catch (e) {
-        out.warn(errorMessage(e));
-      }
-    });
 
     const result = out.build();
     if (!result.showtimes.length) throw new Error('Site layout changed: Renaissance pages loaded but no showtimes were read');
