@@ -88,7 +88,108 @@ class VoxLive extends LiveSource {
     );
     return voxShows(movieId: movie.id, today: today, films: films);
   }
+
+  /// [s]'s VOX session id ("0047-278379"), read from the film's page for its
+  /// day: same cinema and start, and when two formats start together, the
+  /// one whose hall heading the show's format names. Null when it isn't there.
+  Future<String?> sessionOf(Showtime s, Movie movie) async {
+    final booked = RegExp(
+      r'/booking/(\d{4}-\d+)',
+    ).firstMatch(s.bookingUrl ?? '');
+    if (booked != null) return booked.group(1);
+    final day = s.businessDate.replaceAll('-', '');
+    final candidates = <({String id, String heading})>[];
+    for (final film in (await _films()).where((l) => l.matches(movie))) {
+      final doc = await _get('/movies/${film.slug}?d=$day');
+      String? cinemaId;
+      for (final el in doc.querySelectorAll('#showtimes .dates > *')) {
+        if (el.localName == 'h3') {
+          cinemaId = _listedCinemas[el.text.trim()];
+        } else if (cinemaId == s.cinemaId && el.classes.contains('showtimes')) {
+          for (final li in el.children) {
+            final heading = li.querySelector('strong')?.text.trim() ?? '';
+            for (final a in li.querySelectorAll('a.showtime')) {
+              final id = a.attributes['data-id'];
+              final at = liveShowtime(
+                movieId: movie.id,
+                cinemaId: s.cinemaId,
+                businessDate: s.businessDate,
+                clock: a.text.trim(),
+                format: heading,
+              );
+              if (id != null && at?.startsAt == s.startsAt) {
+                candidates.add((id: id, heading: heading));
+              }
+            }
+          }
+        }
+      }
+    }
+    if (candidates.length == 1) return candidates.single.id;
+    final format = s.format.toUpperCase();
+    final named = candidates
+        .where((c) => format.contains(c.heading.toUpperCase()))
+        .toList();
+    return named.length == 1 ? named.single.id : null;
+  }
+
+  /// The hall a VOX session is in ("CINEMA 7"), from its booking page as a
+  /// guest: VOX hands the visitor on through a few redirects, each setting
+  /// cookies the next needs. A fresh set of cookies each time (VOX adds one
+  /// per booking opened, and a long-kept set grows too big to send).
+  Future<String?> screenOf(String session) async {
+    final cookies = <String, String>{};
+    var url = Uri.parse('$_origin/booking/$session');
+    for (var hop = 0; hop < 10; hop++) {
+      final req = http.Request('GET', url)
+        ..followRedirects = false
+        ..headers.addAll(_headers);
+      if (cookies.isNotEmpty) {
+        req.headers['Cookie'] = [
+          for (final e in cookies.entries) '${e.key}=${e.value}',
+        ].join('; ');
+      }
+      final res = await http.Response.fromStream(
+        await _client.send(req),
+      ).timeout(const Duration(seconds: 15));
+      for (final c in _setCookies(res.headers['set-cookie'])) {
+        cookies[c.$1] = c.$2;
+      }
+      final location = res.headers['location'];
+      if (res.statusCode ~/ 100 == 3) {
+        if (location == null || location.contains('/booking/error')) {
+          return null;
+        }
+        url = url.resolve(location);
+        continue;
+      }
+      if (res.statusCode != 200) return null;
+      final screen = RegExp(
+        r'<strong>Screen</strong>:\s*([^<]+)',
+      ).firstMatch(res.body);
+      if (screen != null) return screen.group(1)!.trim();
+      // Still being prepared: ask again in a moment.
+      await Future<void>.delayed(const Duration(seconds: 1));
+    }
+    return null;
+  }
 }
+
+/// `name=value` of each cookie in a Set-Cookie header (dart:io joins several
+/// with commas, which an Expires date also contains).
+List<(String, String)> _setCookies(String? header) => [
+  for (final m in RegExp(
+    r'(?:^|,\s*)([^=;,\s]+)=([^;,]*)',
+  ).allMatches(header ?? ''))
+    if (!const {
+      'expires',
+      'path',
+      'domain',
+      'max-age',
+      'samesite',
+    }.contains(m.group(1)!.toLowerCase()))
+      (m.group(1)!, m.group(2)!),
+];
 
 /// A film on VOX's what's-on page. "Avengers: Doomsday (Infinity Vision)" is
 /// listed apart from the film; it's the same film in another format.
@@ -173,6 +274,9 @@ class VoxFilmPage {
     );
   }
 }
+
+/// The VOX cinemas, as the server lists them.
+Iterable<String> get voxCinemaIds => _listedCinemas.values;
 
 /// VOX's cinema names → the cinema the server lists them under (elCinema's).
 const _listedCinemas = {

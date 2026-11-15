@@ -107,6 +107,13 @@ class Hall {
         if (j['rnsScreenId'] case final String id)
           'rns:${id.substring(id.length - 6)}',
         if (j['premiereScreenId'] case final String id) 'prm:$id',
+        // looked up on the phone when asked for (services/hall_lookup.dart)
+        if (j['voxScreen'] case final String screen)
+          'vox:${screen.toUpperCase()}',
+        if (j['sceneHallId'] case final String id) 'scene:$id',
+        for (final id
+            in ((j['sceneHallIds'] as List?) ?? const []).cast<String>())
+          'scene:$id',
       },
       freeSeating: j['freeSeating'] == true,
     );
@@ -340,6 +347,20 @@ class Halls {
     }
     return null;
   }
+
+  /// The hall at [cinemaId] with [id] among its [Hall.hallIds].
+  Hall? byId(String cinemaId, String id) {
+    for (final h in _byCinema[cinemaId] ?? const <Hall>[]) {
+      if (h.hallIds.contains(id)) return h;
+    }
+    return null;
+  }
+
+  /// Whether some hall at [cinemaId] has an id of [kind] ("vox", "scene").
+  bool hasLookupIds(String cinemaId, String kind) =>
+      (_byCinema[cinemaId] ?? const <Hall>[]).any(
+        (h) => h.hallIds.any((id) => id.startsWith('$kind:')),
+      );
 
   @visibleForTesting
   static Set<String> formatParts(String format) => {

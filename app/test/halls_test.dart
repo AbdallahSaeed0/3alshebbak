@@ -275,4 +275,21 @@ void main() {
       expect(hall.viewFrom(front).score, lessThan(view.score), reason: format);
     }
   });
+
+  test('halls looked up on the phone: by VOX screen and Scene hall id', () {
+    const almaza = 'elcinema:city-centre-almaza';
+    expect(halls.byId(almaza, 'vox:CINEMA 7')!.name, 'Cinema 7');
+    expect(halls.byId(almaza, 'vox:CINEMA 99'), isNull);
+    expect(halls.hasLookupIds(almaza, 'vox'), isTrue);
+    expect(
+      halls.byId('scene:cfc', 'scene:6573c489ef1c1b92a60fd013')!.seats.length,
+      122,
+    );
+    // any of the four Premiere halls gives their shared plan
+    expect(
+      halls.byId('scene:district5', 'scene:65fdb627fd25ff92640ebbb3')!.name,
+      'Premiere',
+    );
+    expect(halls.hasLookupIds('renaissance:banha', 'vox'), isFalse);
+  });
 }

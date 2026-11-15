@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/app_data.dart';
 import '../data/halls.dart';
 import '../data/models.dart';
+import '../services/hall_lookup.dart';
 import '../theme.dart';
 import 'seat_view_screen.dart';
 import '../util/links.dart';
@@ -222,29 +223,15 @@ class _ShowtimeSheet extends StatelessWidget {
                       children: [
                         // The hall's seat map and the view from each seat,
                         // when we know which hall the show is in.
-                        if (Halls.instance?.forShowtime(showtime)
-                            case final hall?) ...[
-                          OutlinedButton.icon(
-                            onPressed: () => openSeatView(
-                              context,
-                              hall,
-                              movie: movie,
-                              bookingUrl: booking,
-                            ),
-                            icon: const Icon(
-                              Icons.event_seat_outlined,
-                              size: 18,
-                            ),
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
-                                ),
-                                const SizedBox(width: 8),
-                                const BetaTag(),
-                              ],
-                            ),
+                        // VOX and Scene name the hall only on the booking
+                        // page: looked up when tapped.
+                        if (seatHall != null ||
+                            HallLookup.instance.canLookUp(showtime)) ...[
+                          _SeatViewButton(
+                            showtime: showtime,
+                            hall: seatHall,
+                            movie: movie,
+                            bookingUrl: booking,
                           ),
                           const SizedBox(height: 10),
                         ],
@@ -321,6 +308,96 @@ class _ShowtimeSheet extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Which seat is best?": opens the hall's seat view, looking the hall up
+/// first when only the booking page names it (VOX, Scene).
+class _SeatViewButton extends StatefulWidget {
+  const _SeatViewButton({
+    required this.showtime,
+    required this.hall,
+    required this.movie,
+    required this.bookingUrl,
+  });
+
+  final Showtime showtime;
+  final Hall? hall;
+  final Movie movie;
+  final String? bookingUrl;
+
+  @override
+  State<_SeatViewButton> createState() => _SeatViewButtonState();
+}
+
+class _SeatViewButtonState extends State<_SeatViewButton> {
+  bool _looking = false;
+  bool _notFound = false;
+
+  Future<void> _open() async {
+    var hall = widget.hall;
+    if (hall == null) {
+      setState(() {
+        _looking = true;
+        _notFound = false;
+      });
+      hall = await HallLookup.instance.hallOf(widget.showtime, widget.movie);
+      if (!mounted) return;
+      setState(() {
+        _looking = false;
+        _notFound = hall == null;
+      });
+      if (hall == null) return;
+    }
+    openSeatView(
+      context,
+      hall,
+      movie: widget.movie,
+      bookingUrl: widget.bookingUrl,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          onPressed: _looking ? null : _open,
+          icon: _looking
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.event_seat_outlined, size: 18),
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _looking
+                    ? tr('بندوّر على الصالة…', 'Finding the hall…')
+                    : tr('أنهي كرسي أحسن؟', 'Which seat is best?'),
+              ),
+              const SizedBox(width: 8),
+              const BetaTag(),
+            ],
+          ),
+        ),
+        if (_notFound)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              tr(
+                'مقدرناش نعرف العرض ده في أنهي صالة',
+                "Couldn't tell which hall this show is in",
+              ),
+              textAlign: TextAlign.center,
+              style: AppText.body(12, color: AppColors.muted),
+            ),
+          ),
+      ],
     );
   }
 }
