@@ -27,3 +27,11 @@ test('Premiere formats read like elCinema writes them', async () => {
   assert.equal(premiereFormat('2D · LUXE'), 'Luxe');
   assert.equal(premiereFormat('3D · IMAX'), '3D · IMAX');
 });
+
+test('a refusal is told apart from a passing fault', async () => {
+  const { refused } = await import('./vox.js');
+  assert.ok(refused('https://egy.voxcinemas.com/showtimes?c=x&d=1: HTTP 403'));
+  assert.ok(refused('…: HTTP 429'));
+  assert.ok(!refused('…: HTTP 500'));
+  assert.ok(!refused('…: The operation was aborted due to timeout'));
+});

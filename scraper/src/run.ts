@@ -13,8 +13,8 @@ import { renaissance } from './sources/renaissance.js';
 import { scene } from './sources/scene.js';
 import { vox } from './sources/vox.js';
 
-// VOX's and Premiere's week comes through elcinema; their own sources add only
-// presale days past it (see time.ts presaleFrom).
+// VOX's and Premiere's cinemas come from their own sites (own-site.ts drops
+// elCinema's copy of them).
 const SOURCES: Record<string, Source> = { renaissance, scene, premiere, elcinema, vox, 'elcinema-presales': elcinemaPresales };
 
 async function main() {

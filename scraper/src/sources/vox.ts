@@ -91,11 +91,18 @@ export function parseCinemaDay(out: ResultBuilder, $: cheerio.CheerioAPI, day: s
   });
 }
 
+/** A failed fetch that reads as VOX turning us away rather than a passing fault. */
+export const refused = (message: string) => /HTTP (401|403|407|429|451)(?!\d)/.test(message);
+
 export const vox: Source = {
   id: 'vox',
   async scrape() {
     const out = new ResultBuilder('vox');
     const today = cairoToday();
+    // A page that can't be read fails the whole run: uploading the rest would
+    // delete the unread days' shows, and a failed run keeps the last good copy
+    // (and GitHub emails the run's owner, so a refusal gets noticed).
+    const failures: string[] = [];
     for (const cinema of CINEMAS) {
       try {
         const first = cheerio.load(await fetchText(`${ORIGIN}/showtimes/${cinema}`));
@@ -106,7 +113,7 @@ export const vox: Source = {
           try {
             pages.push([url, cheerio.load(await fetchText(url))]);
           } catch (e) {
-            out.warn(`VOX ${url}: ${errorMessage(e)}`);
+            failures.push(errorMessage(e));
           }
         }
         for (const [url, $] of pages) {
@@ -120,9 +127,16 @@ export const vox: Source = {
           parseCinemaDay(out, $, day);
         }
       } catch (e) {
-        out.warn(`VOX ${cinema}: ${errorMessage(e)}`);
+        failures.push(`${cinema}: ${errorMessage(e)}`);
       }
+      if (failures.some(refused)) break; // turned away: don't keep knocking
       await pause();
+    }
+    if (failures.length) {
+      throw new Error(
+        `${failures.some(refused) ? 'VOX refused the scraper' : "VOX's pages couldn't all be read"} ` +
+          `(kept the last good copy): ${failures.slice(0, 3).join(' · ')}`,
+      );
     }
     const result = out.build();
     if (!result.showtimes.length) throw new Error("VOX's showtimes pages listed no shows (layout changed?)");
