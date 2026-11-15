@@ -396,6 +396,12 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
                 ? InAppWebView(
                     headlessWebView: _preload!.web,
                     gestureRecognizers: SeatViewPreload.drags,
+                    // The page moves to a new controller here, and the
+                    // handlers added on the headless one don't come along:
+                    // without these, "book" (and "seat") never arrived from
+                    // a hall that was built ahead of time.
+                    onWebViewCreated: (c) =>
+                        SeatViewPreload.listen(c, (n, a) => _onPage(n, a)),
                   )
                 : InAppWebView(
                     initialFile: SeatViewPreload.page,
