@@ -6,7 +6,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { errorMessage } from './http.js';
 import { placeCinemas } from './locations.js';
-import { leaveToPremiere, premiereBranches, removeCededFromDb } from './premiere-week.js';
+import { leaveToOwnSites, ownSiteCinemas, removeCededFromDb } from './own-site.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
@@ -53,17 +53,17 @@ async function main() {
   // Always kept: it's what to check matches against, and what the app bundles offline.
   await writeFile('out/catalog.json', JSON.stringify(catalog, null, 2));
   const db = supabaseFromEnv();
-  const premiere = await premiereBranches(results, db);
-  const ceded = leaveToPremiere(results, premiere);
-  if (ceded) console.log(`✓ premiere: ${ceded} of elCinema's shows left to Premiere's own site`);
+  const ownSites = await ownSiteCinemas(results, db);
+  const ceded = leaveToOwnSites(results, ownSites);
+  if (ceded) console.log(`✓ own sites: ${ceded} of elCinema's shows left to Premiere's and VOX's own sites`);
   if (!db) {
     console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set: wrote out/catalog.json only (dry run)');
     return;
   }
   let removed = await upload(db, results, catalog, runStartedAt);
-  if (results.some((r) => r.source === 'premiere')) {
-    const gone = await removeCededFromDb(db, premiere, results.map((r) => r.source));
-    if (gone) console.log(`✓ premiere: ${gone} stored elCinema shows left to Premiere's own site`);
+  if (results.some((r) => r.source === 'premiere' || r.source === 'vox')) {
+    const gone = await removeCededFromDb(db, ownSites, results.map((r) => r.source));
+    if (gone) console.log(`✓ own sites: ${gone} stored elCinema shows left to Premiere's and VOX's own sites`);
     removed += gone;
   }
   const showtimes = results.reduce((n, r) => n + r.showtimes.length, 0);

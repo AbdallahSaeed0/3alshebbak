@@ -17,7 +17,7 @@ in the User-Agent of every plain HTTP request. Copy `.env.example` to `.env`.
 ## Schedule (GitHub Actions)
 
 Supabase Cron on the existing project dispatches `.github/workflows/pipeline.yml`
-every 10 minutes (UTC minutes 7, 17, 27, 37, 47, 57). VOX presales run every
+every 10 minutes (UTC minutes 7, 17, 27, 37, 47, 57). VOX runs every
 time, Renaissance, Scene and Premiere twice an hour, and elCinema once an hour. It
 needs the repository secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
 `TMDB_API_KEY` and `SCRAPER_CONTACT`. Run it by hand from the Actions tab
@@ -145,13 +145,13 @@ a push and recording progress can still produce an at-least-once retry.
 |---|---|---|
 | `renaissance` | plain HTML, one page per branch per day | every time link carries its own data-* attributes |
 | `scene` | plain HTML per movie + `?business_day=…&ajax=1` per day | one site per venue (cfc, district5) |
-| `premiere` | headless Chromium, clicks through the pickers via the private Supabase transport | every day at every branch, with each show's hall; Plaza, Point90 and Arkan come from Premiere only, elCinema's copy of them is dropped (src/premiere-week.ts) |
+| `premiere` | headless Chromium, clicks through the pickers via the private Supabase transport | every day at every branch, with each show's hall; Plaza, Point90 and Arkan come from Premiere only, elCinema's copy of them is dropped (src/own-site.ts) |
 
 ## Tier 2: elCinema.com
 
 | Source | Covers | Notes |
 |---|---|---|
-| `elcinema` | VOX (Almaza, Mall of Egypt, Alexandria) | VOX's bot protection rejects automated browsers, so `sources/vox.ts` is not run |
+| `vox` | VOX (Almaza, Mall of Egypt, Alexandria) | every day on sale, from each cinema's showtimes page and its day links; elCinema's copy of these cinemas is dropped (src/own-site.ts) |
 
 elCinema's data is its product, so `elcinema` is polite on purpose: one request
 at a time with a pause, an identifying User-Agent, an `attribution` on every

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { ScrapeResult, Showtime } from './model.js';
-import { leaveToPremiere, premiereBranches } from './premiere-week.js';
+import { leaveToOwnSites, ownSiteCinemas } from './own-site.js';
 
 const p90 = 'elcinema:premiere-point90';
 const show = (filmId: string, date: string, time: string, cinemaId = p90): Showtime => ({
@@ -25,8 +25,8 @@ test("a branch Premiere's site lists shows only Premiere's shows", async () => {
   ]);
   const booking = result('elcinema-presales', [show('elcinema:1', '2026-11-16', '12:30')]);
   const results = [elcinema, booking, premiere];
-  assert.deepEqual([...(await premiereBranches(results, null))], [p90]);
-  assert.equal(leaveToPremiere(results, await premiereBranches(results, null)), 4);
+  assert.deepEqual([...(await ownSiteCinemas(results, null))], [p90]);
+  assert.equal(leaveToOwnSites(results, await ownSiteCinemas(results, null)), 4);
   assert.deepEqual(left(elcinema), ['elcinema:sun-city 2026-11-15']);
   assert.deepEqual(left(booking), []);
   assert.equal(premiere.showtimes.length, 2);
@@ -34,6 +34,18 @@ test("a branch Premiere's site lists shows only Premiere's shows", async () => {
 
 test('without Premiere in the run or a database, elCinema keeps everything', async () => {
   const elcinema = result('elcinema', [show('elcinema:1', '2026-11-15', '12:00')]);
-  assert.equal(leaveToPremiere([elcinema], await premiereBranches([elcinema], null)), 0);
+  assert.equal(leaveToOwnSites([elcinema], await ownSiteCinemas([elcinema], null)), 0);
   assert.equal(elcinema.showtimes.length, 1);
+});
+
+test("VOX's cinemas likewise show only VOX's own shows", async () => {
+  const almaza = 'elcinema:city-centre-almaza';
+  const elcinema = result('elcinema', [
+    show('elcinema:1', '2026-11-19', '12:00', almaza), // a day VOX hasn't put on sale
+    show('elcinema:1', '2026-11-15', '12:00', 'elcinema:sun-city'),
+  ]);
+  const vox = result('vox', [show('vox:hadoota-arabic', '2026-11-15', '11:00', almaza)]);
+  const results = [elcinema, vox];
+  assert.equal(leaveToOwnSites(results, await ownSiteCinemas(results, null)), 1);
+  assert.deepEqual(left(elcinema), ['elcinema:sun-city 2026-11-15']);
 });

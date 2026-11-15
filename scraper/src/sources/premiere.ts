@@ -7,7 +7,7 @@
 // Every branch gets every day from here, with each show's hall and Premiere's
 // own booking page: elCinema's copy of Premiere Plaza, Point90 and Cima Arkan
 // can list times Premiere doesn't, so this is the one they're shown from
-// (sync drops elCinema's shows on the days this lists; premiere-week.ts).
+// (sync drops elCinema's copy of these branches; own-site.ts).
 // Branches elCinema lists are filed under its cinema, the others (Nile
 // Cinema, Galaxy elManial) as premiere:* cinemas. Cloudflare
 // turns GitHub's runners away from this site, so in CI the anonymous browser

@@ -1,23 +1,27 @@
-// VOX Cinemas Egypt — presale days only. VOX's week comes through elCinema;
-// this adds what's on sale further out (a big release weeks ahead).
+// VOX Cinemas Egypt, from VOX's own site: every day it has on sale at each of
+// its three cinemas, presales included. elCinema lists these cinemas too, but
+// its copy drifts from VOX's (times moved, whole days missing, days filled in
+// before VOX puts them on sale), so VOX's cinemas are shown from here alone
+// (sync drops elCinema's copy; own-site.ts).
 //
-// VOX answers a bot that says who it is, and its robots.txt allows film pages
-// but no URL with a query string. So this reads only the film pages listed in
-// VOX's own sitemap, one at a time, and never the `?d=` day links: each film
-// page shows its first day on sale, which for a presale is its opening day.
-// The rest of its days arrive through elCinema once they're inside its week.
+// Each cinema's showtimes page lists the days on sale and shows one of them;
+// the others are its `?d=yyyymmdd` links. VOX's robots.txt asks bots to keep
+// off URLs with a query string; reading those day links anyway was a
+// deliberate choice (Nov 2026), since nothing else on the site gives a
+// cinema's days and elCinema's copy proved wrong. Kept light: one page at a
+// time, a pause between them, a client that says who it is.
 //
 // Shows are filed under the VOX cinemas elCinema already gave us
 // (elcinema:city-centre-almaza, …), so the app sees one cinema, not two.
 
 import * as cheerio from 'cheerio';
-import { clean, errorMessage, fetchText, hallName, slugOf } from '../http.js';
+import { clean, errorMessage, fetchText, hallName } from '../http.js';
 import { ResultBuilder, type Source } from '../model.js';
-import { cairoToday, dayFromLabel, showStart } from '../time.js';
+import { addDays, cairoToday, dayFromLabel, showStart } from '../time.js';
 import { elcinemaCinemaId } from './elcinema.js';
 
 const ORIGIN = 'https://egy.voxcinemas.com';
-const SITEMAP = 'https://assets.voxcinemas.com/sitemap/sitemap.EG.xml';
+const CINEMAS = ['city-centre-almaza', 'mall-of-egypt', 'city-centre-alexandria'];
 const PAUSE_MS = 1000;
 
 const pause = () => new Promise((r) => setTimeout(r, PAUSE_MS));
@@ -29,48 +33,62 @@ export function splitTitle(title: string): { title: string; experience?: string 
   return m ? { title: m[1], experience: m[2] } : { title };
 }
 
-async function filmPages(): Promise<string[]> {
-  const xml = await fetchText(SITEMAP);
-  const urls = [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) => m[1]);
-  return [...new Set(urls.filter((u) => /^https:\/\/egy\.voxcinemas\.com\/movies\/[^/?#]+$/.test(u)))];
+/** The day a showtimes page shows ("Today", "Tomorrow", "Tue 17 Nov"). */
+export function shownDay(label: string, today: string): string | null {
+  if (/^today$/i.test(label)) return today;
+  if (/^tomorrow$/i.test(label)) return addDays(today, 1);
+  return dayFromLabel(label, today);
 }
 
-function parseFilm(out: ResultBuilder, $: cheerio.CheerioAPI, url: string, today: string) {
-  // The day shown is the date tab without a link.
-  const day = dayFromLabel(clean($('nav.date-filter li > span').first().text()), today);
-  // Inside elCinema's week too: VOX's own times for this day win over
-  // elCinema's copy (sync drops it), which can lag a week's changeover.
-  if (!day || day < today) return;
+/** The other days a showtimes page links to, as `yyyymmdd`. */
+export function otherDays($: cheerio.CheerioAPI): string[] {
+  const days = new Set<string>();
+  $('nav.date-filter a').each((_, a) => {
+    const m = /[?&]d=(\d{8})/.exec($(a).attr('href') ?? '');
+    if (m) days.add(m[1]);
+  });
+  return [...days];
+}
 
-  const { title, experience } = splitTitle(clean($('#showtimes h2').first().text()).replace(/\s*-\s*Showtimes$/i, ''));
-  if (!title) return out.warn(`VOX ${url}: no title (layout changed?)`);
-  const filmSlug = experience ? slugOf(url).replace(new RegExp(`-${slug(experience)}$`), '') : slugOf(url);
-  const filmId = out.film({ slug: filmSlug, title, url: `${ORIGIN}/movies/${filmSlug}` });
+/** One day of a cinema's showtimes page: each film, its halls, its times (sold-out ones too). */
+export function parseCinemaDay(out: ResultBuilder, $: cheerio.CheerioAPI, day: string) {
+  $('article.movie-compare').each((_, el) => {
+    const article = $(el);
+    const { title, experience } = splitTitle(clean(article.find('h2').first().text()));
+    const pageSlug = article.attr('data-slug');
+    if (!title || !pageSlug) return out.warn(`VOX ${day}: a film without a title or slug (layout changed?)`);
+    const filmSlug = experience ? pageSlug.replace(new RegExp(`-${slug(experience)}$`), '') : pageSlug;
+    const filmId = out.film({ slug: filmSlug, title, url: `${ORIGIN}/movies/${filmSlug}` });
 
-  let cinemaId: string | null = null;
-  $('#showtimes .dates')
-    .children()
-    .each((_, el) => {
-      const node = $(el);
-      if (node.is('h3')) {
-        const name = clean(node.text());
-        cinemaId = elcinemaCinemaId('VOX', name);
-        if (!cinemaId) out.warn(`VOX "${name}": not one of elCinema's VOX cinemas, skipped`);
-        return;
-      }
-      if (!cinemaId || !node.is('ol.showtimes')) return;
-      const at = cinemaId;
-      node.children('li').each((_, li) => {
-        const hall = hallName($(li).children('strong').first().text());
-        const format = experience ? `${hall} · ${experience}` : hall;
-        $(li)
-          .find('a.showtime')
-          .each((_, a) => {
-            const start = showStart(day, clean($(a).text()));
-            if (start) out.showtime({ cinemaId: at, filmId, businessDate: day, start, format, bookingUrl: $(a).attr('href') });
-          });
+    let cinemaId: string | null = null;
+    article
+      .find('.dates')
+      .children()
+      .each((_, child) => {
+        const node = $(child);
+        if (node.is('h3')) {
+          const name = clean(node.text());
+          cinemaId = elcinemaCinemaId('VOX', name);
+          if (!cinemaId) out.warn(`VOX "${name}": not one of elCinema's VOX cinemas, skipped`);
+          return;
+        }
+        if (!cinemaId || !node.is('ol.showtimes')) return;
+        const at = cinemaId;
+        node.children('li').each((_, li) => {
+          const hall = hallName($(li).children('strong').first().text());
+          const format = experience ? `${hall} · ${experience}` : hall;
+          $(li)
+            .find('li[data-id]')
+            .each((_, show) => {
+              const id = $(show).attr('data-id')!;
+              const start = showStart(day, clean($(show).find('.showtime').first().text()));
+              if (start) {
+                out.showtime({ cinemaId: at, filmId, businessDate: day, start, format, bookingUrl: `${ORIGIN}/booking/${id}` });
+              }
+            });
+        });
       });
-    });
+  });
 }
 
 export const vox: Source = {
@@ -78,18 +96,36 @@ export const vox: Source = {
   async scrape() {
     const out = new ResultBuilder('vox');
     const today = cairoToday();
-    const pages = await filmPages();
-    if (!pages.length) throw new Error('VOX sitemap lists no film pages (moved?)');
-
-    for (const url of pages) {
+    for (const cinema of CINEMAS) {
       try {
-        parseFilm(out, cheerio.load(await fetchText(url)), url, today);
+        const first = cheerio.load(await fetchText(`${ORIGIN}/showtimes/${cinema}`));
+        const pages: [string, cheerio.CheerioAPI][] = [[`${ORIGIN}/showtimes/${cinema}`, first]];
+        for (const d of otherDays(first)) {
+          await pause();
+          const url = `${ORIGIN}/showtimes?c=${cinema}&d=${d}`;
+          try {
+            pages.push([url, cheerio.load(await fetchText(url))]);
+          } catch (e) {
+            out.warn(`VOX ${url}: ${errorMessage(e)}`);
+          }
+        }
+        for (const [url, $] of pages) {
+          // The day the page really shows: a day VOX dropped renders today instead.
+          const day = shownDay(clean($('nav.date-filter li > span').first().text()), today);
+          const asked = /[?&]d=(\d{4})(\d{2})(\d{2})/.exec(url);
+          if (!day || (asked && day !== `${asked[1]}-${asked[2]}-${asked[3]}`)) {
+            out.warn(`VOX ${url}: shows "${$('nav.date-filter li > span').first().text().trim()}", skipped`);
+            continue;
+          }
+          parseCinemaDay(out, $, day);
+        }
       } catch (e) {
-        out.warn(`VOX ${url}: ${errorMessage(e)}`);
+        out.warn(`VOX ${cinema}: ${errorMessage(e)}`);
       }
       await pause();
     }
-    // No presales anywhere is a normal week, not a failure.
-    return out.build();
+    const result = out.build();
+    if (!result.showtimes.length) throw new Error("VOX's showtimes pages listed no shows (layout changed?)");
+    return result;
   },
 };
