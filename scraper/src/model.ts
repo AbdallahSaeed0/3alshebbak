@@ -66,19 +66,6 @@ export interface ScrapeResult {
   showtimes: Showtime[];
   /** Pages that failed while the rest of the run went on. */
   warnings: string[];
-  /**
-   * Halls of shows another source lists: Premiere knows the hall of every show
-   * at the branches whose week comes from elCinema, which doesn't. Sync puts
-   * each on the matching show (same cinema, movie and start; see hall-hints.ts).
-   */
-  hallHints?: HallHint[];
-}
-
-export interface HallHint {
-  cinemaId: string;
-  filmId: string;
-  start: string;
-  hall: string;
 }
 
 export interface Source {
@@ -120,15 +107,8 @@ export class ResultBuilder {
     this.warnings.push(message);
   }
 
-  private hallHints: HallHint[] = [];
-
-  hallHint(h: HallHint) {
-    this.hallHints.push(h);
-  }
-
   build(): ScrapeResult {
     return {
-      ...(this.hallHints.length ? { hallHints: this.hallHints } : {}),
       source: this.source,
       fetchedAt: new Date().toISOString(),
       cinemas: [...this.cinemas.values()],

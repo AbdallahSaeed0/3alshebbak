@@ -4,9 +4,9 @@
 // and writes out/catalog.json instead (a dry run).
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { applyHallHints } from './hall-hints.js';
 import { errorMessage } from './http.js';
 import { placeCinemas } from './locations.js';
+import { leaveToPremiere, premiereDays } from './premiere-week.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
@@ -49,12 +49,12 @@ async function main() {
       `(${matched} on TMDB, ${catalog.movies.length - matched} local)`,
   );
   if (catalog.unmatched.length) console.log(`  not on TMDB: ${catalog.unmatched.join(' · ')}`);
-  const hinted = applyHallHints(results, catalog.filmToMovie);
-  if (hinted) console.log(`✓ halls: ${hinted} shows got their hall from another source`);
 
   // Always kept: it's what to check matches against, and what the app bundles offline.
   await writeFile('out/catalog.json', JSON.stringify(catalog, null, 2));
   const db = supabaseFromEnv();
+  const ceded = leaveToPremiere(results, catalog.filmToMovie, await premiereDays(results, catalog.filmToMovie, db));
+  if (ceded) console.log(`✓ premiere: ${ceded} of elCinema's shows left to Premiere's own site`);
   if (!db) {
     console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set: wrote out/catalog.json only (dry run)');
     return;

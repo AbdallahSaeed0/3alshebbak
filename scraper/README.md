@@ -145,7 +145,7 @@ a push and recording progress can still produce an at-least-once retry.
 |---|---|---|
 | `renaissance` | plain HTML, one page per branch per day | every time link carries its own data-* attributes |
 | `scene` | plain HTML per movie + `?business_day=…&ajax=1` per day | one site per venue (cfc, district5) |
-| `premiere` | headless Chromium, clicks through the pickers via the private Supabase transport | includes presales beyond elCinema's week and all dates for unlisted branches such as Nile Cinema |
+| `premiere` | headless Chromium, clicks through the pickers via the private Supabase transport | every day at every branch, with each show's hall; at the branches elCinema also lists (Plaza, Point90, Arkan) its films' days replace elCinema's (src/premiere-week.ts) |
 
 ## Tier 2: elCinema.com
 
