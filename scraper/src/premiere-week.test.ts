@@ -41,3 +41,10 @@ test('without Premiere in the run or a database, elCinema keeps everything', asy
   assert.equal(leaveToPremiere([elcinema], films, await premiereDays([elcinema], films, null)), 0);
   assert.equal(elcinema.showtimes.length, 1);
 });
+
+test("elCinema's booking-page copy steps back too", async () => {
+  const booking = result('elcinema-presales', [show('elcinema:1', '2026-11-15', '12:30'), show('elcinema:1', '2026-11-16', '12:30')]);
+  const results = [booking, result('premiere', premiereShows)];
+  assert.equal(leaveToPremiere(results, films, await premiereDays(results, films, null)), 1);
+  assert.deepEqual(left(booking), [`${p90} elcinema:1 2026-11-16`]);
+});
