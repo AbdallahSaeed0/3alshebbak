@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { ScrapeResult, Showtime } from './model.js';
-import { leaveToPremiere, premiereDays } from './premiere-week.js';
+import { leaveToPremiere, premiereBranches } from './premiere-week.js';
 
 const p90 = 'elcinema:premiere-point90';
 const show = (filmId: string, date: string, time: string, cinemaId = p90): Showtime => ({
@@ -10,41 +10,30 @@ const show = (filmId: string, date: string, time: string, cinemaId = p90): Showt
 const result = (source: ScrapeResult['source'], showtimes: Showtime[]): ScrapeResult => ({
   source, fetchedAt: '2026-11-15T10:00:00Z', cinemas: [], films: [], showtimes, warnings: [],
 });
-const films = { 'elcinema:1': 'tmdb:9', 'premiere:5.1': 'tmdb:9', 'elcinema:2': 'tmdb:8' };
-
-const elcinemaWeek = () =>
-  result('elcinema', [
-    show('elcinema:1', '2026-11-15', '12:00'), // Premiere has it at 11:00
-    show('elcinema:1', '2026-11-18', '12:00'), // a day Premiere hasn't put up yet
-    show('elcinema:2', '2026-11-15', '12:00'), // a film Premiere's site doesn't list that day
-    show('elcinema:1', '2026-11-15', '12:00', 'elcinema:sun-city'), // another cinema
-  ]);
-const premiereShows = [
+const left = (r: ScrapeResult) => r.showtimes.map((s) => `${s.cinemaId} ${s.businessDate}`);
+const premiere = result('premiere', [
   show('premiere:5.1', '2026-11-15', '11:00'),
   show('premiere:5.1', '2026-11-15', '13:30', 'premiere:nile-cinema'),
-];
-const left = (r: ScrapeResult) => r.showtimes.map((s) => `${s.cinemaId} ${s.filmId} ${s.businessDate}`);
+]);
 
-test("elCinema's shows step back on the film-days Premiere's site lists", async () => {
-  const elcinema = elcinemaWeek();
-  const results = [elcinema, result('premiere', premiereShows)];
-  assert.equal(leaveToPremiere(results, films, await premiereDays(results, films, null)), 1);
-  assert.deepEqual(left(elcinema), [
-    `${p90} elcinema:1 2026-11-18`,
-    `${p90} elcinema:2 2026-11-15`,
-    'elcinema:sun-city elcinema:1 2026-11-15',
+test("a branch Premiere's site lists shows only Premiere's shows", async () => {
+  const elcinema = result('elcinema', [
+    show('elcinema:1', '2026-11-15', '12:00'), // Premiere has it at 11:00
+    show('elcinema:1', '2026-11-19', '12:00'), // a day Premiere hasn't put on sale
+    show('elcinema:2', '2026-11-15', '12:00'), // a film Premiere doesn't list there
+    show('elcinema:1', '2026-11-15', '12:00', 'elcinema:sun-city'), // another cinema
   ]);
+  const booking = result('elcinema-presales', [show('elcinema:1', '2026-11-16', '12:30')]);
+  const results = [elcinema, booking, premiere];
+  assert.deepEqual([...(await premiereBranches(results, null))], [p90]);
+  assert.equal(leaveToPremiere(results, await premiereBranches(results, null)), 4);
+  assert.deepEqual(left(elcinema), ['elcinema:sun-city 2026-11-15']);
+  assert.deepEqual(left(booking), []);
+  assert.equal(premiere.showtimes.length, 2);
 });
 
 test('without Premiere in the run or a database, elCinema keeps everything', async () => {
   const elcinema = result('elcinema', [show('elcinema:1', '2026-11-15', '12:00')]);
-  assert.equal(leaveToPremiere([elcinema], films, await premiereDays([elcinema], films, null)), 0);
+  assert.equal(leaveToPremiere([elcinema], await premiereBranches([elcinema], null)), 0);
   assert.equal(elcinema.showtimes.length, 1);
-});
-
-test("elCinema's booking-page copy steps back too", async () => {
-  const booking = result('elcinema-presales', [show('elcinema:1', '2026-11-15', '12:30'), show('elcinema:1', '2026-11-16', '12:30')]);
-  const results = [booking, result('premiere', premiereShows)];
-  assert.equal(leaveToPremiere(results, films, await premiereDays(results, films, null)), 1);
-  assert.deepEqual(left(booking), [`${p90} elcinema:1 2026-11-16`]);
 });

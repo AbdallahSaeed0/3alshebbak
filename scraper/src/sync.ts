@@ -6,7 +6,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { errorMessage } from './http.js';
 import { placeCinemas } from './locations.js';
-import { leaveToPremiere, premiereDays, removeCededFromDb } from './premiere-week.js';
+import { leaveToPremiere, premiereBranches, removeCededFromDb } from './premiere-week.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
 import { supabaseFromEnv, upload } from './supabase.js';
@@ -53,8 +53,8 @@ async function main() {
   // Always kept: it's what to check matches against, and what the app bundles offline.
   await writeFile('out/catalog.json', JSON.stringify(catalog, null, 2));
   const db = supabaseFromEnv();
-  const premiere = await premiereDays(results, catalog.filmToMovie, db);
-  const ceded = leaveToPremiere(results, catalog.filmToMovie, premiere);
+  const premiere = await premiereBranches(results, db);
+  const ceded = leaveToPremiere(results, premiere);
   if (ceded) console.log(`✓ premiere: ${ceded} of elCinema's shows left to Premiere's own site`);
   if (!db) {
     console.log('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set: wrote out/catalog.json only (dry run)');
