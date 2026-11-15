@@ -119,8 +119,18 @@ export const premiere: Source = {
               for (const [date, branches] of Object.entries(days)) {
                 for (const b of branches) {
                   const listed = elcinemaCinemaId('Premiere', ELCINEMA_VENUE[b.name] ?? b.name);
-                  // elCinema has this branch's week; only the days past it are ours.
-                  if (listed && date < from) continue;
+                  // elCinema has this branch's week; only the days past it are
+                  // ours. Its shows don't say their hall, though: hand that over.
+                  if (listed && date < from) {
+                    for (const f of b.formats) {
+                      for (const t of f.times) {
+                        const start = showStart(date, t);
+                        const hall = f.halls?.[t];
+                        if (start && hall) out.hallHint({ cinemaId: listed, filmId, start, hall });
+                      }
+                    }
+                    continue;
+                  }
                   const cinemaId = listed ?? out.cinema({ slug: slug(b.name), chain: 'Premiere', name: b.name });
                   for (const f of b.formats) {
                     const format = premiereFormat(f.name);

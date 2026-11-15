@@ -4,6 +4,7 @@
 // and writes out/catalog.json instead (a dry run).
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { applyHallHints } from './hall-hints.js';
 import { errorMessage } from './http.js';
 import { placeCinemas } from './locations.js';
 import type { ScrapeResult } from './model.js';
@@ -48,6 +49,8 @@ async function main() {
       `(${matched} on TMDB, ${catalog.movies.length - matched} local)`,
   );
   if (catalog.unmatched.length) console.log(`  not on TMDB: ${catalog.unmatched.join(' · ')}`);
+  const hinted = applyHallHints(results, catalog.filmToMovie);
+  if (hinted) console.log(`✓ halls: ${hinted} shows got their hall from another source`);
 
   // Always kept: it's what to check matches against, and what the app bundles offline.
   await writeFile('out/catalog.json', JSON.stringify(catalog, null, 2));

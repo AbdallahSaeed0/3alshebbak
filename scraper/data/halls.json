@@ -1432,6 +1432,257 @@
             ]
           }
         ]
+      },
+      {
+        "name": "Premiere",
+        "formats": [
+          "Premiere"
+        ],
+        "sceneHallIds": [
+          "65fd9a42a4757a36890bc472",
+          "65fdb627fd25ff92640ebbb3",
+          "65fdb6d2fd25ff92640ebbb4",
+          "65fdb7510c6a203e450e2cca"
+        ],
+        "sceneShowtime": "6af8966a475a2207de078f83",
+        "_note": "District 5 has 4 Premiere halls with this same plan (read 2026-11-15); a show says only Premiere, so this plan stands for all of them.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|6 5 . 4 3 . 2 1",
+              "B|6 5 . 4 3 . 2 1",
+              "C|6 5 . 4 3 . 2 1",
+              "D|6 5 . 4 3 . 2 1",
+              "E|6 5 . 4 3 . 2 1",
+              "F|6 5 . 4 3 . 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 1 (90 seats)",
+        "formats": [],
+        "sceneHallId": "65fd4ea503586a23c007cba2",
+        "sceneShowtime": "6af23aede95f9a06741e88e2",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "G|. 6 5 . . . . . . . 2 1 .",
+              "H|. . 9 8 7 6 5 4 3 2 1 . .",
+              "I|. . 9 8 7 6 5 4 3 2 1 . .",
+              "J|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 2 (90 seats)",
+        "formats": [],
+        "sceneHallId": "65fd8e106774aec64707b8ca",
+        "sceneShowtime": "6af226afe95f9a06741e80de",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "G|. 6 5 . . . . . . . 2 1 .",
+              "H|. . 9 8 7 6 5 4 3 2 1 . .",
+              "I|. . 9 8 7 6 5 4 3 2 1 . .",
+              "J|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 3 (90 seats)",
+        "formats": [],
+        "sceneHallId": "65fd8e5c6774aec64707b8cb",
+        "sceneShowtime": "6af22be3e95f9a06741e8309",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "G|. 6 5 . . . . . . . 2 1 .",
+              "H|. . 9 8 7 6 5 4 3 2 1 . .",
+              "I|. . 9 8 7 6 5 4 3 2 1 . .",
+              "J|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 4 (90 seats)",
+        "formats": [],
+        "sceneHallId": "65fd8ea021194b3d000e7e68",
+        "sceneShowtime": "6af22c07e95f9a06741e8347",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "G|. 6 5 . . . . . . . 2 1 .",
+              "H|. . 9 8 7 6 5 4 3 2 1 . .",
+              "I|. . 9 8 7 6 5 4 3 2 1 . .",
+              "J|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 5 (103 seats)",
+        "formats": [],
+        "sceneHallId": "65fd8ef521194b3d000e7e69",
+        "sceneShowtime": "6af22c35e95f9a06741e8378",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "F|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "H|. 6 5 . . . . . . . 2 1 .",
+              "I|. 10 9 8 7 6 5 4 3 2 1 . .",
+              "J|. 10 9 8 7 6 5 4 3 2 1 . .",
+              "K|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 6 (103 seats)",
+        "formats": [],
+        "sceneHallId": "65fd8f6ede6897e862041d52",
+        "sceneShowtime": "6af22c56e95f9a06741e83c5",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "B|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "C|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "D|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "E|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "F|. 11 10 9 8 7 6 5 4 3 2 1 .",
+              "|. . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . .",
+              "H|. 6 5 . . . . . . . 2 1 .",
+              "I|. 10 9 8 7 6 5 4 3 2 1 . .",
+              "J|. 10 9 8 7 6 5 4 3 2 1 . .",
+              "K|13 12 11 10 9 8 7 6 5 4 3 2 1"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 7 (156 seats)",
+        "formats": [],
+        "sceneHallId": "65fd97e1115fe17bb0094a92",
+        "sceneShowtime": "6af22c91e95f9a06741e8420",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "B|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "C|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "D|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "E|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "F|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "G|4 3 2 1 . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . .",
+              "H|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "I|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "J|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "K|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "L|. . 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 8 (156 seats)",
+        "formats": [],
+        "sceneHallId": "65fdc723464d7d9533030912",
+        "sceneShowtime": "6aecbbe5e95f9a06741d5b3a",
+        "_note": "A Standard & Deluxe hall; Scene names no halls, so it is numbered here by its id. A show says only Standard & Deluxe, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "B|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "C|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "D|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "E|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "F|15 14 13 12 . . . 11 10 9 8 7 6 5 . . . 4 3 2 1",
+              "G|15 14 13 12 . . . . . . . . . . . . . . . . .",
+              "|. . . . . . . . . . . . . . . . . . . . .",
+              "H|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "I|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "J|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "K|. . 12 11 10 9 8 . . 7 6 5 4 3 2 1 . . . . .",
+              "L|. . 14 13 12 11 10 9 8 7 6 5 4 3 2 1 . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
       }
     ]
   },
@@ -1492,6 +1743,389 @@
             ]
           }
         ]
+      },
+      {
+        "name": "Premiere",
+        "formats": [
+          "Premiere"
+        ],
+        "sceneHallIds": [
+          "6573dbb3ef1c1b92a60fd8ed",
+          "6573dc2cef1c1b92a60fd91e",
+          "6573dc92ef1c1b92a60fd94f",
+          "6573dd0aef1c1b92a60fd980"
+        ],
+        "sceneShowtime": "6af34c5c807cb7bca003d8f8",
+        "_note": "CFC has 4 Premiere halls with this same plan (read 2026-11-15); a show says only Premiere, so this plan stands for all of them.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|1 2 3 4 5 6",
+              "B|1 2 3 4 5 6",
+              "C|1 2 3 4 5 6",
+              "D|1 2 3 4 5 6",
+              "E|1 2 3 4 5 6",
+              "F|1 2 3 4 5 6"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 1 (132 seats)",
+        "formats": [],
+        "sceneHallId": "6573b13aef1c1b92a60fc679",
+        "sceneShowtime": "6af34926807cb7bca003d59b",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 .",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6",
+              "H|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6",
+              "I|. . . . . . . . . . 1 2 3 4 5 6",
+              "J|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6",
+              "K|. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 2 (150 seats)",
+        "formats": [],
+        "sceneHallId": "6573b729ef1c1b92a60fc8d0",
+        "sceneShowtime": "6af34955807cb7bca003d5d0",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "H|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "I|17 16 15 14 13 12 11 . . . . . . . . . .",
+              "J|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "K|1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 3 (140 seats)",
+        "formats": [],
+        "sceneHallId": "6573b919ef1c1b92a60fc9a2",
+        "sceneShowtime": "6af3496c807cb7bca003d5f5",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "H|. . . . . . . . . . 1 2 3 4 5 6 7",
+              "I|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "J|17 16 15 14 13 12 11 . . . . . 1 2 3 4 5",
+              "K|. 19 18 17 16 15 14 13 12 11 . . . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 4 (143 seats)",
+        "formats": [],
+        "sceneHallId": "6573bbc6ef1c1b92a60fcb46",
+        "sceneShowtime": "6af34a3d807cb7bca003d6bc",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "H|17 16 15 14 13 12 11 . . . . . . . . . .",
+              "I|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "J|13 12 11 . . . . . . . 1 2 3 4 5 6 7",
+              "K|14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 5 (150 seats)",
+        "formats": [],
+        "sceneHallId": "6573bde7ef1c1b92a60fcc18",
+        "sceneShowtime": "6af34a6d807cb7bca003d6eb",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "H|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "I|. . . . . . . . . . 1 2 3 4 5 6 7",
+              "J|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "K|1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 6 (149 seats)",
+        "formats": [],
+        "sceneHallId": "6573bf42ef1c1b92a60fccea",
+        "sceneShowtime": "6af34a95807cb7bca003d71c",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "B|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "H|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "I|17 16 15 14 13 12 11 . . . . . . . . . .",
+              "J|17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "K|1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 7 (261 seats)",
+        "formats": [],
+        "sceneHallId": "6573c0acef1c1b92a60fcdbc",
+        "sceneShowtime": "6aea6b9e93ab5e6f3c4a5d17",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . . 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 . . .",
+              "B|. . 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 . .",
+              "C|. 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 .",
+              "D|. 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 .",
+              "E|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "F|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "G|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "H|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "I|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "J|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "K|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . 21 22 23 24 25 26 27 28",
+              "L|14 13 12 11 . . . . . . . . . . . . . . . . . . . . . . 21 22 23 24",
+              "M|13 12 11 . . . . . . . . . . . . . . . . . . . . . . . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 8 (139 seats)",
+        "formats": [],
+        "sceneHallId": "6573c32bef1c1b92a60fcf43",
+        "sceneShowtime": "6af34adc807cb7bca003d74a",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. . . 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 .",
+              "B|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 .",
+              "C|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10",
+              "D|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10",
+              "E|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10",
+              "F|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10",
+              "G|18 17 16 15 14 13 12 11 . . . . . . . . . . . . .",
+              "H|18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 . . . . .",
+              "I|. 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 9 (122 seats)",
+        "formats": [],
+        "sceneHallId": "6573c489ef1c1b92a60fd013",
+        "sceneShowtime": "6af34b28807cb7bca003d792",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 . .",
+              "B|. 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "C|. 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "D|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "E|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "F|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "G|. . . . . . . . . . . . 1 2 3 4 5 6 7",
+              "H|. . . . . 14 13 12 11 . . . 1 2 3 4 5 6 7",
+              "I|. . . . . 1 2 3 4 5 6 7 8 9 10 11 12 13 ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 10 (147 seats)",
+        "formats": [],
+        "sceneHallId": "6573c736ef1c1b92a60fd0d1",
+        "sceneShowtime": "6af38f8b807cb7bca003f653",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 .",
+              "B|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9",
+              "C|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9",
+              "D|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9",
+              "E|19 18 17 16 15 14 13 12 11 . . . . . . . . . . . .",
+              "F|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 . . . .",
+              "G|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 . . . .",
+              "H|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9",
+              "I|1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 11 (168 seats)",
+        "formats": [],
+        "sceneHallId": "6573cdc1ef1c1b92a60fd418",
+        "sceneShowtime": "6aeba014807cb7bca001bd91",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "B|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "C|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "D|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "E|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "F|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "G|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "H|. . . . . . . . . . . . . . . . . 21 22 23 24 25",
+              "I|. . . . . 9 8 7 6 5 4 3 2 1 . . . 21 22 23 24 25",
+              "J|. . . . . . 8 7 6 5 4 3 2 1 . . . 21 22 23 24 25",
+              "K|. . . . . . 8 7 6 5 4 3 2 1 . . . 21 22 23 24 25",
+              "L|. . . . . . 10 9 8 7 6 5 4 3 2 1 . 21 22 23 24 25",
+              "|. . . . . . . . . . . . . . . . . . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 12 (168 seats)",
+        "formats": [],
+        "sceneHallId": "6573d0bfef1c1b92a60fd538",
+        "sceneShowtime": "6af34c1b807cb7bca003d85e",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "B|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "C|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "D|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "E|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "F|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "G|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "H|15 14 13 12 11 . . . . . . . . . . . . . . . . .",
+              "I|15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 . . . . .",
+              "J|15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . . . .",
+              "K|15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 . . . . . .",
+              "L|15 14 13 12 11 . 1 2 3 4 5 6 7 8 9 10 . . . . . ."
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
+      },
+      {
+        "name": "Hall 13 (224 seats)",
+        "formats": [],
+        "sceneHallId": "6573d90def1c1b92a60fd7a2",
+        "sceneShowtime": "6af34c43807cb7bca003d8c0",
+        "_note": "A Standard hall; Scene names no halls, so it is numbered here by its id. A show says only Standard, so it is not linked to shows.",
+        "sections": [
+          {
+            "name": "Seats",
+            "prices": {},
+            "rows": [
+              "A|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "B|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "C|. 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 .",
+              "D|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "E|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "F|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "G|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "H|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "I|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "J|15 14 13 12 11 . . . 1 2 3 4 5 6 . . . 21 22 23 24 25",
+              "K|. . . . . . . . . . . . . . . . . 21 22 23 24 25",
+              "L|. . . . 15 14 13 12 11 . . . 1 2 3 4 . 5 6 7 8 9",
+              "M|. . . . 15 14 13 12 11 . . . 1 2 3 4 . 5 6 7 8 9",
+              "N|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 . 5 6 7 8 9",
+              "O|19 18 17 16 15 14 13 12 11 . . . 1 2 3 4 5 6 7 8 9 10"
+            ]
+          }
+        ],
+        "recordedAt": "2026-11-15"
       }
     ]
   },

@@ -250,6 +250,18 @@ void main() {
       390,
     );
     expect(halls.forShowtime(_show('Standard', at: 'scene:cfc')), isNull);
+    // each venue's four Premiere halls share one plan
+    for (final at in ['scene:cfc', 'scene:district5']) {
+      expect(
+        halls.forShowtime(_show('Premiere', at: at))!.seats.length,
+        36,
+        reason: at,
+      );
+    }
+    expect(
+      halls.forShowtime(_show('Standard & Deluxe', at: 'scene:district5')),
+      isNull,
+    );
   });
 
   test('the best seat is central and away from the front', () {
