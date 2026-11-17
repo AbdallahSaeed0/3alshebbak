@@ -102,6 +102,55 @@ async function showtimeRows(db: SupabaseClient, since: string): Promise<unknown[
   }
 }
 
+/** The news part kept beside the catalog, so a rebuild without new notifications reuses it. */
+const NEWS_FILE = 'news.json';
+
+/**
+ * The news for the catalog file. Working it out reads two weeks of the
+ * notification log and of shows first seen (several MB, egress on Supabase's
+ * quota), yet it only changes when notifications go out, a few times a day
+ * while the file is rebuilt every hour or so. So it's worked out when a
+ * notification has gone out since the last time, and otherwise read back
+ * from news.json (items older than two weeks dropped).
+ */
+async function currentNews(db: SupabaseClient): Promise<News[]> {
+  const from = new Date(Date.now() - NEWS_DAYS * 86_400_000).toISOString();
+  try {
+    const { data: file } = await db.storage.from(BUCKET).download(NEWS_FILE);
+    const kept = file ? (JSON.parse(await file.text()) as { builtAt: string; news: News[] }) : null;
+    if (kept?.builtAt && Array.isArray(kept.news)) {
+      const { count, error } = await db
+        .from('notification_log')
+        .select('id', { count: 'exact', head: true })
+        .eq('outcome', 'sent')
+        .gte('run_at', kept.builtAt);
+      if (!error && count === 0) return kept.news.filter((n) => n.at >= from);
+    }
+  } catch {
+    // No usable copy: work it out.
+  }
+  const builtAt = new Date().toISOString();
+  const news = attachShows(
+    collectNews(
+      (await all(db, () =>
+        db.from('notification_log').select('run_at,since,movie_id,kind,cinemas')
+          .eq('outcome', 'sent').gte('run_at', from).order('id'),
+      )) as Parameters<typeof collectNews>[0],
+    ),
+    (await all(db, () =>
+      db.from('showtimes_seen').select('movie_id,cinema_id,starts_at,first_seen_at')
+        .gte('first_seen_at', from).gt('starts_at', new Date().toISOString()).order('id'),
+    )) as SeenShow[],
+  );
+  const { error } = await db.storage.from(BUCKET).upload(
+    NEWS_FILE,
+    new Blob([JSON.stringify({ builtAt, news })], { type: 'application/json' }),
+    { upsert: true, contentType: 'application/json' },
+  );
+  if (error) console.log(`  ! news not kept for the next rebuild: ${error.message}`);
+  return news;
+}
+
 /** Builds the snapshot from the database and uploads it. Returns its size in bytes. */
 export async function publishSnapshot(db: SupabaseClient): Promise<number> {
   // Shows that ended an hour ago are of no use, as in the app's own query.
@@ -114,17 +163,7 @@ export async function publishSnapshot(db: SupabaseClient): Promise<number> {
   // Best effort: a snapshot without news still opens the app.
   let news: News[] = [];
   try {
-    const from = new Date(Date.now() - NEWS_DAYS * 86_400_000).toISOString();
-    news = collectNews(
-      (await all(db, () =>
-        db.from('notification_log').select('*').eq('outcome', 'sent').gte('run_at', from).order('id'),
-      )) as Parameters<typeof collectNews>[0],
-    );
-    const seen = (await all(db, () =>
-      db.from('showtimes_seen').select('movie_id,cinema_id,starts_at,first_seen_at')
-        .gte('first_seen_at', from).gt('starts_at', new Date().toISOString()).order('id'),
-    )) as SeenShow[];
-    news = attachShows(news, seen);
+    news = await currentNews(db);
   } catch (e) {
     console.log(`  ! snapshot without news: ${e instanceof Error ? e.message : e}`);
   }
