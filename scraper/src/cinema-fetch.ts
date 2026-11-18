@@ -47,7 +47,7 @@ export async function cinemaFetch(
     try {
       const answer = await relay(process.env.CINEMA_FETCH_WORKER_URL!, process.env.CINEMA_FETCH_WORKER_TOKEN!, {}, payload);
       if (!refusal(answer.status) || !supabaseConfigured()) return answer;
-      if (!workerRefused.has(host)) console.log(`  cinema relay: ${host} turned the Cloudflare Worker away (HTTP ${answer.status}); using Supabase's`, JSON.stringify({ colo: (answer as any).colo, headers: answer.headers, body: answer.body.slice(0, 300) }));
+      if (!workerRefused.has(host)) console.log(`  cinema relay: ${host} turned the Cloudflare Worker away (HTTP ${answer.status}); using Supabase's`, `(from ${(answer as { colo?: string }).colo ?? '?'}, server ${answer.headers.server ?? '?'})`);
       workerRefused.add(host);
     } catch (e) {
       if (!supabaseConfigured()) throw e;
