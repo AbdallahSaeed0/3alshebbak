@@ -21,10 +21,14 @@ test('a failed device retries after Cairo midnight without replaying successful 
       const filters: Record<string, string> = {};
       const result = () => {
         if (table === 'notification_progress') {
-          if (upsertRow) progress.set(upsertRow.token, upsertRow);
+          for (const r of [upsertRow ?? []].flat()) progress.set(r.token, r);
           return { data: [...progress.values()], error: null };
         }
         if (table === 'notifications_sent') {
+          if (operation === 'select') {
+            const data = [...reserved].filter((k) => k.endsWith(`|${filters.sent_on}`)).map((k) => ({ token: k.split('|')[0], movie_id: 'film' }));
+            return { data, error: null };
+          }
           const value = insertRow ?? filters;
           const key = `${value.token}|${value.sent_on}`;
           if (operation === 'delete') { reserved.delete(key); return { error: null }; }

@@ -323,12 +323,30 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       .in('movie_id', movieIds).order('token').order('movie_id'),
   );
   const checked = new Map(progress.map((p) => [`${p.token}|${p.movie_id}`, p.checked_through]));
-  const advance = async (token: string, movie_id: string) => {
-    const { error } = await db.from('notification_progress').upsert(
-      { token, movie_id, checked_through: now }, { onConflict: 'token,movie_id' },
-    );
-    if (error) throw new Error(`save device notification progress: ${error.message}`);
+  // Progress is saved in one go at the end of the run (and before a failure
+  // ends it): one write per phone and film was most of the database requests
+  // and log lines on Supabase's quota. Losing it to a crash is harmless: the
+  // next run finds today's notification already reserved and doesn't resend.
+  const advanced = new Map<string, { token: string; movie_id: string; checked_through: string }>();
+  const advance = (token: string, movie_id: string) => {
+    advanced.set(`${token}|${movie_id}`, { token, movie_id, checked_through: now });
   };
+  const saveProgress = async () => {
+    const rows = [...advanced.values()];
+    advanced.clear();
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await db.from('notification_progress').upsert(rows.slice(i, i + 500), { onConflict: 'token,movie_id' });
+      if (error) throw new Error(`save device notification progress: ${error.message}`);
+    }
+  };
+  // Today's notifications already sent, read once: a film that had its one a
+  // day doesn't need an insert that fails to find that out.
+  const sentToday = new Set(
+    (await all<{ token: string; movie_id: string }>(() =>
+      db.from('notifications_sent').select('token,movie_id').eq('sent_on', cairoToday())
+        .in('movie_id', movieIds).order('token').order('movie_id'),
+    )).map((r) => `${r.token}|${r.movie_id}`),
+  );
 
   const before = await all<Seen>(() =>
     db
@@ -350,10 +368,8 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const today = cairoToday();
   const counts = { opened: 0, days: 0, shows: 0 };
   let failed = false;
+  try {
   for (const device of devices) {
-    // The previous phone's rows (sends, daily limits…) go out before this
-    // one's notifications do.
-    await log.flush();
     // A phone that picked its cinemas hears only about those, unless it
     // asked for every cinema.
     const everywhere = !device.cinemas.length || device.following.includes(ALL_CINEMAS);
@@ -384,9 +400,9 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       }
 
       // The primary key makes this the once-a-day check: a second insert fails.
-      const { error: seen } = await db
-        .from('notifications_sent')
-        .insert({ token: device.token, movie_id: movieId, sent_on: today });
+      const { error: seen } = sentToday.has(`${device.token}|${movieId}`)
+        ? { error: { code: '23505', message: 'sent today' } }
+        : await db.from('notifications_sent').insert({ token: device.token, movie_id: movieId, sent_on: today });
       if (seen) {
         if (seen.code === '23505') {
           // Consume updates intentionally suppressed by today's rate limit,
@@ -403,6 +419,9 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       due.push({ movieId, alert });
     }
     if (!due.length) continue;
+    // The rows so far (daily limits, other phones' sends…) go out before
+    // this phone's notifications do.
+    await log.flush();
 
     // Films the phone follows always get their own notification; only the
     // rest (every-film mode) are bundled, and only past DIGEST_AFTER of them.
@@ -471,6 +490,10 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       const { error } = await db.from('devices').delete().eq('token', device.token);
       if (error) throw new Error(`remove stale device: ${error.message}`);
     }
+  }
+  } finally {
+    await saveProgress();
+    await log.flush();
   }
   console.log(
     `✓ notifications: ${counts.opened} opened, ${counts.days} new days, ${counts.shows} new showtimes`,
