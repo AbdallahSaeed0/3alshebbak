@@ -47,8 +47,8 @@ export async function cinemaFetch(
     try {
       const answer = await relay(process.env.CINEMA_FETCH_WORKER_URL!, process.env.CINEMA_FETCH_WORKER_TOKEN!, {}, payload);
       if (!refusal(answer.status) || !supabaseConfigured()) return answer;
+      if (!workerRefused.has(host)) console.log(`  cinema relay: ${host} turned the Cloudflare Worker away (HTTP ${answer.status}); using Supabase's`);
       workerRefused.add(host);
-      console.log(`  cinema relay: ${host} turned the Cloudflare Worker away (HTTP ${answer.status}); using Supabase's`);
     } catch (e) {
       if (!supabaseConfigured()) throw e;
     }
