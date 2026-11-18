@@ -3,10 +3,12 @@ main = "worker.js"
 compatibility_date = "2026-11-01"
 workers_dev = true
 
-[[durable_objects.bindings]]
-name = "RELAY"
-class_name = "Relay"
-
+# A Durable Object (Relay) was tried for Premiere and removed: v1 made it,
+# v2 deletes it. Kept so later deploys don't replay the creation.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Relay"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["Relay"]

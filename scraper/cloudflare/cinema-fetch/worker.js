@@ -16,18 +16,18 @@ const trimHtml = (html) => html
   .replace(/<!--[\s\S]*?-->/g, '')
   .replace(/\s+/g, ' ');
 
-// Premiere's site (itself behind Cloudflare) turns away requests that leave
-// from US locations, and a Worker runs next to its caller: GitHub's runners
-// put it in Washington. The fetching happens in a Durable Object pinned to
-// Western Europe instead (where Supabase's relay also runs), whoever calls.
-const WHERE = 'weur';
-
-export class Relay {
-  async fetch(request) {
-    const input = await request.json();
+export default {
+  async fetch(request, env) {
+    if (request.method !== 'POST') return new Response('Not found', { status: 404 });
+    if (!env.RELAY_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.RELAY_TOKEN}`) {
+      return new Response('Unauthorized', { status: 401 });
+    }
     try {
+      const input = await request.json();
       let url = new URL(input.url);
       const method = input.method ?? 'GET';
+      if (!allowed(url) || !['GET', 'POST'].includes(method)) return new Response('Destination denied', { status: 400 });
+      if (typeof input.body === 'string' && input.body.length > 256_000) return new Response('Request too large', { status: 413 });
       const headers = new Headers();
       for (const name of ['accept', 'accept-language', 'content-type', 'referer', 'origin', 'user-agent', 'cookie', 'authorization', 'x-requested-with']) {
         if (typeof input.headers?.[name] === 'string') headers.set(name, input.headers[name]);
@@ -47,39 +47,13 @@ export class Relay {
       if (body.length > 4_000_000) return new Response('Response too large', { status: 413 });
       if (input.trim === true && /html/i.test(response.headers.get('content-type') ?? '')) body = trimHtml(body);
       const resultHeaders = {};
-      for (const name of ['content-type', 'set-cookie', 'access-control-allow-origin', 'access-control-allow-credentials', 'server']) {
+      for (const name of ['content-type', 'set-cookie', 'access-control-allow-origin', 'access-control-allow-credentials']) {
         const value = response.headers.get(name);
         if (value) resultHeaders[name] = value;
       }
-      const answer = { status: response.status, headers: resultHeaders, body };
-      // Where a refused request left from, for the scraper's log.
-      if (response.status === 403) {
-        const trace = await (await fetch('https://www.cloudflare.com/cdn-cgi/trace')).text();
-        answer.colo = ['colo', 'loc', 'ip'].map((k) => trace.match(new RegExp(`^${k}=(.*)$`, 'm'))?.[1]).join(' ');
-      }
-      return Response.json(answer);
+      return Response.json({ status: response.status, headers: resultHeaders, body });
     } catch {
       return new Response('Cinema fetch failed', { status: 502 });
     }
-  }
-}
-
-export default {
-  async fetch(request, env) {
-    if (request.method !== 'POST') return new Response('Not found', { status: 404 });
-    if (!env.RELAY_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.RELAY_TOKEN}`) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-    let input;
-    try {
-      input = await request.json();
-      const url = new URL(input.url);
-      if (!allowed(url) || !['GET', 'POST'].includes(input.method ?? 'GET')) return new Response('Destination denied', { status: 400 });
-    } catch {
-      return new Response('Bad request', { status: 400 });
-    }
-    if (typeof input.body === 'string' && input.body.length > 256_000) return new Response('Request too large', { status: 413 });
-    const relay = env.RELAY.get(env.RELAY.idFromName(WHERE), { locationHint: WHERE });
-    return relay.fetch('https://relay/', { method: 'POST', body: JSON.stringify(input) });
   },
 };
