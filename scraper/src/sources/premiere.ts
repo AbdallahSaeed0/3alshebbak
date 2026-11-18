@@ -19,6 +19,7 @@ import type { Page } from 'playwright';
 import { newContext } from '../browser.js';
 import { cinemaFetch, cinemaRelayConfigured } from '../cinema-fetch.js';
 import { errorMessage, hallName } from '../http.js';
+import { cachedScript, keepable, keepScript, saveScripts } from '../premiere-static.js';
 import { ResultBuilder, type Source } from '../model.js';
 import { addDays, cairoToday, showStart } from '../time.js';
 import { elcinemaCinemaId } from './elcinema.js';
@@ -92,7 +93,15 @@ export const premiere: Source = {
           const key = `${request.method()} ${request.url()} ${request.postData() ?? ''}`;
           let answer = answers.get(key);
           if (!answer) {
-            answer = cinemaFetch(request.url(), request.method(), await request.allHeaders(), request.postData() ?? undefined);
+            const url = request.url(), method = request.method();
+            answer = keepable(method, url)
+              ? cachedScript(url).then(async (kept) => {
+                if (kept) return kept;
+                const fetched = await cinemaFetch(url, method, await request.allHeaders());
+                await keepScript(url, fetched);
+                return fetched;
+              })
+              : cinemaFetch(url, method, await request.allHeaders(), request.postData() ?? undefined);
             answers.set(key, answer);
             // A failed or refused answer is asked again next time.
             answer.then((r) => r.status !== 200 && answers.delete(key), () => answers.delete(key));
@@ -156,6 +165,7 @@ export const premiere: Source = {
       );
     } finally {
       await context.close();
+      await saveScripts().catch((e) => out.warn(`Premiere script cache: ${errorMessage(e)}`));
     }
 
     // No presales anywhere is a normal week, not a failure.

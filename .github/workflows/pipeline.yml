@@ -61,6 +61,15 @@ jobs:
           key: tmdb-cache-${{ github.run_id }}
           restore-keys: tmdb-cache-
 
+      # Premiere's site scripts (src/premiere-static.ts), so each run doesn't
+      # pull them through the cinema relay again.
+      - name: Restore Premiere script cache
+        uses: actions/cache/restore@v4
+        with:
+          path: scraper/data/premiere-static.json
+          key: premiere-static-${{ github.run_id }}
+          restore-keys: premiere-static-
+
       - name: Pick sources
         id: sources
         env:
@@ -100,6 +109,13 @@ jobs:
         with:
           path: scraper/data/tmdb-cache.json
           key: tmdb-cache-${{ github.run_id }}
+
+      - name: Save Premiere script cache
+        if: always() && contains(steps.sources.outputs.list, 'premiere') && hashFiles('scraper/data/premiere-static.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: scraper/data/premiere-static.json
+          key: premiere-static-${{ github.run_id }}
 
       # Scrape output and warnings, for looking into a bad run.
       - name: Keep the scrape output

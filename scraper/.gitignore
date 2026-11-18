@@ -3,3 +3,5 @@ out/
 .env
 # Rebuilt from TMDB; CI keeps its own copy in the Actions cache.
 data/tmdb-cache.json
+# Premiere's site scripts; CI keeps its own copy in the Actions cache.
+data/premiere-static.json
