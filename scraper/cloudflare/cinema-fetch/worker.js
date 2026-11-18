@@ -53,7 +53,10 @@ export class Relay {
       }
       const answer = { status: response.status, headers: resultHeaders, body };
       // Where a refused request left from, for the scraper's log.
-      if (response.status === 403) answer.colo = (await (await fetch('https://www.cloudflare.com/cdn-cgi/trace')).text()).match(/colo=(w+)/)?.[1];
+      if (response.status === 403) {
+        const trace = await (await fetch('https://www.cloudflare.com/cdn-cgi/trace')).text();
+        answer.colo = ['colo', 'loc', 'ip'].map((k) => trace.match(new RegExp(`^${k}=(.*)$`, 'm'))?.[1]).join(' ');
+      }
       return Response.json(answer);
     } catch {
       return new Response('Cinema fetch failed', { status: 502 });
