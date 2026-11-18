@@ -47,11 +47,11 @@ export default {
       if (body.length > 4_000_000) return new Response('Response too large', { status: 413 });
       if (input.trim === true && /html/i.test(response.headers.get('content-type') ?? '')) body = trimHtml(body);
       const resultHeaders = {};
-      for (const name of ['content-type', 'set-cookie', 'access-control-allow-origin', 'access-control-allow-credentials']) {
+      for (const name of ['content-type', 'set-cookie', 'access-control-allow-origin', 'access-control-allow-credentials', 'server', 'via', 'x-cache', 'cf-mitigated', 'x-amz-cf-pop']) {
         const value = response.headers.get(name);
         if (value) resultHeaders[name] = value;
       }
-      return Response.json({ status: response.status, headers: resultHeaders, body });
+      return Response.json({ status: response.status, headers: resultHeaders, body, colo: request.cf?.colo });
     } catch {
       return new Response('Cinema fetch failed', { status: 502 });
     }
