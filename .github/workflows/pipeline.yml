@@ -34,6 +34,11 @@ jobs:
       # Optional: without it the run skips push notifications.
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       CINEMA_FETCH_URL: https://enmcbbwunzhjxgwehzuf.supabase.co/functions/v1/cinema-fetch
+      # The Cloudflare Worker relay (scraper/cloudflare/cinema-fetch), tried
+      # first: its traffic isn't on Supabase's quota. Without the secret, the
+      # Supabase relay above is used alone.
+      CINEMA_FETCH_WORKER_URL: https://shebbak-cinema-fetch.abdallahsaeed177.workers.dev
+      CINEMA_FETCH_WORKER_TOKEN: ${{ secrets.CINEMA_FETCH_WORKER_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
