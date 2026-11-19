@@ -49,22 +49,31 @@ class SupabaseShowtimesRepository implements ShowtimesRepository {
   static const snapshotUrl =
       '$url/storage/v1/object/public/shebbak-public/catalog.json';
 
+  /// The same file on the Cloudflare Worker (scraper/cloudflare/cinema-fetch),
+  /// read first: what Cloudflare sends isn't on Supabase's egress quota, so
+  /// more phones opening the app don't use it up. Supabase's copy stays for
+  /// when this one can't be read or has fallen behind.
+  static const workerSnapshotUrl =
+      'https://shebbak-cinema-fetch.abdallahsaeed177.workers.dev/catalog.json';
+
   /// Older than this and the snapshot isn't being updated: ask the database.
   static const _snapshotMaxAge = Duration(minutes: 90);
 
   @override
   Future<CatalogData> load() async {
-    try {
-      final snapshot = await _loadSnapshot();
-      if (snapshot != null) return snapshot;
-    } catch (e) {
-      debugPrint('Catalog snapshot unavailable, reading the database: $e');
+    for (final source in [workerSnapshotUrl, snapshotUrl]) {
+      try {
+        final snapshot = await _loadSnapshot(source);
+        if (snapshot != null) return snapshot;
+      } catch (e) {
+        debugPrint('Catalog snapshot unavailable at $source: $e');
+      }
     }
     return _loadFromDatabase();
   }
 
-  Future<CatalogData?> _loadSnapshot() async {
-    final res = await _client.get(Uri.parse(snapshotUrl)).timeout(_timeout);
+  Future<CatalogData?> _loadSnapshot(String source) async {
+    final res = await _client.get(Uri.parse(source)).timeout(_timeout);
     if (res.statusCode != 200) return null;
     final body = utf8.decode(res.bodyBytes);
     // {"v":1,"generatedAt":"…", …}: read the time without decoding it all.

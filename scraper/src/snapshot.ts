@@ -194,7 +194,30 @@ export async function publishSnapshot(db: SupabaseClient): Promise<number> {
     cacheControl: '60',
   });
   if (error) throw new Error(`upload snapshot: ${error.message}`);
+  await publishToWorker(body);
   return body.length;
+}
+
+/**
+ * The same file on the Cloudflare Worker (cloudflare/cinema-fetch), where
+ * app versions from 0.3.0 read it first: what it sends to phones isn't on
+ * Supabase's egress quota. Best effort: a copy that falls behind is past the
+ * app's 90-minute limit soon enough, and the app then reads Supabase's.
+ */
+async function publishToWorker(body: string) {
+  const base = process.env.CINEMA_FETCH_WORKER_URL, token = process.env.CINEMA_FETCH_WORKER_TOKEN;
+  if (!base || !token) return;
+  try {
+    const response = await fetch(new URL('/catalog.json', base), {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body,
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  } catch (e) {
+    console.log(`  ! snapshot not copied to the Cloudflare Worker: ${e instanceof Error ? e.message : e}`);
+  }
 }
 
 /** scrape_runs' source for each published snapshot: when it was last built. */

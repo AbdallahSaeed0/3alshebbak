@@ -12,3 +12,8 @@ new_sqlite_classes = ["Relay"]
 [[migrations]]
 tag = "v2"
 deleted_classes = ["Relay"]
+
+# The app's catalog file (worker.js, catalog()).
+[[kv_namespaces]]
+binding = "CATALOG"
+id = "f96fa9dfb57d48f38f01992bed9eaff6"

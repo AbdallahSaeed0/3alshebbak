@@ -16,8 +16,43 @@ const trimHtml = (html) => html
   .replace(/<!--[\s\S]*?-->/g, '')
   .replace(/\s+/g, ' ');
 
+// The app's catalog file (scraper/src/snapshot.ts), served from Workers KV:
+// Cloudflare doesn't charge for what it sends, so many phones opening the app
+// don't count against Supabase's egress the way its Storage copy does.
+// GET is public; PUT takes the relay's key (the pipeline's).
+const CATALOG = '/catalog.json';
+
+async function catalog(request, env) {
+  if (request.method === 'PUT') {
+    if (!env.RELAY_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.RELAY_TOKEN}`) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+    const body = await request.text();
+    if (!body.startsWith('{')) return new Response('Not a catalog', { status: 400 });
+    const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(body));
+    const etag = `"${[...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')}"`;
+    await env.CATALOG.put('catalog', body, { metadata: { etag } });
+    return Response.json({ bytes: body.length, etag });
+  }
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Not found', { status: 404 });
+  const { value, metadata } = await env.CATALOG.getWithMetadata('catalog', { cacheTtl: 60 });
+  if (value === null) return new Response('Not found', { status: 404 });
+  const headers = {
+    'Content-Type': 'application/json',
+    // Rebuilt after pipeline runs; a phone may reuse a copy a minute old.
+    'Cache-Control': 'public, max-age=60',
+    ...(metadata?.etag ? { ETag: metadata.etag } : {}),
+  };
+  // A compressed answer's tag comes back weak (W/"…").
+  if (metadata?.etag && request.headers.get('If-None-Match')?.replace(/^W\//, '') === metadata.etag) {
+    return new Response(null, { status: 304, headers });
+  }
+  return new Response(request.method === 'HEAD' ? null : value, { headers });
+}
+
 export default {
   async fetch(request, env) {
+    if (new URL(request.url).pathname === CATALOG) return catalog(request, env);
     if (request.method !== 'POST') return new Response('Not found', { status: 404 });
     if (!env.RELAY_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.RELAY_TOKEN}`) {
       return new Response('Unauthorized', { status: 401 });
