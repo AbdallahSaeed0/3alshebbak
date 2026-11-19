@@ -285,6 +285,8 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
               ),
         'viewFromShort': tr('المنظر من', 'View from'),
         'expand': tr('كبّر', 'Expand'),
+        'peopleOff': tr('شيل الناس', 'Hide people'),
+        'peopleOn': tr('حط ناس في الكراسي', 'Show seated people'),
         'noGl': tr(
           'العرض الـ3D مش شغال على الموبايل ده',
           '3D view isn\'t available on this phone',
