@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shebbak/data/alert_news.dart';
 import 'package:shebbak/data/inbox.dart';
 import 'package:shebbak/data/models.dart';
+import 'package:shebbak/data/prefs.dart';
 import 'package:shebbak/data/repository.dart';
 
 RecentNews _news(String at, String movie, String kind, List<String> cinemas) =>
@@ -84,5 +85,27 @@ void main() {
       ),
       isEmpty,
     );
+  });
+
+  test('unread: what came after the page was last opened', () {
+    final entries = inboxFromNews(
+      _catalog,
+      everyFilm: false,
+      following: {'tmdb:1'},
+      allCinemas: true,
+      myCinemas: {'a'},
+    );
+    expect(unreadCount(entries, null), 2);
+    expect(unreadCount(entries, entries.last.sentAt), 1);
+    expect(unreadCount(entries, entries.first.sentAt), 0);
+  });
+
+  test('opening the page marks everything read; a new install starts there', () {
+    final prefs = Prefs.memory();
+    expect(prefs.inboxSeenAt, isNull);
+    prefs.markInboxSeen(DateTime.utc(2026, 11, 19, 12));
+    expect(prefs.inboxSeenAt, DateTime.utc(2026, 11, 19, 12));
+    final fresh = Prefs.memory(onboarded: false)..finishOnboarding();
+    expect(fresh.inboxSeenAt, isNotNull);
   });
 }

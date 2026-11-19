@@ -8,9 +8,13 @@ import '../util/i18n.dart';
 import '../widgets/schedule.dart';
 import 'news_screen.dart';
 
-void openNotifications(BuildContext context) => Navigator.of(
-  context,
-).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()));
+/// Opening the page reads them all: the bell's count goes back to zero.
+void openNotifications(BuildContext context) {
+  AppScope.of(context).prefs.markInboxSeen();
+  Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()));
+}
 
 /// What this phone's films and cinemas were told in the last two weeks;
 /// tapping one shows what it was about, like tapping the notification. Built

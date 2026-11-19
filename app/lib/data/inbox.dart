@@ -64,6 +64,12 @@ List<InboxEntry> inboxFromNews(
   return entries;
 }
 
+/// How many of [entries] came after the notifications page was last opened
+/// ([seenAt]; null counts them all).
+int unreadCount(List<InboxEntry> entries, DateTime? seenAt) => seenAt == null
+    ? entries.length
+    : entries.where((e) => e.sentAt.isAfter(seenAt)).length;
+
 String _name(CatalogData c, String movieId) =>
     c.movies[movieId]?.displayTitle ?? movieId;
 

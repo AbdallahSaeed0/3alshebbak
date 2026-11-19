@@ -60,6 +60,7 @@ class Prefs extends ChangeNotifier {
   static const _everyFilmKey = 'alerts_every_film';
   static const _allCinemaAlertsKey = 'alerts_all_cinemas';
   static const _weeklyRoundupKey = 'alerts_weekly';
+  static const _inboxSeenKey = 'inbox_seen_at';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -81,6 +82,7 @@ class Prefs extends ChangeNotifier {
       return Prefs.memory(onboarded: false);
     }
     final spot = store.getStringList(_spotKey);
+    final seen = store.getInt(_inboxSeenKey);
     return Prefs._(
       store,
       store.getStringList(_cinemasKey)?.toSet() ?? {...defaultCinemas},
@@ -96,7 +98,9 @@ class Prefs extends ChangeNotifier {
       store.getBool(_everyFilmKey) ?? false,
       store.getBool(_allCinemaAlertsKey) ?? false,
       store.getBool(_weeklyRoundupKey) ?? true,
-    );
+    ).._inboxSeenAt = seen == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(seen, isUtc: true);
   }
 
   final SharedPreferences? _store;
@@ -110,6 +114,17 @@ class Prefs extends ChangeNotifier {
   bool _everyFilm;
   bool _allCinemaAlerts;
   bool _weeklyRoundup;
+  DateTime? _inboxSeenAt;
+
+  /// When the notifications page was last opened: what came after is unread
+  /// (the count on the bell). Null: never opened.
+  DateTime? get inboxSeenAt => _inboxSeenAt;
+
+  void markInboxSeen([DateTime? at]) {
+    _inboxSeenAt = (at ?? DateTime.now()).toUtc();
+    _store?.setInt(_inboxSeenKey, _inboxSeenAt!.millisecondsSinceEpoch);
+    notifyListeners();
+  }
 
   Set<String> get myCinemas => Set.unmodifiable(_cinemas);
   Set<String> get following => Set.unmodifiable(_following);
@@ -260,6 +275,9 @@ class Prefs extends ChangeNotifier {
   void finishOnboarding() {
     _onboarded = true;
     _store?.setBool(_onboardedKey, true);
+    // A new install starts with nothing unread: it wasn't sent the last two
+    // weeks' notifications.
+    if (_inboxSeenAt == null) markInboxSeen();
     notifyListeners();
   }
 }

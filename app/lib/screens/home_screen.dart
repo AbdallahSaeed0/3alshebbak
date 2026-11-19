@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/app_data.dart';
+import '../data/inbox.dart';
 import '../data/models.dart';
 import '../services/follow_film.dart';
 import '../theme.dart';
@@ -272,11 +273,7 @@ class _Header extends StatelessWidget {
                     key: TourTargets.bell,
                     onPressed: () => openNotifications(context),
                     tooltip: tr('الإشعارات', 'Notifications'),
-                    child: Icon(
-                      Icons.notifications_none,
-                      size: 18,
-                      color: AppColors.text,
-                    ),
+                    child: _Bell(unread: _unread(context)),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -335,6 +332,68 @@ class _Header extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Notifications the phone's films and cinemas got since the page was last
+/// opened (the same list the page shows).
+int _unread(BuildContext context) {
+  final data = AppScope.of(context);
+  final prefs = data.prefs;
+  final entries = inboxFromNews(
+    data.catalog,
+    everyFilm: prefs.everyFilm,
+    following: prefs.following,
+    allCinemas: prefs.allCinemaAlerts,
+    myCinemas: prefs.myCinemas,
+  );
+  return unreadCount(entries, prefs.inboxSeenAt);
+}
+
+/// The bell, with a count of unread notifications on its corner.
+class _Bell extends StatelessWidget {
+  const _Bell({required this.unread});
+  final int unread;
+
+  @override
+  Widget build(BuildContext context) {
+    final bell = Icon(
+      unread > 0 ? Icons.notifications : Icons.notifications_none,
+      size: 18,
+      color: AppColors.text,
+    );
+    if (unread == 0) return bell;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        bell,
+        PositionedDirectional(
+          top: -7,
+          end: -10,
+          child: Semantics(
+            label: tr('$unread جديدة', '$unread new'),
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 16),
+              height: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.gold,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.surface, width: 1.5),
+              ),
+              child: Text(
+                unread > 9 ? '9+' : '$unread',
+                style: AppText.numerals(
+                  12,
+                  color: AppColors.background,
+                ).copyWith(fontWeight: FontWeight.w700, height: 1),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
