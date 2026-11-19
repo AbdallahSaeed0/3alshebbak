@@ -18,6 +18,8 @@ Future<void> toggleFilmFollow(
   if (!_pending.add(key)) return;
   try {
     final notifications = alerts ?? Push.instance;
+    // The first film followed ends the "every film" default.
+    final narrowed = prefs.everyFilmByDefault && !prefs.isFollowing(movieId);
     prefs.toggleFollow(movieId);
     final following = prefs.isFollowing(movieId);
     if (!notifications.supported) {
@@ -72,6 +74,10 @@ Future<void> toggleFilmFollow(
     final result = await notifications.enableForFollow();
     if (!context.mounted || !prefs.isFollowing(movieId)) return;
     final message = switch (result) {
+      FollowAlertResult.enabled when narrowed => tr(
+        'هيوصلك إشعار لما الحجز يفتح. ومن دلوقتي الإشعارات للأفلام اللي بتتابعها بس، وتقدر ترجّع «كل الأفلام» من الإعدادات.',
+        'You’ll get an alert when booking opens. From now on, alerts are only for films you follow; turn “Every film” back on in Settings.',
+      ),
       FollowAlertResult.enabled =>
         prefs.myCinemas.isEmpty
             ? tr(

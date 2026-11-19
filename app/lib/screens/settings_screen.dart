@@ -156,9 +156,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _enablePush() async {
     setState(() => _enablingPush = true);
     final prefs = AppScope.of(context).prefs;
-    prefs.setEveryFilm(true);
+    prefs.setEveryFilm(true, chosen: false);
     final on = await Push.instance.enable();
-    if (!on) prefs.setEveryFilm(false);
+    if (!on) prefs.setEveryFilm(false, chosen: false);
     if (!mounted) return;
     setState(() => _enablingPush = false);
     _say(

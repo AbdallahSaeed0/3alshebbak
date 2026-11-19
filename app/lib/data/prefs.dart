@@ -61,6 +61,8 @@ class Prefs extends ChangeNotifier {
   static const _allCinemaAlertsKey = 'alerts_all_cinemas';
   static const _weeklyRoundupKey = 'alerts_weekly';
   static const _inboxSeenKey = 'inbox_seen_at';
+  static const _filmsByDefaultKey = 'alerts_films_default';
+  static const _cinemasByDefaultKey = 'alerts_cinemas_default';
 
   /// For someone who skips picking: a handful of popular Cairo cinemas.
   static const defaultCinemas = {
@@ -83,24 +85,39 @@ class Prefs extends ChangeNotifier {
     }
     final spot = store.getStringList(_spotKey);
     final seen = store.getInt(_inboxSeenKey);
+    // A new install hears about every film at every cinema until the user
+    // picks their own (see _narrow…). Phones set up before this keep what
+    // they had.
+    final onboarded = store.getBool(_onboardedKey) ?? false;
+    if (!onboarded && !store.containsKey(_everyFilmKey)) {
+      store.setBool(_everyFilmKey, true);
+      store.setBool(_filmsByDefaultKey, true);
+    }
+    if (!onboarded && !store.containsKey(_allCinemaAlertsKey)) {
+      store.setBool(_allCinemaAlertsKey, true);
+      store.setBool(_cinemasByDefaultKey, true);
+    }
     return Prefs._(
-      store,
-      store.getStringList(_cinemasKey)?.toSet() ?? {...defaultCinemas},
-      store.getStringList(_followingKey)?.toSet() ?? {},
-      spot != null && spot.length == 2
-          ? (lat: double.parse(spot[0]), lng: double.parse(spot[1]))
-          : null,
-      store.getBool(_onboardedKey) ?? false,
-      store.getString(_homeCityKey),
-      Appearance.values.asNameMap()[store.getString(_appearanceKey)] ??
-          Appearance.system,
-      store.getBool(_englishKey) ?? false,
-      store.getBool(_everyFilmKey) ?? false,
-      store.getBool(_allCinemaAlertsKey) ?? false,
-      store.getBool(_weeklyRoundupKey) ?? true,
-    ).._inboxSeenAt = seen == null
-        ? null
-        : DateTime.fromMillisecondsSinceEpoch(seen, isUtc: true);
+        store,
+        store.getStringList(_cinemasKey)?.toSet() ?? {...defaultCinemas},
+        store.getStringList(_followingKey)?.toSet() ?? {},
+        spot != null && spot.length == 2
+            ? (lat: double.parse(spot[0]), lng: double.parse(spot[1]))
+            : null,
+        onboarded,
+        store.getString(_homeCityKey),
+        Appearance.values.asNameMap()[store.getString(_appearanceKey)] ??
+            Appearance.system,
+        store.getBool(_englishKey) ?? false,
+        store.getBool(_everyFilmKey) ?? false,
+        store.getBool(_allCinemaAlertsKey) ?? false,
+        store.getBool(_weeklyRoundupKey) ?? true,
+      )
+      .._inboxSeenAt = seen == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(seen, isUtc: true)
+      .._filmsByDefault = store.getBool(_filmsByDefaultKey) ?? false
+      .._cinemasByDefault = store.getBool(_cinemasByDefaultKey) ?? false;
   }
 
   final SharedPreferences? _store;
@@ -115,6 +132,32 @@ class Prefs extends ChangeNotifier {
   bool _allCinemaAlerts;
   bool _weeklyRoundup;
   DateTime? _inboxSeenAt;
+  bool _filmsByDefault = false;
+  bool _cinemasByDefault = false;
+
+  /// "Every film" is still the new-install default: following a film narrows
+  /// alerts to followed films.
+  bool get everyFilmByDefault => _filmsByDefault;
+
+  /// "Every cinema" is still the new-install default: picking a cinema
+  /// narrows alerts to my cinemas.
+  bool get allCinemasByDefault => _cinemasByDefault;
+
+  void _narrowFilms() {
+    if (!_filmsByDefault) return;
+    _filmsByDefault = false;
+    _everyFilm = false;
+    _store?.setBool(_filmsByDefaultKey, false);
+    _store?.setBool(_everyFilmKey, false);
+  }
+
+  void _narrowCinemas() {
+    if (!_cinemasByDefault) return;
+    _cinemasByDefault = false;
+    _allCinemaAlerts = false;
+    _store?.setBool(_cinemasByDefaultKey, false);
+    _store?.setBool(_allCinemaAlertsKey, false);
+  }
 
   /// When the notifications page was last opened: what came after is unread
   /// (the count on the bell). Null: never opened.
@@ -134,7 +177,14 @@ class Prefs extends ChangeNotifier {
   /// Alerts for every film's new showtimes at my cinemas, followed or not.
   bool get everyFilm => _everyFilm;
 
-  void setEveryFilm(bool on) {
+  /// [chosen]: the user flipped the switch themselves, so it's no longer
+  /// the default that following a film undoes. Turning notifications on
+  /// sets it without choosing.
+  void setEveryFilm(bool on, {bool chosen = true}) {
+    if (chosen && _filmsByDefault) {
+      _filmsByDefault = false;
+      _store?.setBool(_filmsByDefaultKey, false);
+    }
     _everyFilm = on;
     _store?.setBool(_everyFilmKey, on);
     notifyListeners();
@@ -144,6 +194,10 @@ class Prefs extends ChangeNotifier {
   bool get allCinemaAlerts => _allCinemaAlerts;
 
   void setAllCinemaAlerts(bool on) {
+    if (_cinemasByDefault) {
+      _cinemasByDefault = false;
+      _store?.setBool(_cinemasByDefaultKey, false);
+    }
     _allCinemaAlerts = on;
     _store?.setBool(_allCinemaAlertsKey, on);
     notifyListeners();
@@ -171,6 +225,7 @@ class Prefs extends ChangeNotifier {
 
   void toggleCinema(String cinemaId) {
     if (!_cinemas.remove(cinemaId)) _cinemas.add(cinemaId);
+    _narrowCinemas();
     _store?.setStringList(_cinemasKey, _cinemas.toList());
     notifyListeners();
   }
@@ -179,12 +234,16 @@ class Prefs extends ChangeNotifier {
     _cinemas
       ..clear()
       ..addAll(cinemaIds);
+    _narrowCinemas();
     _store?.setStringList(_cinemasKey, _cinemas.toList());
     notifyListeners();
   }
 
   void toggleFollow(String movieId) {
-    if (!_following.remove(movieId)) _following.add(movieId);
+    if (!_following.remove(movieId)) {
+      _following.add(movieId);
+      _narrowFilms();
+    }
     _store?.setStringList(_followingKey, _following.toList());
     notifyListeners();
   }
@@ -255,6 +314,8 @@ class Prefs extends ChangeNotifier {
         Appearance.values.asNameMap()[b['appearance']] ?? Appearance.system;
     _english = b['english'] == true;
     _onboarded = true;
+    _filmsByDefault = false;
+    _cinemasByDefault = false;
     final s = _store;
     if (s != null) {
       s.setStringList(_cinemasKey, _cinemas.toList());
@@ -268,6 +329,8 @@ class Prefs extends ChangeNotifier {
       s.setString(_appearanceKey, _appearance.name);
       s.setBool(_englishKey, _english);
       s.setBool(_onboardedKey, true);
+      s.setBool(_filmsByDefaultKey, false);
+      s.setBool(_cinemasByDefaultKey, false);
     }
     notifyListeners();
   }

@@ -82,8 +82,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// new follows nothing yet, so followed-only alerts would stay silent.
   Future<void> _enablePush() async {
     final prefs = AppScope.of(context).prefs;
-    prefs.setEveryFilm(true);
-    if (!await Push.instance.enable()) prefs.setEveryFilm(false);
+    prefs.setEveryFilm(true, chosen: false);
+    if (!await Push.instance.enable()) prefs.setEveryFilm(false, chosen: false);
     if (mounted) _finish();
   }
 
