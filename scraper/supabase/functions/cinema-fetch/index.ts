@@ -1,5 +1,5 @@
 // Private transport for public cinema pages. No arbitrary destinations or redirects.
-const hosts = new Set(['rnscinemas.com', 'www.rnscinemas.com', 'www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com']);
+const hosts = new Set(['rnscinemas.com', 'www.rnscinemas.com', 'www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com', 'egy.voxcinemas.com']);
 // A copy of scraper/src/trim-html.ts: a page cut down to its markup, sent back
 // when the caller asks (`trim: true`), since every byte returned is egress.
 const trimHtml = (html: string) => html

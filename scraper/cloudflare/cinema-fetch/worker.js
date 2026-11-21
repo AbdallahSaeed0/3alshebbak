@@ -5,7 +5,7 @@
 // (src/cinema-fetch.ts). Deploy: `npx wrangler deploy` in this folder, with
 // the secret RELAY_TOKEN set (`npx wrangler secret put RELAY_TOKEN`).
 
-const HOSTS = new Set(['rnscinemas.com', 'www.rnscinemas.com', 'www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com']);
+const HOSTS = new Set(['rnscinemas.com', 'www.rnscinemas.com', 'www.premiere-cinemas.com', 'premiere-cinemas.com', 'mifcentral-api.premiere-cinemas.com', 'egy.voxcinemas.com']);
 const allowed = (url) => url.protocol === 'https:' && !url.port && !url.username && !url.password && HOSTS.has(url.hostname);
 
 // A copy of scraper/src/trim-html.ts: a page cut down to its markup, sent back

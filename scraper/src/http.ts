@@ -8,15 +8,27 @@ export const USER_AGENT = `3alShebbakBot/0.1 (cinema showtimes app; ${CONTACT})`
 
 const TIMEOUT_MS = 20_000;
 
+/**
+ * Sites read directly that now and then turn a GitHub runner away (VOX: a 403
+ * every few dozen runs). Once one does, the rest of the run reads it through
+ * the cinema relay instead of failing.
+ */
+const RELAY_WHEN_REFUSED = new Set(['egy.voxcinemas.com']);
+const relayedHosts = new Set<string>();
+
 export async function fetchText(url: string, retries = 2): Promise<string> {
   let lastError: unknown;
+  const host = new URL(url).hostname;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const renaissance = ['rnscinemas.com', 'www.rnscinemas.com'].includes(new URL(url).hostname);
-      if (renaissance && cinemaRelayConfigured()) {
-        // Listing pages are read by their markup; the booking page's scripts hold the hall id.
+      const renaissance = ['rnscinemas.com', 'www.rnscinemas.com'].includes(host);
+      if ((renaissance || relayedHosts.has(host)) && cinemaRelayConfigured()) {
+        // Listing pages are read by their markup; Renaissance's booking page's scripts hold the hall id.
         const trim = !url.includes('/start_booking/');
-        const response = await cinemaFetch(url, 'GET', { 'accept-language': 'en' }, undefined, trim);
+        const headers: Record<string, string> = renaissance
+          ? { 'accept-language': 'en' }
+          : { 'user-agent': USER_AGENT, 'accept-language': 'en' };
+        const response = await cinemaFetch(url, 'GET', headers, undefined, trim);
         if (response.status !== 200) throw new Error(`HTTP ${response.status}`);
         return response.body;
       }
@@ -24,6 +36,12 @@ export async function fetchText(url: string, retries = 2): Promise<string> {
         headers: renaissance ? { 'Accept-Language': 'en' } : { 'User-Agent': USER_AGENT, 'Accept-Language': 'en' },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
+      if ((res.status === 403 || res.status === 429) && RELAY_WHEN_REFUSED.has(host) && cinemaRelayConfigured()) {
+        console.log(`  ${host} turned the runner away (HTTP ${res.status}); reading it through the cinema relay`);
+        relayedHosts.add(host);
+        attempt--; // the relay gets its own tries
+        continue;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (e) {
