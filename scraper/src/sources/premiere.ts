@@ -47,8 +47,11 @@ export function premiereFormat(name: string): string {
 }
 
 interface Listing { id: string; title: string; posterUrl: string | null; info: string | null; cinemas: string[]; url: string }
-/** `halls`: time label → the show's hall, "prm:<cinema id>:<screen id>" (premiere.page.js). */
-type Days = Record<string, { name: string; formats: { name: string; times: string[]; halls?: Record<string, string> }[] }[]>;
+/**
+ * `halls`: time label → the show's hall, "prm:<cinema id>:<screen id>";
+ * `bookings`: time label → the show's seat page (premiere.page.js).
+ */
+type Days = Record<string, { name: string; formats: { name: string; times: string[]; halls?: Record<string, string>; bookings?: Record<string, string> }[] }[]>;
 
 declare global {
   interface Window {
@@ -147,9 +150,11 @@ export const premiere: Source = {
                     const format = premiereFormat(f.name);
                     for (const t of f.times) {
                       const start = showStart(date, t);
-                      // Times are buttons on the movie page, not links; book from there.
+                      // The show's own seat page, so booking doesn't start over at
+                      // picking the cinema and time; the film's page if it wasn't read.
                       if (start) {
-                        out.showtime({ cinemaId, filmId, businessDate: date, start, format, bookingUrl: movie.url, hall: f.halls?.[t] });
+                        const bookingUrl = f.bookings?.[t] ?? movie.url;
+                        out.showtime({ cinemaId, filmId, businessDate: date, start, format, bookingUrl, hall: f.halls?.[t] });
                       }
                     }
                   }

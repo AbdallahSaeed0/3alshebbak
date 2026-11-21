@@ -185,6 +185,11 @@ LiveShows premiereShows({
       }
       for (final f in (branch['formats'] as List? ?? const [])) {
         final format = Map<String, dynamic>.from(f as Map);
+        // Each time's own seat page (premiere.page.js), so booking doesn't
+        // start over at picking the cinema and time; else the film's page.
+        final bookings = format['bookings'] is Map
+            ? Map<String, dynamic>.from(format['bookings'] as Map)
+            : const <String, dynamic>{};
         for (final t in (format['times'] as List? ?? const [])) {
           final show = liveShowtime(
             movieId: movieId,
@@ -192,7 +197,7 @@ LiveShows premiereShows({
             businessDate: '$date',
             clock: '$t',
             format: premiereFormat(format['name'] as String? ?? ''),
-            bookingUrl: bookingUrl,
+            bookingUrl: bookings['$t'] as String? ?? bookingUrl,
           );
           if (show != null) shows.add(show);
         }

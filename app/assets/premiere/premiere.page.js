@@ -113,8 +113,65 @@
     });
   }
 
+  // The show data the card's picker holds for the selected date, every branch's
+  // shows with their hall: the site decrypts its API answer into React state,
+  // which a page script can read like any other. Shows without it are fine.
+  function pickerShows(card) {
+    var p = Array.prototype.find.call(card.querySelectorAll('p'), function (p) { return CINEMA.test(text(p)); });
+    var key = p && Object.keys(p).find(function (k) { return k.indexOf('__reactFiber') === 0; });
+    var shows = [];
+    for (var f = key && p[key], i = 0; f && i < 15; f = f.return, i++) {
+      for (var s = f.memoizedState, j = 0; s && j < 50; s = s.next, j++) {
+        var v = s.memoizedState;
+        if (!v || typeof v !== 'object' || !Array.isArray(v.Records)) continue;
+        v.Records.forEach(function (r) {
+          (r.cinemaShowTimes || []).forEach(function (t) {
+            (t.movieDetailsData || []).forEach(function (m) { shows.push({ show: m, md_id: t.md_id }); });
+          });
+        });
+        return shows;
+      }
+    }
+    return shows;
+  }
+
+  // "11:00 PM" → "23:00"
+  function hhmm(label) {
+    var m = /^(\d{1,2}):(\d{2})\s*([AP]M)$/i.exec(label);
+    if (!m) return null;
+    var h = parseInt(m[1], 10) % 12 + (/p/i.test(m[3]) ? 12 : 0);
+    return (h < 10 ? '0' : '') + h + ':' + m[2];
+  }
+
+  // Each time's hall at `branch` on `date` ("prm:<cinema id>:<screen id>",
+  // as data/halls.json's premiereScreenId), for the app's seat view, and its
+  // seat page: where the site's own "Choose Time" → "Book" goes
+  // (/<lang>/seats/<cinema>/<ss_id>/<md_id>/<screen>), so booking from the app
+  // doesn't start over at picking the cinema, day, format and time.
+  function showsFor(card, branch, date, format, times) {
+    var byTime = {};
+    pickerShows(card).forEach(function (p) {
+      var m = p.show;
+      if (m.cinema_name !== branch || m.ss_start_date !== date) return;
+      if (m.mf_name + ' · ' + m.movie_experience !== format) return;
+      byTime[m.ss_start_time] = {
+        hall: m.screen_id == null ? null : 'prm:' + m.cinema_id + ':' + m.screen_id,
+        booking: m.cinema_id != null && m.ss_id != null && p.md_id != null && m.screen_id != null
+          ? abs('/en/seats/' + m.cinema_id + '/' + m.ss_id + '/' + p.md_id + '/' + m.screen_id)
+          : null,
+      };
+    });
+    var halls = {}, bookings = {};
+    times.forEach(function (t) {
+      var s = byTime[hhmm(t)];
+      if (s && s.hall) halls[t] = s.hall;
+      if (s && s.booking) bookings[t] = s.booking;
+    });
+    return { halls: halls, bookings: bookings };
+  }
+
   // Reads every format · experience → times for the date currently selected on `card`.
-  async function readFormats(card) {
+  async function readFormats(card, branch, date) {
     var formats = [];
     var formatNames = buttons(section(card, FORMAT)).map(text);
     for (var fi = 0; fi < formatNames.length; fi++) {
@@ -125,7 +182,11 @@
         clickButton(card, EXPERIENCE, experienceNames[ei]);
         await settle();
         var times = buttons(section(card, TIME)).map(text);
-        if (times.length) formats.push({ name: formatNames[fi] + ' · ' + experienceNames[ei], times: times });
+        if (!times.length) continue;
+        var name = formatNames[fi] + ' · ' + experienceNames[ei];
+        var shows = { halls: {}, bookings: {} };
+        try { shows = showsFor(card, branch, date, name, times); } catch (_) { /* layout changed: the film's page */ }
+        formats.push({ name: name, times: times, halls: shows.halls, bookings: shows.bookings });
       }
     }
     return formats;
@@ -162,7 +223,7 @@
         if (!tile) continue; // not playing at this branch that day
         tile.click();
         await settle();
-        var formats = await readFormats(card);
+        var formats = await readFormats(card, names[ci], wanted[di]);
         if (formats.length) {
           days[wanted[di]].push({ name: names[ci], formats: formats });
           // The app (a Flutter web view) shows each day as soon as it's read.

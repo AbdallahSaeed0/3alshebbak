@@ -38,6 +38,10 @@ void main() {
               {
                 'name': '2D · PREMIUM',
                 'times': ['10:30 PM', '12:45 AM'],
+                'bookings': {
+                  '10:30 PM':
+                      'https://www.premiere-cinemas.com/en/seats/5/901/77/3',
+                },
               },
             ],
           },
@@ -64,6 +68,12 @@ void main() {
     expect(late.format, 'Standard');
     expect(shows.showtimes.first.cinemaId, 'elcinema:premiere-point90');
     expect(shows.showtimes.first.format, 'MX4D');
+    // A time with its seat page books there; one without, the film's page.
+    expect(
+      shows.showtimes[1].bookingUrl,
+      'https://www.premiere-cinemas.com/en/seats/5/901/77/3',
+    );
+    expect(late.bookingUrl, 'https://example.test');
   });
 
   test('VOX\'s Infinity Vision listing is the same film in another format', () {

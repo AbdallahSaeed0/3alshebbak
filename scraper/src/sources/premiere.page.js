@@ -126,7 +126,7 @@
         if (!v || typeof v !== 'object' || !Array.isArray(v.Records)) continue;
         v.Records.forEach(function (r) {
           (r.cinemaShowTimes || []).forEach(function (t) {
-            (t.movieDetailsData || []).forEach(function (m) { shows.push(m); });
+            (t.movieDetailsData || []).forEach(function (m) { shows.push({ show: m, md_id: t.md_id }); });
           });
         });
         return shows;
@@ -144,17 +144,30 @@
   }
 
   // Each time's hall at `branch` on `date` ("prm:<cinema id>:<screen id>",
-  // as data/halls.json's premiereScreenId), for the app's seat view.
-  function hallsFor(card, branch, date, format, times) {
+  // as data/halls.json's premiereScreenId), for the app's seat view, and its
+  // seat page: where the site's own "Choose Time" → "Book" goes
+  // (/<lang>/seats/<cinema>/<ss_id>/<md_id>/<screen>), so booking from the app
+  // doesn't start over at picking the cinema, day, format and time.
+  function showsFor(card, branch, date, format, times) {
     var byTime = {};
-    pickerShows(card).forEach(function (m) {
-      if (m.cinema_name !== branch || m.ss_start_date !== date || m.screen_id == null) return;
+    pickerShows(card).forEach(function (p) {
+      var m = p.show;
+      if (m.cinema_name !== branch || m.ss_start_date !== date) return;
       if (m.mf_name + ' · ' + m.movie_experience !== format) return;
-      byTime[m.ss_start_time] = 'prm:' + m.cinema_id + ':' + m.screen_id;
+      byTime[m.ss_start_time] = {
+        hall: m.screen_id == null ? null : 'prm:' + m.cinema_id + ':' + m.screen_id,
+        booking: m.cinema_id != null && m.ss_id != null && p.md_id != null && m.screen_id != null
+          ? abs('/en/seats/' + m.cinema_id + '/' + m.ss_id + '/' + p.md_id + '/' + m.screen_id)
+          : null,
+      };
     });
-    var halls = {};
-    times.forEach(function (t) { var h = byTime[hhmm(t)]; if (h) halls[t] = h; });
-    return halls;
+    var halls = {}, bookings = {};
+    times.forEach(function (t) {
+      var s = byTime[hhmm(t)];
+      if (s && s.hall) halls[t] = s.hall;
+      if (s && s.booking) bookings[t] = s.booking;
+    });
+    return { halls: halls, bookings: bookings };
   }
 
   // Reads every format · experience → times for the date currently selected on `card`.
@@ -171,9 +184,9 @@
         var times = buttons(section(card, TIME)).map(text);
         if (!times.length) continue;
         var name = formatNames[fi] + ' · ' + experienceNames[ei];
-        var halls = {};
-        try { halls = hallsFor(card, branch, date, name, times); } catch (_) { /* layout changed: no halls */ }
-        formats.push({ name: name, times: times, halls: halls });
+        var shows = { halls: {}, bookings: {} };
+        try { shows = showsFor(card, branch, date, name, times); } catch (_) { /* layout changed: the film's page */ }
+        formats.push({ name: name, times: times, halls: shows.halls, bookings: shows.bookings });
       }
     }
     return formats;
