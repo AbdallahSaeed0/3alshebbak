@@ -23,8 +23,10 @@ export async function fetchText(url: string, retries = 2): Promise<string> {
     try {
       const renaissance = ['rnscinemas.com', 'www.rnscinemas.com'].includes(host);
       if ((renaissance || relayedHosts.has(host)) && cinemaRelayConfigured()) {
-        // Listing pages are read by their markup; Renaissance's booking page's scripts hold the hall id.
-        const trim = !url.includes('/start_booking/');
+        // Renaissance's listing pages are read by their markup; its booking page's
+        // scripts hold the hall id. VOX's pages come whole: trimmed, they parse
+        // to no shows.
+        const trim = renaissance && !url.includes('/start_booking/');
         const headers: Record<string, string> = renaissance
           ? { 'accept-language': 'en' }
           : { 'user-agent': USER_AGENT, 'accept-language': 'en' };
