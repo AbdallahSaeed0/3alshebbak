@@ -607,19 +607,6 @@ class _NotificationsPageState extends State<_NotificationsPage> {
               ),
               onTap: () => prefs.setWeeklyRoundup(!prefs.weeklyRoundup),
             ),
-            _Row(
-              icon: Icons.hourglass_bottom,
-              title: tr('آخر فرصة', 'Last chance'),
-              detail: tr(
-                'لما فيلم يبقى خارج من سينماتك',
-                'When a film is leaving your cinemas',
-              ),
-              trailing: Switch(
-                value: prefs.lastChance,
-                onChanged: prefs.setLastChance,
-              ),
-              onTap: () => prefs.setLastChance(!prefs.lastChance),
-            ),
           ],
         ),
         if (defaultTargetPlatform == TargetPlatform.android) ...[

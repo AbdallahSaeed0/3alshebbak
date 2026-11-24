@@ -60,7 +60,6 @@ class Prefs extends ChangeNotifier {
   static const _everyFilmKey = 'alerts_every_film';
   static const _allCinemaAlertsKey = 'alerts_all_cinemas';
   static const _weeklyRoundupKey = 'alerts_weekly';
-  static const _lastChanceKey = 'alerts_last_chance';
   static const _inboxSeenKey = 'inbox_seen_at';
   static const _filmsByDefaultKey = 'alerts_films_default';
   static const _cinemasByDefaultKey = 'alerts_cinemas_default';
@@ -117,7 +116,6 @@ class Prefs extends ChangeNotifier {
       .._inboxSeenAt = seen == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(seen, isUtc: true)
-      .._lastChance = store.getBool(_lastChanceKey) ?? true
       .._filmsByDefault = store.getBool(_filmsByDefaultKey) ?? false
       .._cinemasByDefault = store.getBool(_cinemasByDefaultKey) ?? false;
   }
@@ -134,16 +132,6 @@ class Prefs extends ChangeNotifier {
   bool _allCinemaAlerts;
   bool _weeklyRoundup;
   DateTime? _inboxSeenAt;
-  bool _lastChance = true;
-
-  /// A notification when a film is leaving my cinemas (scraper/src/lastchance.ts).
-  bool get lastChance => _lastChance;
-
-  void setLastChance(bool on) {
-    _lastChance = on;
-    _store?.setBool(_lastChanceKey, on);
-    notifyListeners();
-  }
 
   bool _filmsByDefault = false;
   bool _cinemasByDefault = false;
@@ -304,7 +292,6 @@ class Prefs extends ChangeNotifier {
     'everyFilm': _everyFilm,
     'allCinemaAlerts': _allCinemaAlerts,
     'weeklyRoundup': _weeklyRoundup,
-    'lastChance': _lastChance,
     'homeCity': _homeCity,
     'appearance': _appearance.name,
     'english': _english,
@@ -323,7 +310,6 @@ class Prefs extends ChangeNotifier {
     _everyFilm = b['everyFilm'] == true;
     _allCinemaAlerts = b['allCinemaAlerts'] == true;
     _weeklyRoundup = b['weeklyRoundup'] != false;
-    _lastChance = b['lastChance'] != false;
     _homeCity = b['homeCity'] as String?;
     _appearance =
         Appearance.values.asNameMap()[b['appearance']] ?? Appearance.system;
@@ -338,7 +324,6 @@ class Prefs extends ChangeNotifier {
       s.setBool(_everyFilmKey, _everyFilm);
       s.setBool(_allCinemaAlertsKey, _allCinemaAlerts);
       s.setBool(_weeklyRoundupKey, _weeklyRoundup);
-      s.setBool(_lastChanceKey, _lastChance);
       _homeCity == null
           ? s.remove(_homeCityKey)
           : s.setString(_homeCityKey, _homeCity!);

@@ -54,14 +54,6 @@ class Upcoming {
   final List<Cinema> cinemas;
 }
 
-/// A film leaving Home's cinemas: its last day there and where it's still on.
-class LastChance {
-  LastChance(this.movie, this.lastDate, this.cinemas);
-  final Movie movie;
-  final String lastDate;
-  final List<Cinema> cinemas;
-}
-
 /// A movie in a browse list: how widely it's showing.
 class MovieSummary {
   MovieSummary(this.movie, this.cinemaCount, this.showCount);
@@ -257,65 +249,6 @@ class AppData {
             ),
     ];
     list.sort((a, b) => a.firstDate.compareTo(b.firstDate));
-    return list;
-  }
-
-  /// Films on their way out of Home's cinemas, soonest gone first. A film
-  /// is leaving a cinema when the cinema's full program runs past the
-  /// film's last day there: its next week is out and the film isn't in it
-  /// (not merely the end of what's listed so far). "Full" days are ones with
-  /// at least half the films of the cinema's busiest day, so a couple of
-  /// presale films listed weeks ahead don't count. It's last chance when that
-  /// holds at every Home cinema still showing it, and its last day there is
-  /// within [withinDays].
-  List<LastChance> lastChance({int withinDays = 4}) {
-    final filmsOn =
-        <String, Map<String, Set<String>>>{}; // cinema → day → films
-    final last = <String, String>{}; // film|cinema → its last day there
-    final upcomingAt =
-        <String, Set<String>>{}; // film → Home cinemas with shows to come
-    for (final s in catalog.showtimes) {
-      if (!_onHome(s) || s.businessDate.compareTo(today) < 0) continue;
-      ((filmsOn[s.cinemaId] ??= {})[s.businessDate] ??= {}).add(s.movieId);
-      final key = '${s.movieId}|${s.cinemaId}';
-      final l = last[key];
-      if (l == null || s.businessDate.compareTo(l) > 0)
-        last[key] = s.businessDate;
-      if (_upcoming(s)) (upcomingAt[s.movieId] ??= {}).add(s.cinemaId);
-    }
-    final horizon = <String, String>{}; // cinema → its last full day
-    filmsOn.forEach((cinemaId, days) {
-      final peak = days.values.fold(0, (n, f) => math.max(n, f.length));
-      final enough = math.max(2, peak / 2);
-      for (final MapEntry(key: day, value: films) in days.entries) {
-        final h = horizon[cinemaId];
-        if (films.length >= enough && (h == null || day.compareTo(h) > 0)) {
-          horizon[cinemaId] = day;
-        }
-      }
-    });
-    final todayDate = DateTime.parse(today);
-    final list = <LastChance>[];
-    for (final MapEntry(key: movieId, value: cinemaIds) in upcomingAt.entries) {
-      String? lastDay;
-      var leaving = true;
-      for (final c in cinemaIds) {
-        final l = last['$movieId|$c']!;
-        final h = horizon[c];
-        if (h == null || l.compareTo(h) >= 0) {
-          leaving = false; // on through the cinema's last full day
-          break;
-        }
-        if (lastDay == null || l.compareTo(lastDay) > 0) lastDay = l;
-      }
-      if (!leaving || lastDay == null) continue;
-      if (_daysBetween(todayDate, DateTime.parse(lastDay)) > withinDays)
-        continue;
-      list.add(
-        LastChance(movie(movieId), lastDay, cinemaIds.map(cinema).toList()),
-      );
-    }
-    list.sort((a, b) => a.lastDate.compareTo(b.lastDate));
     return list;
   }
 

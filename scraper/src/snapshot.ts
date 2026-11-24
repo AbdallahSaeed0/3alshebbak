@@ -65,7 +65,8 @@ export function collectNews(rows: { run_at: string; since: string | null; movie_
   const byKey = new Map<string, News>();
   for (const r of rows) {
     if (!r.movie_id) continue;
-    // Last-chance notices (lastchance.ts) aren't news of new showtimes.
+    // Last-chance notices (sent for a few days in November 2026, now
+    // removed) aren't news of new showtimes.
     if (r.kind === 'last_chance') continue;
     // A digest bundles films that each got new showtimes.
     const k = r.kind && r.kind !== 'digest' ? r.kind : 'shows';

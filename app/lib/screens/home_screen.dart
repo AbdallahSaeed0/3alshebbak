@@ -31,7 +31,6 @@ class HomeScreen extends StatelessWidget {
     final day = data.homeDay;
     final today = data.showingOn(day);
     final coming = data.upcoming(minDaysAhead: 8, maxDaysAhead: 365);
-    final leaving = data.lastChance();
     final city = data.prefs.homeCity;
     final where = city == null
         ? tr('سينماتك', 'your cinemas')
@@ -175,40 +174,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-          ],
-          if (leaving.isNotEmpty) ...[
-            _gap(28),
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: tr('آخر فرصة', 'Last chance'),
-                color: AppColors.amber,
-                subtitle: tr(
-                  'أفلام خارجة من $where قريب',
-                  'Leaving $where soon',
-                ),
-              ),
-            ),
-            _gap(12),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 300,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: leaving.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, i) => _OpenedCard(
-                    movie: leaving[i].movie,
-                    cinemas: leaving[i].cinemas,
-                    badge: tr('آخر فرصة', 'Last chance'),
-                    line: tr(
-                      'آخر يوم ${dayLabel(leaving[i].lastDate)}',
-                      'Last day ${dayLabel(leaving[i].lastDate)}',
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
           if (coming.isNotEmpty) ...[
             _gap(28),
@@ -655,8 +620,7 @@ String _chains(List<Cinema> cinemas) {
 
 /// Poster with a "new" badge, tear line, then title, chains and opening day.
 /// A poster card with a badge on the poster and a gold line under the
-/// title: tickets just out ("New · From Thu"), or a film leaving ("Last chance
-/// · Last day Sun").
+/// title: tickets just out ("New · From Thu").
 class _OpenedCard extends StatelessWidget {
   const _OpenedCard({
     required this.movie,

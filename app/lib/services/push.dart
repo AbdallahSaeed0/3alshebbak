@@ -228,8 +228,6 @@ class Push implements FilmAlerts {
                 if (prefs.allCinemaAlerts) '@all-cinemas',
                 // Wednesday's roundup is on unless turned off (weekly.ts).
                 if (!prefs.weeklyRoundup) '@no-weekly',
-                // Films leaving my cinemas (lastchance.ts), on unless off.
-                if (!prefs.lastChance) '@no-last-chance',
                 // Play installs update through Play, not GitHub's APK.
                 if (fromPlayStore) '@play',
               ],
