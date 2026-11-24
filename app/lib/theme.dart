@@ -279,8 +279,8 @@ ThemeData buildTheme() {
       modalBarrierColor: p.scrim,
     ),
     // Every message at the bottom (follow, saved, errors…): readable text
-    // in either theme, a gold edge so it stands out from the page, and
-    // floating clear of the bottom bar instead of sitting on it.
+    // in either theme and a gold edge so it stands out from the page, in
+    // the usual place just above the bottom bar.
     snackBarTheme: SnackBarThemeData(
       backgroundColor: p.raised,
       behavior: SnackBarBehavior.floating,
@@ -297,7 +297,6 @@ ThemeData buildTheme() {
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: p.goldEdge, width: 1.2),
       ),
-      insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
     ),
     dividerColor: p.hairline,
     textTheme: GoogleFonts.ibmPlexSansArabicTextTheme(
