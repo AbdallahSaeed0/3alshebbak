@@ -47,6 +47,32 @@ const meteredFetch: typeof fetch = async (input, init) => {
   return response;
 };
 
+/** This run's traffic by table, largest first, for recordTraffic. */
+export function trafficRows(): { what: string; calls: number; bytes: number }[] {
+  return [...traffic].map(([what, t]) => ({ what, ...t })).sort((a, b) => b.bytes - a.bytes);
+}
+
+/**
+ * Keeps the run's traffic in scrape_runs (source "traffic", the breakdown in
+ * warnings), where it can be added up across runs without the CI logs.
+ * Best effort.
+ */
+export async function recordTraffic(db: SupabaseClient, startedAt: string, sources: string[]) {
+  const rows = trafficRows();
+  const total = rows.reduce((n, r) => n + r.bytes, 0);
+  try {
+    await db.from('scrape_runs').insert({
+      source: 'traffic',
+      started_at: startedAt,
+      ok: true,
+      showtimes: Math.round(total / 1000), // KB
+      warnings: [sources.join(','), ...rows.slice(0, 12).map((r) => `${r.what} ${Math.round(r.bytes / 1000)}KB ${r.calls}`)],
+    });
+  } catch {
+    // Never fails a run.
+  }
+}
+
 /** "1.9 MB down: GET showtimes 1.2 MB (14 calls), …", the largest first. */
 export function trafficReport(top = 8): string {
   const rows = [...traffic].sort((a, b) => b[1].bytes - a[1].bytes);

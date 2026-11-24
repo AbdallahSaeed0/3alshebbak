@@ -9,7 +9,7 @@ import { placeCinemas } from './locations.js';
 import { leaveToOwnSites, ownSiteCinemas, removeCededFromDb } from './own-site.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
-import { supabaseFromEnv, trafficReport, upload } from './supabase.js';
+import { recordTraffic, supabaseFromEnv, trafficReport, upload } from './supabase.js';
 import { publishSnapshot, recordSnapshot, snapshotDue } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
 import { weeklyRoundup } from './weekly.js';
@@ -75,6 +75,7 @@ async function main() {
     await refreshSnapshot(db, removed);
   }
   await weeklyRoundup(db);
+  await recordTraffic(db, runStartedAt, results.map((r) => r.source));
 }
 
 /**
