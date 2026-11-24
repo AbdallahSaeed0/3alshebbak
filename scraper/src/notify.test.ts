@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { alertData, alertFor, dayName, digest, message, NotificationLog, showCount, type Seen } from './notify.js';
+import { alertData, alertFor, dayName, digest, eachLimit, message, NotificationLog, showCount, type Seen } from './notify.js';
 
 const show = (business_date: string, cinema_id = 'scene:cfc', time = '19:00'): Seen => ({
   movie_id: 'tmdb:1',
@@ -155,4 +155,30 @@ test('before the inbox migration, the log is still written without its window', 
   await log.flush();
   assert.equal(written.length, 2);
   assert.ok(written.every((rows) => rows.every((r) => !('since' in r))));
+});
+
+test('phones are handled a few at a time, every one of them', async () => {
+  let running = 0, most = 0;
+  const done: number[] = [];
+  await eachLimit([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3, async (n) => {
+    running++;
+    most = Math.max(most, running);
+    await new Promise((r) => setTimeout(r, 5));
+    done.push(n);
+    running--;
+  });
+  assert.equal(most, 3);
+  assert.deepEqual(done.sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+});
+
+test('after a failure no new phone starts, and the error comes out', async () => {
+  const started: number[] = [];
+  await assert.rejects(
+    eachLimit([1, 2, 3, 4, 5], 1, async (n) => {
+      started.push(n);
+      if (n === 2) throw new Error('boom');
+    }),
+    /boom/,
+  );
+  assert.deepEqual(started, [1, 2]);
 });

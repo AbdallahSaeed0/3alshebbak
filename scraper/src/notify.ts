@@ -35,6 +35,30 @@ export const EVERY_FILM = '*';
  */
 export const ALL_CINEMAS = '@all-cinemas';
 
+/** Phones handled at the same time in one alerts run. */
+const SEND_CONCURRENCY = 8;
+
+/**
+ * Runs [fn] on every item, at most [limit] at a time. After a failure no new
+ * item starts; the ones running finish, then the first error is thrown.
+ */
+export async function eachLimit<T>(items: T[], limit: number, fn: (item: T) => Promise<void>) {
+  let next = 0;
+  let failure: { error: unknown } | null = null;
+  const worker = async () => {
+    while (!failure && next < items.length) {
+      const item = items[next++];
+      try {
+        await fn(item);
+      } catch (error) {
+        failure ??= { error };
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  if (failure) throw (failure as { error: unknown }).error;
+}
+
 /** More alerts than this in one run go out as one notification. */
 const DIGEST_AFTER = 3;
 
@@ -369,7 +393,9 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
   const counts = { opened: 0, days: 0, shows: 0 };
   let failed = false;
   try {
-  for (const device of devices) {
+  // Several phones at a time: each send waits on FCM and the database, so
+  // one by one, a run with hundreds of phones took minutes.
+  await eachLimit(devices, SEND_CONCURRENCY, async (device) => {
     // A phone that picked its cinemas hears only about those, unless it
     // asked for every cinema.
     const everywhere = !device.cinemas.length || device.following.includes(ALL_CINEMAS);
@@ -418,7 +444,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       }
       due.push({ movieId, alert });
     }
-    if (!due.length) continue;
+    if (!due.length) return;
     // The rows so far (daily limits, other phones' sends…) go out before
     // this phone's notifications do.
     await log.flush();
@@ -490,7 +516,7 @@ async function announce(db: SupabaseClient, fcm: Fcm, since: string, now: string
       const { error } = await db.from('devices').delete().eq('token', device.token);
       if (error) throw new Error(`remove stale device: ${error.message}`);
     }
-  }
+  });
   } finally {
     await saveProgress();
     await log.flush();

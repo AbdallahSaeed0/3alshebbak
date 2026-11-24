@@ -9,7 +9,7 @@ import { placeCinemas } from './locations.js';
 import { leaveToOwnSites, ownSiteCinemas, removeCededFromDb } from './own-site.js';
 import type { ScrapeResult } from './model.js';
 import { notifyDrops } from './notify.js';
-import { supabaseFromEnv, upload } from './supabase.js';
+import { supabaseFromEnv, trafficReport, upload } from './supabase.js';
 import { publishSnapshot, recordSnapshot, snapshotDue } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
 import { weeklyRoundup } from './weekly.js';
@@ -94,7 +94,9 @@ async function refreshSnapshot(db: NonNullable<ReturnType<typeof supabaseFromEnv
   }
 }
 
-main().catch((e) => {
-  console.error(`✗ sync: ${errorMessage(e)}`);
-  process.exitCode = 1;
-});
+main()
+  .catch((e) => {
+    console.error(`✗ sync: ${errorMessage(e)}`);
+    process.exitCode = 1;
+  })
+  .finally(() => console.log(`  supabase traffic: ${trafficReport()}`));

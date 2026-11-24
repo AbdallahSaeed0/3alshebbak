@@ -16,8 +16,43 @@ export function supabaseFromEnv(): SupabaseClient | null {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   // All of عالشباك's tables live in their own schema (see 001_init.sql).
   return url && key
-    ? (createClient(url, key, { auth: { persistSession: false }, db: { schema: 'shebbak' } }) as unknown as SupabaseClient)
+    ? (createClient(url, key, {
+        auth: { persistSession: false },
+        db: { schema: 'shebbak' },
+        global: { fetch: meteredFetch },
+      }) as unknown as SupabaseClient)
     : null;
+}
+
+/**
+ * What this run downloaded from Supabase, by table or function: the plan's
+ * egress quota is what runs out first, so each run prints where it went
+ * (trafficReport). Bodies as received after decompression; requests counted too.
+ */
+const traffic = new Map<string, { calls: number; bytes: number }>();
+
+const meteredFetch: typeof fetch = async (input, init) => {
+  const response = await fetch(input, init);
+  try {
+    const u = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
+    const key = `${(init?.method ?? 'GET').toUpperCase()} ${u.pathname.replace(/^\/(rest|storage)\/v1\//, '')}`;
+    const bytes = (await response.clone().arrayBuffer()).byteLength;
+    const t = traffic.get(key) ?? { calls: 0, bytes: 0 };
+    t.calls++;
+    t.bytes += bytes;
+    traffic.set(key, t);
+  } catch {
+    // Metering never gets in the way of the request.
+  }
+  return response;
+};
+
+/** "1.9 MB down: GET showtimes 1.2 MB (14 calls), …", the largest first. */
+export function trafficReport(top = 8): string {
+  const rows = [...traffic].sort((a, b) => b[1].bytes - a[1].bytes);
+  const total = rows.reduce((n, [, t]) => n + t.bytes, 0);
+  const kb = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.round(n / 1e3)} KB`);
+  return `${kb(total)} down: ${rows.slice(0, top).map(([k, t]) => `${k} ${kb(t.bytes)} (${t.calls})`).join(', ')}`;
 }
 
 export function showtimeId(cinemaId: string, filmId: string, start: string, format: string): string {
