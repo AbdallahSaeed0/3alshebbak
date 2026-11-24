@@ -38,8 +38,13 @@ class _TrailerPopup extends StatelessWidget {
   final Movie movie;
   final String youTubeKey;
 
-  /// YouTube's embedded player, sized to the popup. Loaded as a page "from"
-  /// youtube.com: the player refuses to start without a web origin.
+  /// Who the player is embedded by. YouTube's player shows "Video
+  /// unavailable" (errors 152/153) unless the embedding page identifies
+  /// itself with a Referer; for an app's web view its terms ask for
+  /// https:// followed by the app id. Posing as youtube.com no longer works.
+  static const _origin = 'https://com.shebbak.shebbak';
+
+  /// YouTube's embedded player, sized to the popup.
   String get _page =>
       '''
 <!doctype html><html><head>
@@ -47,7 +52,8 @@ class _TrailerPopup extends StatelessWidget {
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
 iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style>
 </head><body>
-<iframe src="https://www.youtube.com/embed/$youTubeKey?autoplay=1&playsinline=1&rel=0&modestbranding=1"
+<iframe src="https://www.youtube.com/embed/$youTubeKey?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=$_origin&widget_referrer=$_origin"
+ referrerpolicy="strict-origin-when-cross-origin"
  allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
 </body></html>''';
 
@@ -89,7 +95,7 @@ iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style>
               child: InAppWebView(
                 initialData: InAppWebViewInitialData(
                   data: _page,
-                  baseUrl: WebUri('https://www.youtube.com'),
+                  baseUrl: WebUri(_origin),
                 ),
                 initialSettings: InAppWebViewSettings(
                   mediaPlaybackRequiresUserGesture: false,
