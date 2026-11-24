@@ -13,6 +13,7 @@ import { recordTraffic, supabaseFromEnv, trafficReport, upload } from './supabas
 import { publishSnapshot, recordSnapshot, snapshotDue } from './snapshot.js';
 import { buildCatalog } from './tmdb.js';
 import { weeklyRoundup } from './weekly.js';
+import { lastChance } from './lastchance.js';
 
 /** Older scrape output is skipped: re-uploading it would mark stale shows as seen now. */
 const MAX_AGE_MS = 2 * 3600_000;
@@ -75,6 +76,7 @@ async function main() {
     await refreshSnapshot(db, removed);
   }
   await weeklyRoundup(db);
+  await lastChance(db);
   await recordTraffic(db, runStartedAt, results.map((r) => r.source));
 }
 
