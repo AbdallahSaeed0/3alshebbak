@@ -101,7 +101,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           content: Text(
             tr(
               'وصلتنا، شكرًا إنك قلتلنا 🙏',
-              'Got it, thank you for telling us 🙏',
+              'Got it, thanks for telling us 🙏',
             ),
           ),
         ),
@@ -112,7 +112,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           content: Text(
             tr(
               'ما اتبعتتش. اتأكد من النت وجرّب تاني.',
-              'Not sent. Check your connection and try again.',
+              'Didn’t go through. Check your internet and try again.',
             ),
           ),
         ),
@@ -173,7 +173,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               hintText: _kind == 'showtimes'
                   ? tr(
                       'أنهي فيلم وأنهي سينما، والميعاد الصح إيه؟',
-                      'Which film and cinema, and what is the right time?',
+                      'Which film, which cinema, and what’s the right time?',
                     )
                   : tr('اكتب هنا…', 'Write here…'),
             ),

@@ -25,7 +25,7 @@ Future<void> syncHomeWidget(AppData data) async {
       'next_empty',
       tr(
         'مفيش حفلات جاية في سينماتك خلال ٢٤ ساعة',
-        'No shows at your cinemas in the next 24 hours',
+        'Nothing at your cinemas in the next 24 hours',
       ),
     );
     await HomeWidget.updateWidget(androidName: 'NextShowWidget');

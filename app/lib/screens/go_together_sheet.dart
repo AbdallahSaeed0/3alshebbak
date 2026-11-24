@@ -7,7 +7,7 @@ import '../util/format.dart';
 import '../util/i18n.dart';
 import '../widgets/share_card.dart';
 
-/// "Shall we go?": tick a few showtimes of a film and send them to friends in
+/// "Go together?": tick a few showtimes of a film and send them to friends in
 /// one message, so they pick one.
 Future<void> showGoTogether(BuildContext context, Movie movie) {
   return showModalBottomSheet<void>(
@@ -69,11 +69,11 @@ class _GoTogetherState extends State<_GoTogether> {
       context,
       movie: widget.movie,
       shows: picked,
-      heading: tr('نروح سوا؟ 🎬 اختاروا ميعاد', 'Shall we go? 🎬 Pick a time'),
+      heading: tr('نروح سوا؟ 🎬 اختاروا ميعاد', 'Wanna go? 🎬 Pick a time'),
       text: [
         tr(
           'نروح «${widget.movie.displayTitle}» سوا؟ 🎬 اختاروا ميعاد:',
-          'Shall we see "${widget.movie.displayTitle}"? 🎬 Pick a time:',
+          'Wanna see “${widget.movie.displayTitle}” together? 🎬 Pick a time:',
         ),
         ...lines,
         tr('— من عالشباك', '— from 3al Shebbak'),
@@ -97,7 +97,7 @@ class _GoTogetherState extends State<_GoTogether> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
             child: Text(
-              tr('نروح سوا؟', 'Shall we go?'),
+              tr('نروح سوا؟', 'Go together?'),
               style: AppText.display(24),
             ),
           ),
@@ -106,7 +106,7 @@ class _GoTogetherState extends State<_GoTogether> {
             child: Text(
               tr(
                 'علّم على كام ميعاد يناسبوك، وابعتهم لصحابك يختاروا.',
-                'Tick a few times that suit you and send them to friends to pick.',
+                'Tick a few times that work for you and let your friends pick.',
               ),
               style: AppText.body(13, color: AppColors.muted),
             ),
@@ -118,7 +118,7 @@ class _GoTogetherState extends State<_GoTogether> {
                     child: Text(
                       tr(
                         'مفيش حفلات جاية للفيلم ده.',
-                        'No upcoming shows for this film.',
+                        'No shows coming up for this film.',
                       ),
                       style: AppText.body(14, color: AppColors.muted),
                     ),

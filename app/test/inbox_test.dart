@@ -100,12 +100,15 @@ void main() {
     expect(unreadCount(entries, entries.first.sentAt), 0);
   });
 
-  test('opening the page marks everything read; a new install starts there', () {
-    final prefs = Prefs.memory();
-    expect(prefs.inboxSeenAt, isNull);
-    prefs.markInboxSeen(DateTime.utc(2026, 11, 19, 12));
-    expect(prefs.inboxSeenAt, DateTime.utc(2026, 11, 19, 12));
-    final fresh = Prefs.memory(onboarded: false)..finishOnboarding();
-    expect(fresh.inboxSeenAt, isNotNull);
-  });
+  test(
+    'opening the page marks everything read; a new install starts there',
+    () {
+      final prefs = Prefs.memory();
+      expect(prefs.inboxSeenAt, isNull);
+      prefs.markInboxSeen(DateTime.utc(2026, 11, 19, 12));
+      expect(prefs.inboxSeenAt, DateTime.utc(2026, 11, 19, 12));
+      final fresh = Prefs.memory(onboarded: false)..finishOnboarding();
+      expect(fresh.inboxSeenAt, isNotNull);
+    },
+  );
 }

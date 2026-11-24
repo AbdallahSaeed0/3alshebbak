@@ -81,7 +81,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       suffixIcon: query.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: tr('امسح', 'Delete'),
+                              tooltip: tr('امسح', 'Clear'),
                               icon: Icon(Icons.close, color: AppColors.muted),
                               onPressed: () => setState(_search.clear),
                             ),
@@ -208,7 +208,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: Text(
                   tr(
                     'مفيش أفلام بالشكل ده. جرّب تشيل فلتر.',
-                    'No films match. Try removing a filter.',
+                    'No films like that. Try dropping a filter.',
                   ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),

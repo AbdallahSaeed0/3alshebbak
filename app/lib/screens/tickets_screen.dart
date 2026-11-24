@@ -238,7 +238,7 @@ class _TicketGrid extends StatelessWidget {
             used
                 ? tr(
                     'لما تستخدم تذكرة، افتحها ودوس «خلاص استخدمتها» وهتنزل هنا.',
-                    'When you\'ve used a ticket, open it and tap "I\'ve used it" to move it here.',
+                    'Used a ticket? Open it and tap “Done, used it” and it moves here.',
                   )
                 : tr(
                     'مفيش تذاكر جاية. اللي استخدمتها في «انتهت».',
@@ -272,7 +272,7 @@ class _TicketGrid extends StatelessWidget {
               Text(
                 tr(
                   'حجزت؟ خد اسكرين للتذكرة وحطها هنا، تلاقيها بسرعة على باب السينما. بتتحفظ على موبايلك بس.',
-                  'Booked? Screenshot the ticket and add it here to find it fast at the cinema door. It stays on your phone only.',
+                  'Booked? Screenshot your ticket and drop it here so it’s right there at the cinema door. It only stays on your phone.',
                 ),
                 style: AppText.body(14, color: AppColors.muted),
                 textAlign: TextAlign.center,
@@ -368,14 +368,14 @@ class _TicketView extends StatelessWidget {
         content: Text(
           tr(
             'هتتمسح من التطبيق بس، مش من صور الموبايل.',
-            'It\'s removed from the app only, not from your photos.',
+            'It’s only removed from the app, not from your photos.',
           ),
           style: AppText.body(14, color: AppColors.muted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(tr('لأ', 'No')),
+            child: Text(tr('لأ', 'Keep it')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -472,7 +472,7 @@ class _TicketView extends StatelessWidget {
             : FilledButton.icon(
                 onPressed: () => _toggleUsed(context),
                 icon: const Icon(Icons.check_circle_outline),
-                label: Text(tr('خلاص استخدمتها', 'I\'ve used it')),
+                label: Text(tr('خلاص استخدمتها', 'Done, used it')),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.onGold,

@@ -60,7 +60,7 @@ class FollowingScreen extends StatelessWidget {
                     Text(
                       tr(
                         'تابِع فيلم ونقولك أول ما التذاكر تنزل أو تنزل حفلات جديدة.',
-                        'Follow a film and we\'ll tell you when tickets go on sale or new shows are added.',
+                        'Follow a film and we’ll tell you when tickets drop or new shows are added.',
                       ),
                       textAlign: TextAlign.center,
                       style: AppText.body(14, color: AppColors.muted),

@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
               leading: _Dot(color: AppColors.amber),
               subtitle: tr(
                 'أقرب الحفلات في السينمات اللي معلّم عليها نجمة · الساعة دلوقتي ${clock(data.cairoNow)} ${period(data.cairoNow)}',
-                'The next shows at the cinemas you starred · it\'s ${clock(data.cairoNow)} ${period(data.cairoNow)}',
+                'Next up at the cinemas you starred · it’s ${clock(data.cairoNow)} ${period(data.cairoNow)} now',
               ),
             ),
           ),
@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                 ? _Empty(
                     tr(
                       'مفيش حفلات جاية في سينماتك خلال ٢٤ ساعة',
-                      'No shows at your cinemas in the next 24 hours',
+                      'Nothing at your cinemas in the next 24 hours',
                     ),
                   )
                 : SizedBox(
@@ -133,7 +133,7 @@ class HomeScreen extends StatelessWidget {
               child: _Empty(
                 tr(
                   'مفيش حفلات النهارده ولا بكره في $where',
-                  'No shows today or tomorrow at $where',
+                  'Nothing today or tomorrow at $where',
                 ),
               ),
             )
@@ -217,7 +217,7 @@ class HomeScreen extends StatelessWidget {
                 title: tr('قريبًا', 'Coming soon'),
                 subtitle: tr(
                   'تابِع الفيلم ونقولك أول ما التذاكر تنزل',
-                  'Follow a film and we\'ll tell you when tickets go on sale',
+                  'Follow a film and we’ll tell you when tickets drop',
                 ),
               ),
             ),
@@ -323,7 +323,10 @@ class _Header extends StatelessWidget {
                 _PillButton(
                   key: TourTargets.city,
                   onPressed: () => showCityPicker(context),
-                  tooltip: tr('السينمات اللي تظهر هنا', 'Cinemas shown here'),
+                  tooltip: tr(
+                    'السينمات اللي تظهر هنا',
+                    'Which cinemas show here',
+                  ),
                   child: Row(
                     children: [
                       Text(switch (AppScope.of(context).prefs.homeCity) {
@@ -360,7 +363,7 @@ class _Header extends StatelessWidget {
                             Text(
                               tr(
                                 'دوّر على فيلم أو سينما',
-                                'Search a film or cinema',
+                                'Look up a film or cinema',
                               ),
                               style: AppText.body(14, color: AppColors.muted),
                             ),

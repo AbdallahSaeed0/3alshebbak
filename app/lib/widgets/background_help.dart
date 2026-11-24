@@ -215,7 +215,7 @@ class _BackgroundHelp extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              tr('عشان الإشعارات توصلك', 'So alerts reach you'),
+              tr('عشان الإشعارات توصلك', 'So notifications reach you'),
               style: AppText.display(26),
             ),
             const SizedBox(height: 6),

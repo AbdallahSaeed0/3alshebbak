@@ -37,16 +37,19 @@ void main() {
     expect(prefs.everyFilm, isTrue);
   });
 
-  test('turning notifications on keeps the default; the switch ends it', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await Prefs.load();
-    prefs.setEveryFilm(true, chosen: false);
-    expect(prefs.everyFilmByDefault, isTrue);
-    prefs.setEveryFilm(true);
-    expect(prefs.everyFilmByDefault, isFalse);
-    prefs.toggleFollow('tmdb:1');
-    expect(prefs.everyFilm, isTrue);
-  });
+  test(
+    'turning notifications on keeps the default; the switch ends it',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await Prefs.load();
+      prefs.setEveryFilm(true, chosen: false);
+      expect(prefs.everyFilmByDefault, isTrue);
+      prefs.setEveryFilm(true);
+      expect(prefs.everyFilmByDefault, isFalse);
+      prefs.toggleFollow('tmdb:1');
+      expect(prefs.everyFilm, isTrue);
+    },
+  );
 
   test('the narrowing survives a restart', () async {
     SharedPreferences.setMockInitialValues({});

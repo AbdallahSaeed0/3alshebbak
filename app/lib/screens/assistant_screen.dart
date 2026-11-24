@@ -92,16 +92,16 @@ class _AssistantScreenState extends State<AssistantScreen> {
       [
         _Msg.bot(
           again
-              ? tr('تحب تعرف إيه تاني؟', 'What else would you like to know?')
+              ? tr('تحب تعرف إيه تاني؟', 'Anything else you want to know?')
               : tr(
                   'أهلاً! 👋 أنا هنا أسهّل عليك. عايز تعرف إيه؟',
-                  'Hi! 👋 I\'m here to make it easy. What would you like to know?',
+                  'Hey! 👋 Let me make it easy. What are you after?',
                 ),
         ),
       ],
       [
         _pick(
-          tr('مواعيد فيلم', 'A film\'s showtimes'),
+          tr('مواعيد فيلم', 'When’s a film showing?'),
           () => _askWhere(_askFilm),
           icon: Icons.movie_outlined,
         ),
@@ -196,7 +196,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.bot(
           tr(
             'مفيش أفلام معروضة ${_whereLabel(where)} الأسبوع ده.',
-            'Nothing is showing ${_whereLabel(where)} this week.',
+            'Nothing’s showing ${_whereLabel(where)} this week.',
           ),
         ),
       ], _again);
@@ -209,7 +209,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
           _Msg.bot(
             tr(
               'فيه ${films.length} فيلم ${_whereLabel(where)}. أنهي فيلم؟',
-              '${films.length} films ${_whereLabel(where)}. Which one?',
+              'There are ${films.length} films ${_whereLabel(where)}. Which one?',
             ),
           ),
       ],
@@ -245,7 +245,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.bot(
           tr(
             'مفيش حفلات جاية لـ«${movie.displayTitle}» ${_whereLabel(where)}.',
-            'No upcoming shows of "${movie.displayTitle}" ${_whereLabel(where)}.',
+            'No shows coming up for “${movie.displayTitle}” ${_whereLabel(where)}.',
           ),
         ),
       ], _again);
@@ -319,7 +319,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     final cinemas = _cinemas(where).take(8).toList();
     if (cinemas.isEmpty) {
       return _say([
-        _Msg.bot(tr('مش لاقي سينمات هنا.', 'No cinemas here.')),
+        _Msg.bot(tr('مش لاقي سينمات هنا.', 'Couldn’t find any cinemas here.')),
       ], _again);
     }
     _say(
@@ -328,11 +328,11 @@ class _AssistantScreenState extends State<AssistantScreen> {
           _data.prefs.spot != null
               ? tr(
                   'دي السينمات ${_whereLabel(where)}، الأقرب الأول:',
-                  'Cinemas ${_whereLabel(where)}, nearest first:',
+                  'Here are the cinemas ${_whereLabel(where)}, nearest first:',
                 )
               : tr(
                   'دي السينمات ${_whereLabel(where)}:',
-                  'Cinemas ${_whereLabel(where)}:',
+                  'Here are the cinemas ${_whereLabel(where)}:',
                 ),
         ),
         _Msg.card(
@@ -360,7 +360,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.bot(
           tr(
             'مفيش حفلات جاية في ${cinema.label}.',
-            'No upcoming shows at ${cinema.label}.',
+            'Nothing coming up at ${cinema.label}.',
           ),
         ),
       ], _again);
@@ -429,7 +429,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.bot(
           tr(
             'مفيش حفلات هتبدأ في الـ3 ساعات الجاية ${_whereLabel(where)}.',
-            'Nothing starts in the next 3 hours ${_whereLabel(where)}.',
+            'Nothing’s starting in the next 3 hours ${_whereLabel(where)}.',
           ),
         ),
       ], _again);

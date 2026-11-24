@@ -33,7 +33,7 @@ class Credit extends StatelessWidget {
           [
             tr(
               'عالشباك · مواعيد سينمات مصر',
-              '3al Shebbak · Egypt\'s showtimes',
+              '3al Shebbak · Egypt’s cinema times',
             ),
             if (version.data != null) 'v${version.data}',
           ].join(' · '),

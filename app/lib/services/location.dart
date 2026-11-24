@@ -90,7 +90,7 @@ String describe(LocationProblem problem) => switch (problem) {
   ),
   LocationProblem.deniedForever => tr(
     'اللوكيشن مرفوض للتطبيق. تقدر تسمح بيه من الإعدادات.',
-    'Location is blocked for the app. You can allow it in settings.',
+    'The app isn’t allowed to use your location. You can allow it in Settings.',
   ),
   LocationProblem.unavailable => tr(
     'معرفناش نحدد مكانك دلوقتي. جرّب تاني.',

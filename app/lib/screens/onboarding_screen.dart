@@ -313,7 +313,7 @@ class _Welcome extends StatelessWidget {
         'مواعيد ${cinemaCount(data.catalog.cinemas.length)} في مصر في مكان واحد، '
             'وأول ما تذاكر فيلم مستنيه تنزل، نقولك.',
         'Showtimes for ${cinemaCount(data.catalog.cinemas.length)} in Egypt in one place, '
-            "and the moment tickets for a film you're waiting on go on sale, we tell you.",
+            'and the moment tickets drop for a film you’re waiting for, we’ll tell you.',
       ),
       primary: _GoldButton(
         label: tr('يلا بينا', 'Let\'s go'),
@@ -347,7 +347,7 @@ class _Location extends StatelessWidget {
       body: tr(
         'هنستخدم مكانك عشان نرتبلك السينمات من الأقرب للأبعد. '
             'مكانك بيفضل على موبايلك، مش بنبعته لحد.',
-        'We use your location to sort cinemas from nearest to farthest. '
+        'We use your location to sort cinemas nearest first. '
             'It stays on your phone; we never send it anywhere.',
       ),
       note: p == null
@@ -389,7 +389,7 @@ class _Location extends StatelessWidget {
         onPressed: onLocate,
       ),
       secondary: _QuietButton(
-        label: tr('هختار بنفسي', 'I\'ll choose myself'),
+        label: tr('هختار بنفسي', 'I’ll pick myself'),
         onPressed: onManual,
       ),
     );
@@ -465,11 +465,11 @@ class _PickCinemasState extends State<_PickCinemas> {
             spot != null
                 ? tr(
                     'رتبناها من الأقرب ليك، واخترنالك الأقرب. غيّر براحتك.',
-                    'Sorted nearest first, with the closest picked for you. Change them as you like.',
+                    'Sorted nearest first, and we picked the closest ones. Change them however you like.',
                   )
                 : tr(
                     'اختار السينمات اللي بتروحها، عشان نوريك مواعيدها الأول.',
-                    'Pick the cinemas you go to, so we show their times first.',
+                    'Pick the cinemas you go to, and we’ll show their times first.',
                   ),
             style: AppText.body(13, color: AppColors.muted),
           ),
@@ -483,7 +483,7 @@ class _PickCinemasState extends State<_PickCinemas> {
             decoration: InputDecoration(
               hintText: tr(
                 'دوّر على سينما أو منطقة',
-                'Search a cinema or area',
+                'Look up a cinema or area',
               ),
               hintStyle: AppText.body(14, color: AppColors.muted),
               prefixIcon: Icon(Icons.search, color: AppColors.muted),
@@ -672,16 +672,16 @@ class _Notifications extends StatelessWidget {
       art: const _Badge(Icons.notifications_active_outlined),
       title: tr(
         'نقولك أول ما المواعيد تنزل؟',
-        'Tell you when showtimes come out?',
+        'Want a heads-up when showtimes drop?',
       ),
       body: tr(
         'أي فيلم يفتح حجزه أو تنزله مواعيد جديدة في سينماتك، هيوصلك إشعار بيه. '
             'ولو أفلام كتير مرة واحدة، هيوصلك إشعار واحد يجمعهم.',
-        'Whenever booking opens or new showtimes come out for any film at '
-            'your cinemas, you get a notification. Many films at once come as one.',
+        'Whenever booking opens or new times drop for any film at your '
+            'cinemas, we’ll let you know. Lots of films at once come in one notification.',
       ),
       primary: _GoldButton(
-        label: tr('أيوه، بلغني', 'Yes, notify me'),
+        label: tr('أيوه، بلغني', 'Yes, let me know'),
         onPressed: onEnable,
       ),
       secondary: _QuietButton(

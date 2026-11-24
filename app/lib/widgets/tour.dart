@@ -60,7 +60,7 @@ List<_Step> get _steps => [
     title: tr('سينماتك', 'Your cinemas'),
     body: tr(
       'الرئيسية بتعرض اللي جاي في سينماتك. من هنا تختار سينماتك أو مدينة كاملة.',
-      'Home shows what\'s next at your cinemas. Pick your cinemas or a whole city here.',
+      'Home shows what’s coming up at your cinemas. Pick your cinemas, or a whole city, here.',
     ),
   ),
   (
@@ -68,7 +68,7 @@ List<_Step> get _steps => [
     title: tr('دوّر واحجز', 'Search and book'),
     body: tr(
       'دوّر على أي فيلم أو سينما. ودوس على أي ميعاد: هتطلعلك تذكرة فيها زرار الحجز، وتقدر تبعتها لصحابك.',
-      'Find any film or cinema. Tap any time for a ticket with the booking button, and send it to friends.',
+      'Look up any film or cinema. Tap a time to get a ticket with a booking button, and send it to your friends.',
     ),
   ),
   (
@@ -76,7 +76,7 @@ List<_Step> get _steps => [
     title: tr('الإشعارات', 'Notifications'),
     body: tr(
       'كل الجديد للأفلام اللي بتتابعها: الحجز اللي فتح والمواعيد الجديدة، وتفاصيل كل واحد.',
-      'Everything new for films you follow: booking opening and new showtimes, with the details.',
+      'Everything new for the films you follow: booking opening, new times, and all the details.',
     ),
   ),
   (
@@ -84,7 +84,7 @@ List<_Step> get _steps => [
     title: tr('استكشف وتابع', 'Explore and follow'),
     body: tr(
       'كل الأفلام المعروضة واللي جاية قريب. من صفحة أي فيلم دوس «تابع الفيلم» ويوصلك إشعار أول ما الحجز يفتح.',
-      'Every film showing and coming soon. On a film\'s page tap "Follow" to hear when booking opens.',
+      'Every film showing now and coming soon. On a film’s page, tap “Follow” and we’ll tell you when booking opens.',
     ),
   ),
   (
@@ -92,7 +92,7 @@ List<_Step> get _steps => [
     title: tr('اسأل عالشباك', 'Ask 3al Shebbak'),
     body: tr(
       'اختار مدينة وفيلم ويقولك مواعيده، أو يدلّك على أقرب سينما ليك.',
-      'Pick a city and a film for its times, or find your nearest cinema.',
+      'Pick a city and a film to get its times, or find the cinema nearest you.',
     ),
   ),
   (
@@ -108,7 +108,7 @@ List<_Step> get _steps => [
     title: tr('الإعدادات', 'Settings'),
     body: tr(
       'الإشعارات واللغة والشكل، وتبعتلنا رأيك أو شكوى، وتعيد الجولة دي.',
-      'Notifications, language and look, send us feedback, and replay this tour.',
+      'Notifications, language and look, feedback for us, and this tour again.',
     ),
   ),
 ];

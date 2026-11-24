@@ -28,7 +28,7 @@ Future<void> toggleFilmFollow(
           context,
           tr(
             'بتتابع الفيلم. الإشعارات مش متاحة على النسخة دي.',
-            'Following this film. Alerts are unavailable on this platform.',
+            'You’re following this film. Notifications don’t work on this version.',
           ),
         );
       }
@@ -41,10 +41,10 @@ Future<void> toggleFilmFollow(
       _say(
         context,
         synced
-            ? tr('بطّلت متابعة الفيلم', 'Unfollowed this film')
+            ? tr('بطّلت متابعة الفيلم', 'You stopped following this film')
             : tr(
                 'اتلغت المتابعة على الموبايل، لكن مزامنتها فشلت. جرّب تاني.',
-                'Unfollowed on this phone, but syncing failed. Try again.',
+                'Unfollowed on this phone, but it didn’t sync. Try again.',
               ),
         action: synced
             ? null
@@ -56,13 +56,10 @@ Future<void> toggleFilmFollow(
                   _say(
                     context,
                     synced
-                        ? tr(
-                            'تمام، متابعة الجهاز اتزامنت',
-                            'Device preferences synced',
-                          )
+                        ? tr('تمام، متابعة الجهاز اتزامنت', 'All synced')
                         : tr(
                             'المزامنة ما كملتش. اتأكد من النت وجرّب تاني.',
-                            'Sync failed. Check your connection and retry.',
+                            'Didn’t sync. Check your internet and try again.',
                           ),
                   );
                 },
@@ -76,29 +73,29 @@ Future<void> toggleFilmFollow(
     final message = switch (result) {
       FollowAlertResult.enabled when narrowed => tr(
         'هيوصلك إشعار لما الحجز يفتح. ومن دلوقتي الإشعارات للأفلام اللي بتتابعها بس، وتقدر ترجّع «كل الأفلام» من الإعدادات.',
-        'You’ll get an alert when booking opens. From now on, alerts are only for films you follow; turn “Every film” back on in Settings.',
+        'We’ll let you know when booking opens. From now on you’ll only hear about films you follow; turn “Every film” back on in Settings.',
       ),
       FollowAlertResult.enabled =>
         prefs.myCinemas.isEmpty
             ? tr(
                 'هيوصلك إشعار لما الحجز يفتح في أي سينما',
-                'You’ll get an alert when booking opens at any cinema',
+                'We’ll let you know when booking opens at any cinema',
               )
             : tr(
                 'هيوصلك إشعار لما الحجز يفتح في السينمات اللي مختارها',
-                'You’ll get an alert when booking opens at your selected cinemas',
+                'We’ll let you know when booking opens at your cinemas',
               ),
       FollowAlertResult.denied => tr(
         'بتتابع الفيلم، بس إذن الإشعارات مقفول. افتحه من إعدادات الموبايل.',
-        'Following this film, but notification permission is off. Enable it in your phone settings.',
+        'You’re following this film, but notifications are off. Turn them on in your phone’s settings.',
       ),
       FollowAlertResult.failed => tr(
         'بتتابع الفيلم، لكن تفعيل الإشعارات ما كملش. اتأكد من النت وجرّب تاني.',
-        'Following this film, but alerts could not be activated. Check your connection and retry.',
+        'You’re following this film, but we couldn’t turn on notifications. Check your internet and try again.',
       ),
       FollowAlertResult.unavailable => tr(
         'بتتابع الفيلم. الإشعارات مش متاحة على النسخة دي.',
-        'Following this film. Alerts are unavailable on this platform.',
+        'You’re following this film. Notifications don’t work on this version.',
       ),
     };
     _say(
@@ -120,10 +117,13 @@ Future<void> toggleFilmFollow(
             _say(
               context,
               retry == FollowAlertResult.enabled
-                  ? tr('تمام، إشعارات الفيلم اتفعّلت', 'Film alerts enabled')
+                  ? tr(
+                      'تمام، إشعارات الفيلم اتفعّلت',
+                      'Done, notifications are on for this film',
+                    )
                   : tr(
                       'تفعيل الإشعارات ما كملش. جرّب من الإعدادات.',
-                      'Alerts could not be enabled. Try from settings.',
+                      'Couldn’t turn on notifications. Try from Settings.',
                     ),
             );
           },

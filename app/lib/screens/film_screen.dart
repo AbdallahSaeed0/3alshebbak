@@ -240,7 +240,7 @@ class _FilmScreenState extends State<FilmScreen> {
                       Expanded(
                         child: _SideButton(
                           icon: Icons.groups_outlined,
-                          label: tr('نروح سوا؟', 'Shall we go?'),
+                          label: tr('نروح سوا؟', 'Go together?'),
                           onPressed: () => showGoTogether(context, movie),
                         ),
                       ),
@@ -301,7 +301,7 @@ class _FilmScreenState extends State<FilmScreen> {
                 child: Text(
                   tr(
                     'مفيش حفلات جاية للفيلم ده دلوقتي. تابعه ونبلغك أول ما التذاكر تنزل.',
-                    'No upcoming shows for this film right now. Follow it and we\'ll tell you when tickets go on sale.',
+                    'No shows for this film right now. Follow it and we’ll tell you the moment tickets drop.',
                   ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),

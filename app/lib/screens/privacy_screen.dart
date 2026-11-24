@@ -57,7 +57,7 @@ class PrivacyScreen extends StatelessWidget {
           _Para(
             tr(
               'لو مسحت التطبيق، كل ده بيتمسح معاه.',
-              'Uninstalling the app deletes all of it.',
+              'Delete the app and all of this goes with it.',
             ),
           ),
           _Title(tr('الإشعارات', 'Notifications')),

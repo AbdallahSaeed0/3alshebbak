@@ -137,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     setState(() => _locating = false);
     if (problem == null)
-      return _say(tr('تمام، حدّثنا مكانك', 'Done, location updated'));
+      return _say(tr('تمام، حدّثنا مكانك', 'Done, we updated your location'));
     _say(
       describe(problem),
       action:
@@ -165,11 +165,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       on
           ? tr(
               'هنقولك بأي حجز يفتح أو مواعيد تنزل في سينماتك',
-              "We'll tell you when booking opens or showtimes come out at your cinemas",
+              "We’ll let you know when booking opens or new times drop at your cinemas",
             )
           : tr(
               'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
-              'Notifications are off. You can turn them on in your phone\'s settings.',
+              'Notifications are off. You can turn them on from your phone’s settings.',
             ),
     );
   }
@@ -190,11 +190,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       allowed
           ? tr(
               'هنقولك بأي مواعيد جديدة في سينماتك، لأي فيلم',
-              "We'll tell you about new showtimes at your cinemas, for any film",
+              "We’ll let you know about new times at your cinemas, for any film",
             )
           : tr(
               'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
-              "Notifications are off. You can turn them on in your phone's settings.",
+              "Notifications are off. You can turn them on from your phone’s settings.",
             ),
     );
   }
@@ -238,7 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: EdgeInsets.only(bottom: barSpace(context)),
         children: [
-          _Heading(tr('حاجاتي', 'Mine')),
+          _Heading(tr('حاجاتي', 'My stuff')),
           _Group(
             children: [
               _Row(
@@ -247,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 detail: prefs.following.isEmpty
                     ? tr(
                         'الأفلام اللي بتستناها، ونقولك أول ما تذاكرها تنزل',
-                        'Films you\'re waiting for; we tell you when tickets go on sale',
+                        'Films you’re waiting for: we’ll tell you when tickets drop',
                       )
                     : tr(
                         '${prefs.following.length} فيلم بتتابعه',
@@ -283,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: tr('الشكل', 'Appearance'),
                 value: prefs.appearance,
                 options: {
-                  Appearance.system: tr('زي الموبايل', 'Phone'),
+                  Appearance.system: tr('زي الموبايل', 'Same as phone'),
                   Appearance.light: tr('فاتح', 'Light'),
                   Appearance.dark: tr('غامق', 'Dark'),
                 },
@@ -356,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: tr('امسح موقعي', 'Forget my location'),
                   onTap: () {
                     prefs.clearSpot();
-                    _say(tr('مسحنا مكانك', 'Location forgotten'));
+                    _say(tr('مسحنا مكانك', 'Your location’s cleared'));
                   },
                 ),
             ],
@@ -370,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: tr('شغّل الإشعارات', 'Turn on notifications'),
                   detail: tr(
                     'أي حجز يفتح أو مواعيد تنزل في سينماتك',
-                    'New booking or showtimes at your cinemas',
+                    'When booking opens or new times drop at your cinemas',
                   ),
                   trailing: _enablingPush
                       ? const SizedBox.square(
@@ -451,7 +451,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   detail: tr(
                     'دوس هنا وهنقولك تعمل إيه خطوة بخطوة',
-                    'Tap for step-by-step help',
+                    'Tap and we’ll walk you through it',
                   ),
                   onTap: () => showBackgroundHelp(context),
                 )
@@ -476,7 +476,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.rate_review_outlined,
                 title: tr(
                   'ابعتلنا رأيك أو شكوى',
-                  'Send feedback or a complaint',
+                  'Send us feedback or a complaint',
                 ),
                 onTap: () => openFeedback(context),
               ),

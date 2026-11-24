@@ -127,7 +127,7 @@ class _CinemasScreenState extends State<CinemasScreen> {
           Text(
             tr(
               '${data.catalog.cinemas.length} سينما في مصر · النجمة تضيفها لسينماتك',
-              '${data.catalog.cinemas.length} cinemas in Egypt · the star adds one to yours',
+              '${data.catalog.cinemas.length} cinemas in Egypt · tap the star to make one yours',
             ),
             style: AppText.body(12, color: AppColors.muted),
           ),
@@ -139,7 +139,7 @@ class _CinemasScreenState extends State<CinemasScreen> {
             decoration: InputDecoration(
               hintText: tr(
                 'دوّر على سينما أو منطقة',
-                'Search a cinema or area',
+                'Look up a cinema or area',
               ),
               hintStyle: AppText.body(14, color: AppColors.muted),
               prefixIcon: Icon(Icons.search, color: AppColors.muted),

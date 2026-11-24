@@ -89,7 +89,7 @@ class _NewsScreenState extends State<NewsScreen> {
                 _Notice(
                   tr(
                     'ما قدرناش نجيب تفاصيل الحفلات دلوقتي.',
-                    'Couldn\'t load the showtimes right now.',
+                    'Couldn’t load the showtimes just now.',
                   ),
                   action: TextButton(
                     onPressed: () => setState(() => _shows = _load()),
@@ -111,7 +111,7 @@ class _NewsScreenState extends State<NewsScreen> {
                 _Notice(
                   tr(
                     'الأفلام دي مش موجودة في المواعيد دلوقتي.',
-                    'These films aren\'t in the schedule any more.',
+                    'These films aren’t on the schedule anymore.',
                   ),
                 ),
             ],
@@ -145,7 +145,7 @@ class _FilmNews extends StatelessWidget {
       ((grouped[s.cinemaId] ??= {})[s.businessDate] ??= []).add(s);
     }
     final kind = switch (film.kind) {
-      NewsKind.opened => tr('الحجز فتح', 'Tickets on sale'),
+      NewsKind.opened => tr('الحجز فتح', 'Booking’s open'),
       NewsKind.days => tr('أيام حجز جديدة', 'New days on sale'),
       NewsKind.shows => tr('حفلات جديدة', 'New showtimes'),
     };
@@ -200,7 +200,7 @@ class _FilmNews extends StatelessWidget {
                 child: Text(
                   tr(
                     'الحفلات الجديدة دي عدّت أو اتشالت من الجدول.',
-                    'These new shows are over or no longer listed.',
+                    'These shows are over or were taken off the schedule.',
                   ),
                   style: AppText.body(13, color: AppColors.muted),
                 ),

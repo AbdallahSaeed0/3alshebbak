@@ -57,7 +57,7 @@ class NotificationsScreen extends StatelessWidget {
                           )
                         : tr(
                             'مفيش جديد في آخر أسبوعين للأفلام والسينمات اللي اخترتها. تقدر تتابع أفلام أكتر، أو تشغّل «كل الأفلام» من الإعدادات.',
-                            'Nothing new in the last two weeks for your films and cinemas. Follow more films, or turn on "every film" in Settings.',
+                            'Nothing new for your films and cinemas in the last two weeks. Follow more films, or turn on “Every film” in Settings.',
                           ),
                     textAlign: TextAlign.center,
                     style: AppText.body(15, color: AppColors.muted),

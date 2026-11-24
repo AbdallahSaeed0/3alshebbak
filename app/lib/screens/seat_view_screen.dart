@@ -229,12 +229,12 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
   SeatViewPreload? _preload;
 
   static (String, String) _rating(SeatView v) => switch (v.issue) {
-    null => (tr('مثالي', 'Ideal'), 'good'),
+    null => (tr('مثالي', 'Perfect'), 'good'),
     ViewIssue.close => (tr('قريب', 'Close'), 'ok'),
     ViewIssue.aBitFar => (tr('بعيد شوية', 'A bit far'), 'ok'),
     ViewIssue.tooClose => (tr('قريب أوي', 'Too close'), 'bad'),
     ViewIssue.farBack => (tr('بعيد', 'Far back'), 'bad'),
-    ViewIssue.toTheSide => (tr('على الجنب', 'Side angle'), 'bad'),
+    ViewIssue.toTheSide => (tr('على الجنب', 'Off to the side'), 'bad'),
   };
 
   /// Everything the 3D page draws, worked out here so its positions and
@@ -274,7 +274,7 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
             ? tr('جلوس حر · مكان مقترح', 'Free seating · a suggested spot')
             : tr('الكرسي اللي اخترته', 'Your seat'),
         'yourView': tr('المنظر من كرسيك', 'Your view'),
-        'viewFrom': tr('شوف من هنا', 'View from seat'),
+        'viewFrom': tr('شوف من هنا', 'See from here'),
         'overview': tr('القاعة كلها', 'Whole hall'),
         'best': tr('أحسن كرسي', 'Best seat'),
         'book': booking == null
@@ -285,11 +285,11 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
               ),
         'viewFromShort': tr('المنظر من', 'View from'),
         'expand': tr('كبّر', 'Expand'),
-        'peopleOff': tr('شيل الناس', 'Hide people'),
-        'peopleOn': tr('حط ناس في الكراسي', 'Show seated people'),
+        'peopleOff': tr('شيل الناس', 'Empty the seats'),
+        'peopleOn': tr('حط ناس في الكراسي', 'Fill the seats'),
         'noGl': tr(
           'العرض الـ3D مش شغال على الموبايل ده',
-          '3D view isn\'t available on this phone',
+          'The 3D view doesn’t work on this phone',
         ),
       },
       'seats': [
@@ -508,13 +508,13 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
                 icon: Icons.panorama_wide_angle_outlined,
                 text: tr(
                   'الشاشة ${view.screenAngle.round()}° من نظرك',
-                  'Screen fills ${view.screenAngle.round()}°',
+                  'The screen fills ${view.screenAngle.round()}° of your view',
                 ),
               ),
               _Fact(
                 icon: Icons.swap_horiz,
                 text: view.sideAngle < 3
-                    ? tr('في النص', 'Centred')
+                    ? tr('في النص', 'Dead centre')
                     : tr(
                         '${view.sideAngle.round()}° على الجنب',
                         '${view.sideAngle.round()}° off centre',
@@ -570,23 +570,23 @@ class _SeatViewScreenState extends State<SeatViewScreen> {
   static String _why(SeatView v) => switch (v.issue) {
     ViewIssue.tooClose => tr(
       'قريب أوي: هتبص لفوق وتلف راسك.',
-      'Too close: you\'ll look up and turn your head.',
+      'Too close: you’ll be looking up and turning your head.',
     ),
     ViewIssue.close => tr(
       'قريب: الشاشة مالية نظرك، لو بتحب تبقى جوا الفيلم.',
-      'Close: the screen fills your view, if you like being in the film.',
+      'Close: the screen fills your view. Great if you like being in the movie.',
     ),
     ViewIssue.aBitFar => tr(
       'بعيد شوية: مريح بس الشاشة أصغر.',
-      'A bit far: comfortable, the screen looks smaller.',
+      'A bit far: comfy, but the screen looks smaller.',
     ),
     ViewIssue.farBack => tr(
       'بعيد: الشاشة هتبان صغيرة.',
-      'Far back: the screen looks small.',
+      'Far back: the screen will look small.',
     ),
     ViewIssue.toTheSide => tr(
       'على الجنب: هتشوف الشاشة مايلة.',
-      'To the side: you see the screen at an angle.',
+      'Off to the side: you’ll see the screen at an angle.',
     ),
     null => tr(
       'مكان مثالي: الشاشة مالية نظرك من غير ما تلف راسك.',

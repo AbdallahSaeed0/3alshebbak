@@ -111,7 +111,7 @@ class _CinemaScreenState extends State<CinemaScreen> {
                         cinema.attribution != null
                             ? tr(
                                 'صفحتها على ${cinema.attribution}',
-                                'Its page on ${cinema.attribution}',
+                                'See it on ${cinema.attribution}',
                               )
                             : tr('موقع السينما', 'Cinema website'),
                       ),
@@ -138,7 +138,7 @@ class _CinemaScreenState extends State<CinemaScreen> {
                 child: Text(
                   tr(
                     'مفيش حفلات جاية في السينما دي دلوقتي',
-                    'No upcoming shows at this cinema right now',
+                    'Nothing coming up here right now',
                   ),
                   style: AppText.body(14, color: AppColors.muted),
                 ),
@@ -207,7 +207,7 @@ class _CinemaScreenState extends State<CinemaScreen> {
                 child: Text(
                   tr(
                     'مواعيد السينما دي من ${cinema.attribution}',
-                    'Showtimes for this cinema from ${cinema.attribution}',
+                    'Showtimes for this cinema come from ${cinema.attribution}',
                   ),
                   style: AppText.body(12, color: AppColors.muted),
                 ),

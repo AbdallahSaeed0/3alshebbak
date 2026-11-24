@@ -391,7 +391,7 @@ class _SeatViewButtonState extends State<_SeatViewButton> {
             child: Text(
               tr(
                 'مقدرناش نعرف العرض ده في أنهي صالة',
-                "Couldn't tell which hall this show is in",
+                "We couldn’t tell which hall this show’s in",
               ),
               textAlign: TextAlign.center,
               style: AppText.body(12, color: AppColors.muted),

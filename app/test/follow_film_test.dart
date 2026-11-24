@@ -65,7 +65,10 @@ void main() {
     );
     alerts.pending!.complete(FollowAlertResult.enabled);
     await tester.pumpAndSettle();
-    expect(find.textContaining('selected cinemas'), findsOneWidget);
+    expect(
+      find.textContaining('booking opens at your cinemas'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('denied permission keeps the follow and offers phone settings', (
@@ -76,7 +79,7 @@ void main() {
     await tester.tap(find.text('Follow'));
     await tester.pumpAndSettle();
     expect(prefs.isFollowing('film'), isTrue);
-    expect(find.textContaining('permission is off'), findsOneWidget);
+    expect(find.textContaining('but notifications are off'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
   });
 
@@ -88,14 +91,17 @@ void main() {
       await _mount(tester, prefs, alerts);
       await tester.tap(find.text('Follow'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('could not be activated'), findsOneWidget);
+      expect(
+        find.textContaining('couldn’t turn on notifications'),
+        findsOneWidget,
+      );
       expect(find.textContaining('You’ll get an alert'), findsNothing);
       alerts.result = FollowAlertResult.enabled;
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
       expect(alerts.enables, 2);
       expect(prefs.isFollowing('film'), isTrue);
-      expect(find.text('Film alerts enabled'), findsOneWidget);
+      expect(find.text('Done, notifications are on for this film'), findsOneWidget);
     },
   );
 
@@ -129,7 +135,7 @@ void main() {
     await _mount(tester, prefs, alerts);
     await tester.tap(find.text('Follow'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('syncing failed'), findsOneWidget);
+    expect(find.textContaining('it didn’t sync'), findsOneWidget);
     alerts.syncResult = true;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
@@ -148,10 +154,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(prefs.isFollowing('film'), isTrue);
       expect(alerts.enables, 0);
-      expect(
-        find.textContaining('unavailable on this platform'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('don’t work on this version'), findsOneWidget);
     },
   );
 }

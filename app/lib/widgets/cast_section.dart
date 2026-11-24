@@ -172,9 +172,10 @@ class _Actor extends StatelessWidget {
             maxLines: 2,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: AppText.body(12, weight: FontWeight.w700).copyWith(
-              height: 1.25,
-            ),
+            style: AppText.body(
+              12,
+              weight: FontWeight.w700,
+            ).copyWith(height: 1.25),
           ),
           if (person.character != null)
             Text(
