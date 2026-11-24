@@ -173,7 +173,7 @@ class _GoTogetherState extends State<_GoTogether> {
                     ? tr('علّم على ميعاد الأول', 'Tick a time first')
                     : tr(
                         'ابعت ${_picked.length} مواعيد لصحابك',
-                        'Send ${_picked.length} times to friends',
+                        'Send ${plural(_picked.length, 'time', 'times')} to friends',
                       ),
               ),
               style: FilledButton.styleFrom(

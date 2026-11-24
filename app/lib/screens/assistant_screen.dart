@@ -209,7 +209,9 @@ class _AssistantScreenState extends State<AssistantScreen> {
           _Msg.bot(
             tr(
               'فيه ${films.length} فيلم ${_whereLabel(where)}. أنهي فيلم؟',
-              'There are ${films.length} films ${_whereLabel(where)}. Which one?',
+              films.length == 1
+                  ? 'There’s 1 film ${_whereLabel(where)}. Which one?'
+                  : 'There are ${films.length} films ${_whereLabel(where)}. Which one?',
             ),
           ),
       ],
@@ -381,7 +383,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
         _Msg.bot(
           tr(
             '${cinema.label} ${dayLabel(day)}: ${schedule.length} فيلم',
-            '${cinema.label} on ${dayLabel(day)}: ${schedule.length} films',
+            '${cinema.label} on ${dayLabel(day)}: ${plural(schedule.length, 'film', 'films')}',
           ),
         ),
         _Msg.card(

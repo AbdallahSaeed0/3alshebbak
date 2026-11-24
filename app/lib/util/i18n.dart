@@ -8,3 +8,7 @@ abstract final class Lang {
 }
 
 String tr(String arabic, String english) => Lang.english ? english : arabic;
+
+/// English count and noun: "1 film", "3 films". Arabic counts have their
+/// own helpers (filmCount, cinemaCount…) where needed.
+String plural(int n, String one, String many) => '$n ${n == 1 ? one : many}';

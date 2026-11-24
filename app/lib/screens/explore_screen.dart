@@ -194,8 +194,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: Text(
                 _comingSoon
-                    ? tr('$count فيلم جايين', '$count films coming')
-                    : tr('$count فيلم الأسبوع ده', '$count films this week') +
+                    ? tr(
+                        '$count فيلم جايين',
+                        '${plural(count, 'film', 'films')} coming',
+                      )
+                    : tr(
+                            '$count فيلم الأسبوع ده',
+                            '${plural(count, 'film', 'films')} this week',
+                          ) +
                           (_format != null ? ' · $_format' : ''),
                 style: AppText.body(12, color: AppColors.muted),
               ),

@@ -157,7 +157,9 @@ class SettingsScreen extends StatelessWidget {
                       )
                     : tr(
                         '${prefs.following.length} فيلم بتتابعه',
-                        'Following ${prefs.following.length} films',
+                        prefs.following.length == 1
+                            ? 'Following 1 film'
+                            : 'Following ${prefs.following.length} films',
                       ),
                 onTap: () => _openFollowing(context),
               ),
@@ -173,7 +175,10 @@ class SettingsScreen extends StatelessWidget {
                         'اسكرينات تذاكرك، محفوظة على موبايلك',
                         'Screenshots of your tickets, kept on your phone',
                       ),
-                      final n => tr('$n تذكرة محفوظة', '$n tickets saved'),
+                      final n => tr(
+                        '$n تذكرة محفوظة',
+                        '${plural(n, 'ticket', 'tickets')} saved',
+                      ),
                     },
                     onTap: () => openTickets(context),
                   ),
@@ -189,7 +194,7 @@ class SettingsScreen extends StatelessWidget {
                 title: tr('الشكل', 'Appearance'),
                 value: prefs.appearance,
                 options: {
-                  Appearance.system: tr('زي الموبايل', 'Same as phone'),
+                  Appearance.system: tr('زي الموبايل', 'Auto'),
                   Appearance.light: tr('فاتح', 'Light'),
                   Appearance.dark: tr('غامق', 'Dark'),
                 },
@@ -719,7 +724,15 @@ class _Choices<T> extends StatelessWidget {
           child: SegmentedButton<T>(
             segments: [
               for (final e in options.entries)
-                ButtonSegment(value: e.key, label: Text(e.value)),
+                // One line always: a long label shrinks a little instead
+                // of wrapping inside its segment.
+                ButtonSegment(
+                  value: e.key,
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(e.value, maxLines: 1, softWrap: false),
+                  ),
+                ),
             ],
             selected: {value},
             onSelectionChanged: (s) => onChanged(s.first),
