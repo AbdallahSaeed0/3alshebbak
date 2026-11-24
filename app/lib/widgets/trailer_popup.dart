@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,12 +26,29 @@ Future<void> showTrailer(BuildContext context, Movie movie) async {
     barrierColor: Colors.black87,
     builder: (_) => _TrailerPopup(movie: movie, youTubeKey: key),
   );
+  // Closed while full screen (the back button): portrait and bars again.
+  await _fullScreen(false);
 }
 
 Future<void> _openYouTube(String key) => launchUrl(
   Uri.parse('https://www.youtube.com/watch?v=$key'),
   mode: LaunchMode.externalApplication,
 );
+
+/// Landscape and immersive while the player is full screen; the app's usual
+/// orientations and bars otherwise.
+Future<void> _fullScreen(bool on) async {
+  if (on) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  } else {
+    await SystemChrome.setPreferredOrientations(const []);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+}
 
 class _TrailerPopup extends StatelessWidget {
   const _TrailerPopup({required this.movie, required this.youTubeKey});
@@ -61,7 +79,8 @@ iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style>
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      // Nearly the screen's width: the trailer is the point of the popup.
+      insetPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
@@ -106,6 +125,10 @@ iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style>
                 ),
                 // Links inside the player (the YouTube logo, "watch on
                 // YouTube") go to the YouTube app, not into the popup.
+                // YouTube's own full-screen button: sideways and without
+                // the status and navigation bars, back again on exit.
+                onEnterFullscreen: (_) => _fullScreen(true),
+                onExitFullscreen: (_) => _fullScreen(false),
                 shouldOverrideUrlLoading: (_, action) async {
                   final url = action.request.url;
                   if (action.isForMainFrame &&

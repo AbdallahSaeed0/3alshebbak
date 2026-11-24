@@ -89,6 +89,21 @@ class Push implements FilmAlerts {
     }
   }
 
+  /// Whether the phone lets the app show notifications (no dialog).
+  Future<bool> isOn() async {
+    final prefs = _prefs;
+    if (!available || prefs == null) return false;
+    try {
+      await start(prefs);
+      if (!_initialized) return false;
+      final settings = await FirebaseMessaging.instance
+          .getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Asks for permission (Android 13+ / iOS show a dialog) and registers.
   /// Returns whether notifications are on.
   Future<bool> enable() async =>

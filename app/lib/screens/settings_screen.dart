@@ -106,100 +106,16 @@ class _Choice extends StatelessWidget {
   }
 }
 
-/// The fourth tab: my films and tickets, then my cinemas, location,
-/// notifications, and where the data comes from.
-class SettingsScreen extends StatefulWidget {
+/// The fourth tab: my films and tickets, look and language, then one row
+/// each for my cinemas, notifications and "about", which open their own
+/// pages, and feedback.
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.onExplore});
 
   /// Switches to the Explore tab (from an empty Following page).
   final VoidCallback onExplore;
 
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _locating = false;
-  bool _enablingPush = false;
-
-  void _say(String message, {SnackBarAction? action}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: AppText.body(13)),
-        action: action,
-      ),
-    );
-  }
-
-  Future<void> _locate() async {
-    setState(() => _locating = true);
-    final problem = await refreshSpot(AppScope.of(context).prefs);
-    if (!mounted) return;
-    setState(() => _locating = false);
-    if (problem == null)
-      return _say(tr('تمام، حدّثنا مكانك', 'Done, we updated your location'));
-    _say(
-      describe(problem),
-      action:
-          problem == LocationProblem.deniedForever ||
-              problem == LocationProblem.serviceOff
-          ? SnackBarAction(
-              label: tr('الإعدادات', 'Settings'),
-              onPressed: () => openFixFor(problem),
-            )
-          : null,
-    );
-  }
-
-  /// Same as onboarding's yes: alerts for every film; the switch below can
-  /// narrow them to followed films.
-  Future<void> _enablePush() async {
-    setState(() => _enablingPush = true);
-    final prefs = AppScope.of(context).prefs;
-    prefs.setEveryFilm(true, chosen: false);
-    final on = await Push.instance.enable();
-    if (!on) prefs.setEveryFilm(false, chosen: false);
-    if (!mounted) return;
-    setState(() => _enablingPush = false);
-    _say(
-      on
-          ? tr(
-              'هنقولك بأي حجز يفتح أو مواعيد تنزل في سينماتك',
-              "We’ll let you know when booking opens or new times drop at your cinemas",
-            )
-          : tr(
-              'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
-              'Notifications are off. You can turn them on from your phone’s settings.',
-            ),
-    );
-  }
-
-  /// Every film's new showtimes, not only followed ones: on asks for
-  /// notification permission like following a film does.
-  Future<void> _setEveryFilm(bool on) async {
-    final prefs = AppScope.of(context).prefs;
-    prefs.setEveryFilm(on);
-    if (!on) {
-      await Push.instance.syncPreferences();
-      return;
-    }
-    final allowed = await Push.instance.enable();
-    if (!mounted) return;
-    if (!allowed) prefs.setEveryFilm(false);
-    _say(
-      allowed
-          ? tr(
-              'هنقولك بأي مواعيد جديدة في سينماتك، لأي فيلم',
-              "We’ll let you know about new times at your cinemas, for any film",
-            )
-          : tr(
-              'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
-              "Notifications are off. You can turn them on from your phone’s settings.",
-            ),
-    );
-  }
-
-  void _openFollowing() {
+  void _openFollowing(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => Scaffold(
@@ -207,19 +123,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           body: FollowingScreen(
             onExplore: () {
               Navigator.of(context).pop();
-              widget.onExplore();
+              onExplore();
             },
           ),
         ),
-      ),
-    );
-  }
-
-  void _redoSetup() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) =>
-            OnboardingScreen(onDone: () => Navigator.of(context).pop()),
       ),
     );
   }
@@ -228,7 +135,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final data = AppScope.of(context);
     final prefs = data.prefs;
-    final spot = prefs.spot;
 
     return Scaffold(
       appBar: AppBar(
@@ -253,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         '${prefs.following.length} فيلم بتتابعه',
                         'Following ${prefs.following.length} films',
                       ),
-                onTap: _openFollowing,
+                onTap: () => _openFollowing(context),
               ),
               FutureBuilder<TicketStore>(
                 future: TicketStore.load(),
@@ -299,174 +205,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-          _Heading(tr('سينماتي', 'My cinemas')),
+          const SizedBox(height: 16),
           _Group(
             children: [
               _Row(
                 icon: Icons.star_outline,
-                title: tr('اختار سينماتك من جديد', 'Pick your cinemas again'),
+                title: tr('سينماتي', 'My cinemas'),
                 detail: tr(
-                  'متختار ${cinemaCount(prefs.myCinemas.length)} · نبدأ من اللوكيشن',
-                  '${cinemaCount(prefs.myCinemas.length)} picked · starts from your location',
+                  '${cinemaCount(prefs.myCinemas.length)} · الرئيسية تعرض ${_homeShows(prefs)}',
+                  '${cinemaCount(prefs.myCinemas.length)} · Home shows ${_homeShows(prefs)}',
                 ),
-                onTap: _redoSetup,
+                onTap: () => _push(context, const _CinemasPage()),
               ),
               _Row(
-                icon: Icons.location_city_outlined,
-                title: tr('الرئيسية تعرض', 'Home shows'),
-                detail: switch (prefs.homeCity) {
-                  null => tr('سينماتي', 'My cinemas'),
-                  final city => tr(
-                    'كل سينمات ${cityName(city)}',
-                    'All ${cityName(city)} cinemas',
-                  ),
-                },
-                onTap: () => showCityPicker(context),
+                icon: Icons.notifications_active_outlined,
+                title: tr('الإشعارات', 'Notifications'),
+                detail: _notificationsSummary(prefs),
+                onTap: () => _push(context, const _NotificationsPage()),
               ),
-            ],
-          ),
-          _Heading(tr('الموقع', 'Location')),
-          _Group(
-            children: [
-              _Row(
-                icon: Icons.my_location,
-                title: spot == null
-                    ? tr('استخدم موقعي', 'Use my location')
-                    : tr('حدّث موقعي', 'Update my location'),
-                detail: spot == null
-                    ? tr(
-                        'عشان نرتب السينمات من الأقرب ليك',
-                        'To sort cinemas nearest first',
-                      )
-                    : tr(
-                        'محفوظ على الموبايل بس، مش بيتبعت لحد',
-                        'Kept on your phone only, never sent anywhere',
-                      ),
-                trailing: _locating
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : null,
-                onTap: _locating ? null : _locate,
-              ),
-              if (spot != null)
-                _Row(
-                  icon: Icons.location_off_outlined,
-                  title: tr('امسح موقعي', 'Forget my location'),
-                  onTap: () {
-                    prefs.clearSpot();
-                    _say(tr('مسحنا مكانك', 'Your location’s cleared'));
-                  },
-                ),
-            ],
-          ),
-          _Heading(tr('الإشعارات', 'Notifications')),
-          _Group(
-            children: [
-              if (Push.available)
-                _Row(
-                  icon: Icons.notifications_active_outlined,
-                  title: tr('شغّل الإشعارات', 'Turn on notifications'),
-                  detail: tr(
-                    'أي حجز يفتح أو مواعيد تنزل في سينماتك',
-                    'When booking opens or new times drop at your cinemas',
-                  ),
-                  trailing: _enablingPush
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : null,
-                  onTap: _enablingPush ? null : _enablePush,
-                ),
-              if (Push.available)
-                _Row(
-                  icon: Icons.campaign_outlined,
-                  title: tr('كل الأفلام', 'Every film'),
-                  detail: prefs.everyFilm
-                      ? tr(
-                          'أي فيلم، حتى لو مش متابعه',
-                          'Any film, followed or not',
-                        )
-                      : tr(
-                          'مقفول: الأفلام اللي بتتابعها بس · ${prefs.following.length} فيلم',
-                          'Off: only films you follow · ${prefs.following.length}',
-                        ),
-                  trailing: Switch(
-                    value: prefs.everyFilm,
-                    onChanged: _setEveryFilm,
-                  ),
-                  onTap: () => _setEveryFilm(!prefs.everyFilm),
-                ),
-              if (Push.available)
-                _Choices<bool>(
-                  icon: Icons.location_city_outlined,
-                  title: tr('من', 'From'),
-                  value: prefs.allCinemaAlerts,
-                  options: {
-                    false: tr(
-                      'سينماتي (${prefs.myCinemas.length})',
-                      'My cinemas (${prefs.myCinemas.length})',
-                    ),
-                    true: tr('كل السينمات', 'All cinemas'),
-                  },
-                  onChanged: prefs.setAllCinemaAlerts,
-                ),
-              if (Push.available)
-                _Row(
-                  icon: Icons.event_repeat_outlined,
-                  title: tr('ملخص الأربع', 'Wednesday roundup'),
-                  detail: tr(
-                    'كل أربع: الأفلام الجديدة في سينماتك',
-                    "Every Wednesday: the week's new films at your cinemas",
-                  ),
-                  trailing: Switch(
-                    value: prefs.weeklyRoundup,
-                    onChanged: prefs.setWeeklyRoundup,
-                  ),
-                  onTap: () => prefs.setWeeklyRoundup(!prefs.weeklyRoundup),
-                ),
-              if (Push.available)
-                _Row(
-                  icon: Icons.hourglass_bottom,
-                  title: tr('آخر فرصة', 'Last chance'),
-                  detail: tr(
-                    'لما فيلم يبقى خارج من سينماتك',
-                    'When a film is leaving your cinemas',
-                  ),
-                  trailing: Switch(
-                    value: prefs.lastChance,
-                    onChanged: prefs.setLastChance,
-                  ),
-                  onTap: () => prefs.setLastChance(!prefs.lastChance),
-                ),
-              if (Push.available &&
-                  defaultTargetPlatform == TargetPlatform.android)
-                _Row(
-                  icon: Icons.battery_alert_outlined,
-                  title: tr(
-                    'الإشعارات مش بتوصل؟',
-                    'Notifications not arriving?',
-                  ),
-                  detail: tr(
-                    'دوس هنا وهنقولك تعمل إيه خطوة بخطوة',
-                    'Tap and we’ll walk you through it',
-                  ),
-                  onTap: () => showBackgroundHelp(context),
-                )
-              else
-                _Row(
-                  icon: Icons.notifications_off_outlined,
-                  title: tr(
-                    'الإشعارات في تطبيق أندرويد',
-                    'Notifications are in the Android app',
-                  ),
-                  detail: tr(
-                    'النسخة دي مش بتبعت إشعارات',
-                    'This version doesn\'t send notifications',
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -481,28 +237,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => openFeedback(context),
               ),
               _Row(
-                icon: Icons.school_outlined,
-                title: tr('جولة سريعة في التطبيق', 'Quick tour of the app'),
-                onTap: () => showTour(context),
-              ),
-              _Row(
-                icon: Icons.privacy_tip_outlined,
-                title: tr('سياسة الخصوصية', 'Privacy policy'),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const PrivacyScreen(),
-                  ),
+                icon: Icons.info_outline,
+                title: tr('عن التطبيق', 'About the app'),
+                detail: tr(
+                  'جولة سريعة، الخصوصية، والتحديثات',
+                  'Quick tour, privacy and updates',
                 ),
+                onTap: () => _push(context, const _AboutPage()),
               ),
-              // GitHub APK updates: Android sideloads only, not web, Play or iOS.
-              if (!kIsWeb &&
-                  !fromPlayStore &&
-                  defaultTargetPlatform == TargetPlatform.android)
-                _Row(
-                  icon: Icons.system_update_outlined,
-                  title: tr('دوّر على تحديث', 'Check for updates'),
-                  onTap: () => _checkUpdate(context),
-                ),
             ],
           ),
           const SizedBox(height: 36),
@@ -514,21 +256,438 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  Future<void> _checkUpdate(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final update = await checkForUpdate(ignoreShown: true);
-    if (!context.mounted) return;
-    if (update != null) return showUpdatePrompt(context, update);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          tr('عندك آخر نسخة', 'You have the latest version'),
-          style: AppText.body(13),
-        ),
+/// "سينماتي" / "my cinemas", or the city Home shows.
+String _homeShows(Prefs prefs) => switch (prefs.homeCity) {
+  null => tr('سينماتي', 'my cinemas'),
+  final city => tr(
+    'كل سينمات ${cityName(city)}',
+    'all ${cityName(city)} cinemas',
+  ),
+};
+
+/// The notifications row's one line: which films, from where.
+String _notificationsSummary(Prefs prefs) {
+  if (!Push.available) {
+    return tr('مش متاحة على النسخة دي', 'Not available on this version');
+  }
+  final films = prefs.everyFilm
+      ? tr('كل الأفلام', 'every film')
+      : tr(
+          'الأفلام اللي بتتابعها (${prefs.following.length})',
+          'films you follow (${prefs.following.length})',
+        );
+  final from = prefs.allCinemaAlerts
+      ? tr('كل السينمات', 'all cinemas')
+      : tr('سينماتي', 'my cinemas');
+  return tr('$films · من $from', 'For $films · from $from');
+}
+
+void _push(BuildContext context, Widget page) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+void _say(BuildContext context, String message, {SnackBarAction? action}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message, style: AppText.body(13)),
+      action: action,
+    ),
+  );
+}
+
+/// A settings sub-page: title and its groups.
+class _Page extends StatelessWidget {
+  const _Page({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: Text(title, style: AppText.display(22)),
+      backgroundColor: AppColors.background,
+    ),
+    body: ListView(
+      padding: const EdgeInsets.only(bottom: 32),
+      children: children,
+    ),
+  );
+}
+
+/// My cinemas: pick them again, what Home shows, and my location.
+class _CinemasPage extends StatefulWidget {
+  const _CinemasPage();
+
+  @override
+  State<_CinemasPage> createState() => _CinemasPageState();
+}
+
+class _CinemasPageState extends State<_CinemasPage> {
+  bool _locating = false;
+
+  Future<void> _locate() async {
+    setState(() => _locating = true);
+    final problem = await refreshSpot(AppScope.of(context).prefs);
+    if (!mounted) return;
+    setState(() => _locating = false);
+    if (problem == null) {
+      return _say(
+        context,
+        tr('تمام، حدّثنا مكانك', 'Done, we updated your location'),
+      );
+    }
+    _say(
+      context,
+      describe(problem),
+      action:
+          problem == LocationProblem.deniedForever ||
+              problem == LocationProblem.serviceOff
+          ? SnackBarAction(
+              label: tr('الإعدادات', 'Settings'),
+              onPressed: () => openFixFor(problem),
+            )
+          : null,
+    );
+  }
+
+  void _redoSetup() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            OnboardingScreen(onDone: () => Navigator.of(context).pop()),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final prefs = AppScope.of(context).prefs;
+    final spot = prefs.spot;
+    return _Page(
+      title: tr('سينماتي', 'My cinemas'),
+      children: [
+        const SizedBox(height: 8),
+        _Group(
+          children: [
+            _Row(
+              icon: Icons.star_outline,
+              title: tr('اختار سينماتك من جديد', 'Pick your cinemas again'),
+              detail: tr(
+                'متختار ${cinemaCount(prefs.myCinemas.length)} · نبدأ من اللوكيشن',
+                '${cinemaCount(prefs.myCinemas.length)} picked · starts from your location',
+              ),
+              onTap: _redoSetup,
+            ),
+            _Row(
+              icon: Icons.location_city_outlined,
+              title: tr('الرئيسية تعرض', 'Home shows'),
+              detail: _homeShows(prefs),
+              onTap: () => showCityPicker(context),
+            ),
+          ],
+        ),
+        _Heading(tr('الموقع', 'Location')),
+        _Group(
+          children: [
+            _Row(
+              icon: Icons.my_location,
+              title: spot == null
+                  ? tr('استخدم موقعي', 'Use my location')
+                  : tr('حدّث موقعي', 'Update my location'),
+              detail: spot == null
+                  ? tr(
+                      'عشان نرتب السينمات من الأقرب ليك',
+                      'To sort cinemas nearest first',
+                    )
+                  : tr(
+                      'محفوظ على الموبايل بس، مش بيتبعت لحد',
+                      'Kept on your phone only, never sent anywhere',
+                    ),
+              trailing: _locating
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
+              onTap: _locating ? null : _locate,
+            ),
+            if (spot != null)
+              _Row(
+                icon: Icons.location_off_outlined,
+                title: tr('امسح موقعي', 'Forget my location'),
+                onTap: () {
+                  prefs.clearSpot();
+                  _say(context, tr('مسحنا مكانك', 'Your location’s cleared'));
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Every notification choice. "Turn on" only shows while the phone has
+/// them off; the background help is for Android phones that kill apps.
+class _NotificationsPage extends StatefulWidget {
+  const _NotificationsPage();
+
+  @override
+  State<_NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<_NotificationsPage> {
+  bool _enablingPush = false;
+  late Future<bool> _on = Push.instance.isOn();
+
+  /// Same as onboarding's yes: alerts for every film; the switch below can
+  /// narrow them to followed films.
+  Future<void> _enablePush() async {
+    setState(() => _enablingPush = true);
+    final prefs = AppScope.of(context).prefs;
+    prefs.setEveryFilm(true, chosen: false);
+    final on = await Push.instance.enable();
+    if (!on) prefs.setEveryFilm(false, chosen: false);
+    if (!mounted) return;
+    setState(() {
+      _enablingPush = false;
+      _on = Future.value(on);
+    });
+    _say(
+      context,
+      on
+          ? tr(
+              'هنقولك بأي حجز يفتح أو مواعيد تنزل في سينماتك',
+              'We’ll let you know when booking opens or new times drop at your cinemas',
+            )
+          : tr(
+              'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
+              'Notifications are off. You can turn them on from your phone’s settings.',
+            ),
+    );
+  }
+
+  /// Every film's new showtimes, not only followed ones: on asks for
+  /// notification permission like following a film does.
+  Future<void> _setEveryFilm(bool on) async {
+    final prefs = AppScope.of(context).prefs;
+    prefs.setEveryFilm(on);
+    if (!on) {
+      await Push.instance.syncPreferences();
+      return;
+    }
+    final allowed = await Push.instance.enable();
+    if (!mounted) return;
+    if (!allowed) prefs.setEveryFilm(false);
+    setState(() => _on = Future.value(allowed));
+    _say(
+      context,
+      allowed
+          ? tr(
+              'هنقولك بأي مواعيد جديدة في سينماتك، لأي فيلم',
+              'We’ll let you know about new times at your cinemas, for any film',
+            )
+          : tr(
+              'الإشعارات مقفولة. تقدر تفتحها من إعدادات الموبايل.',
+              'Notifications are off. You can turn them on from your phone’s settings.',
+            ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final prefs = AppScope.of(context).prefs;
+    if (!Push.available) {
+      return _Page(
+        title: tr('الإشعارات', 'Notifications'),
+        children: [
+          const SizedBox(height: 8),
+          _Group(
+            children: [
+              _Row(
+                icon: Icons.notifications_off_outlined,
+                title: tr(
+                  'الإشعارات في تطبيق الموبايل',
+                  'Notifications are in the phone app',
+                ),
+                detail: tr(
+                  'النسخة دي مش بتبعت إشعارات',
+                  'This version doesn’t send notifications',
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+    return _Page(
+      title: tr('الإشعارات', 'Notifications'),
+      children: [
+        FutureBuilder<bool>(
+          future: _on,
+          builder: (context, snap) => snap.data == false
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _Group(
+                    children: [
+                      _Row(
+                        icon: Icons.notifications_active_outlined,
+                        title: tr('شغّل الإشعارات', 'Turn on notifications'),
+                        detail: tr(
+                          'مقفولة دلوقتي · أي حجز يفتح أو مواعيد تنزل في سينماتك',
+                          'Off right now · when booking opens or new times drop at your cinemas',
+                        ),
+                        trailing: _enablingPush
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : null,
+                        onTap: _enablingPush ? null : _enablePush,
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+        _Heading(tr('عن إيه', 'About what')),
+        _Group(
+          children: [
+            _Row(
+              icon: Icons.campaign_outlined,
+              title: tr('كل الأفلام', 'Every film'),
+              detail: prefs.everyFilm
+                  ? tr('أي فيلم، حتى لو مش متابعه', 'Any film, followed or not')
+                  : tr(
+                      'مقفول: الأفلام اللي بتتابعها بس · ${prefs.following.length} فيلم',
+                      'Off: only films you follow · ${prefs.following.length}',
+                    ),
+              trailing: Switch(
+                value: prefs.everyFilm,
+                onChanged: _setEveryFilm,
+              ),
+              onTap: () => _setEveryFilm(!prefs.everyFilm),
+            ),
+            _Choices<bool>(
+              icon: Icons.location_city_outlined,
+              title: tr('من', 'From'),
+              value: prefs.allCinemaAlerts,
+              options: {
+                false: tr(
+                  'سينماتي (${prefs.myCinemas.length})',
+                  'My cinemas (${prefs.myCinemas.length})',
+                ),
+                true: tr('كل السينمات', 'All cinemas'),
+              },
+              onChanged: prefs.setAllCinemaAlerts,
+            ),
+          ],
+        ),
+        _Heading(tr('كمان', 'Also')),
+        _Group(
+          children: [
+            _Row(
+              icon: Icons.event_repeat_outlined,
+              title: tr('ملخص الأربع', 'Wednesday roundup'),
+              detail: tr(
+                'كل أربع: الأفلام الجديدة في سينماتك',
+                'Every Wednesday: the week’s new films at your cinemas',
+              ),
+              trailing: Switch(
+                value: prefs.weeklyRoundup,
+                onChanged: prefs.setWeeklyRoundup,
+              ),
+              onTap: () => prefs.setWeeklyRoundup(!prefs.weeklyRoundup),
+            ),
+            _Row(
+              icon: Icons.hourglass_bottom,
+              title: tr('آخر فرصة', 'Last chance'),
+              detail: tr(
+                'لما فيلم يبقى خارج من سينماتك',
+                'When a film is leaving your cinemas',
+              ),
+              trailing: Switch(
+                value: prefs.lastChance,
+                onChanged: prefs.setLastChance,
+              ),
+              onTap: () => prefs.setLastChance(!prefs.lastChance),
+            ),
+          ],
+        ),
+        if (defaultTargetPlatform == TargetPlatform.android) ...[
+          const SizedBox(height: 16),
+          _Group(
+            children: [
+              _Row(
+                icon: Icons.battery_alert_outlined,
+                title: tr('الإشعارات مش بتوصل؟', 'Notifications not arriving?'),
+                detail: tr(
+                  'دوس هنا وهنقولك تعمل إيه خطوة بخطوة',
+                  'Tap and we’ll walk you through it',
+                ),
+                onTap: () => showBackgroundHelp(context),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// The rarely needed ones: the tour, the privacy policy, and (GitHub
+/// installs only) checking for a new APK.
+class _AboutPage extends StatelessWidget {
+  const _AboutPage();
+
+  Future<void> _checkUpdate(BuildContext context) async {
+    final update = await checkForUpdate(ignoreShown: true);
+    if (!context.mounted) return;
+    if (update != null) return showUpdatePrompt(context, update);
+    _say(context, tr('عندك آخر نسخة', 'You have the latest version'));
+  }
+
+  @override
+  Widget build(BuildContext context) => _Page(
+    title: tr('عن التطبيق', 'About the app'),
+    children: [
+      const SizedBox(height: 8),
+      _Group(
+        children: [
+          _Row(
+            icon: Icons.school_outlined,
+            title: tr('جولة سريعة في التطبيق', 'Quick tour of the app'),
+            onTap: () {
+              // The tour points at Home's buttons: back to the tab first,
+              // then shown from the navigator (this page is gone by then).
+              final nav = Navigator.of(context);
+              nav.pop();
+              showTour(nav.context);
+            },
+          ),
+          _Row(
+            icon: Icons.privacy_tip_outlined,
+            title: tr('سياسة الخصوصية', 'Privacy policy'),
+            onTap: () => _push(context, const PrivacyScreen()),
+          ),
+          // GitHub APK updates: Android sideloads only, not web, Play or iOS.
+          if (!kIsWeb &&
+              !fromPlayStore &&
+              defaultTargetPlatform == TargetPlatform.android)
+            _Row(
+              icon: Icons.system_update_outlined,
+              title: tr('دوّر على تحديث', 'Check for updates'),
+              onTap: () => _checkUpdate(context),
+            ),
+        ],
+      ),
+      const SizedBox(height: 36),
+      const Credit(),
+    ],
+  );
 }
 
 /// A setting with a few choices, as a row of segments.
