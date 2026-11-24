@@ -427,6 +427,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   onTap: () => prefs.setWeeklyRoundup(!prefs.weeklyRoundup),
                 ),
+              if (Push.available)
+                _Row(
+                  icon: Icons.hourglass_bottom,
+                  title: tr('آخر فرصة', 'Last chance'),
+                  detail: tr(
+                    'لما فيلم يبقى خارج من سينماتك',
+                    'When a film is leaving your cinemas',
+                  ),
+                  trailing: Switch(
+                    value: prefs.lastChance,
+                    onChanged: prefs.setLastChance,
+                  ),
+                  onTap: () => prefs.setLastChance(!prefs.lastChance),
+                ),
               if (Push.available &&
                   defaultTargetPlatform == TargetPlatform.android)
                 _Row(
